@@ -1,11 +1,12 @@
 import java.text.SimpleDateFormat;
 
 /////////////////git version logic///////////////
-def cmd = "git rev-parse --short HEAD"
+def cmd = "git show --pretty=format:%ct_%h"//"git rev-parse --short HEAD"
 def proc = cmd.execute()
-String gitRevision = proc.text.trim()
+String[] gitInfos = proc.text.trim().split('_')
+String gitRevision = gitInfos[1]
 SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss")
-String gitTimestamp = format.format(new Date());
+String gitTimestamp = format.format(new Date(Long.parseLong(gitInfos[0])*1000));
 /////////////////git version logic///////////////
 
 
@@ -24,7 +25,7 @@ group = "com.jme3x"
 repositories {
 	mavenCentral()
 
-	maven { url "https://oss.sonatype.org/content/groups/public"}
+	maven { url "http://updates.jmonkeyengine.org/maven/"}
 }
 
 configurations {
@@ -37,10 +38,15 @@ sourceSets {
 }
 sourceSets.main.resources.srcDir 'src/main/java'
 
-
+def v_slf4j = '1.7.7'
+def v_jme3 = '3.0.10'
 dependencies {
-	compile group: 'org.jfxtras', name: 'jfxtras-window', version:'8.0-r2-SNAPSHOT'
-	provided files('providedlibs/jme3-core.jar','providedlibs/jme3-desktop.jar','providedlibs/jme3-lwjgl.jar','providedlibs/lwjgl.jar')
+	compile group: 'org.jfxtras', name: 'jfxtras-window', version:'8.0-r2'
+	compile "org.slf4j:slf4j-api:${v_slf4j}"
+	provided "com.jme3:jme3-core:${v_jme3}"
+	provided "com.jme3:jme3-desktop:${v_jme3}"
+	provided "com.jme3:jme3-lwjgl:${v_jme3}"
+	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 }
 
 task packageSources(type: Jar) {
@@ -68,5 +74,37 @@ eclipse {
 	classpath {
 		plusConfigurations += [configurations.provided]
 		noExportConfigurations += [configurations.provided]
+	}
+}
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
+	}
+}
+
+apply plugin: 'com.jfrog.bintray'
+
+bintray {
+	user = bintray_user
+	key = bintray_api_key
+
+	configurations = ['archives']
+	//publications = ['maven'] //When uploading Maven-based publication files
+	dryRun = false //Whether to run this as dry-run, without deploying
+	publish = true //If version should be auto published after an upload
+	pkg {
+		repo = 'jme3stuff'
+		name = project.name
+		desc = "JFX Gui bridge for JME with usefull utilities for common usecases."
+		websiteUrl = "https://github.com/empirephoenix/JME3-JFX"
+		issueTrackerUrl = "https://github.com/empirephoenix/JME3-JFX/issues"
+		vcsUrl = "https://github.com/empirephoenix/JME3-JFX.git"
+		licenses = ['BSD 3-Clause']
+		labels = ['jmonkeyengine', 'gui']
+		publicDownloadNumbers = true
 	}
 }

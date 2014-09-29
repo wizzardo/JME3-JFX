@@ -3,6 +3,7 @@ package com.jme3x.jfx;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.BitSet;
@@ -13,6 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -25,6 +27,8 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 import org.lwjgl.opengl.Display;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
@@ -52,10 +56,11 @@ import com.sun.javafx.stage.EmbeddedWindow;
 
 /**
  * Need to pass -Dprism.dirtyopts=false on startup
- * 
+ *
  * @author abies / Artur Biesiadowski
  */
 public class JmeFxContainer {
+	private static final Logger logger = LoggerFactory.getLogger(JmeFxContainer.class);
 
 	EmbeddedStageInterface		stagePeer;
 	EmbeddedSceneInterface		scenePeer;
@@ -80,6 +85,7 @@ public class JmeFxContainer {
 	private Group				rootNode;
 
 	private final Picture		picture;
+	private Function<ByteBuffer, Void> reorderData;
 
 	/** Indent the window position to account for window decoration by Ronn */
 	private int					windowOffsetX;
@@ -192,10 +198,6 @@ public class JmeFxContainer {
 		return this.pWidth;
 	}
 
-	private EmbeddedSceneInterface getScenePeer() {
-		return this.scenePeer;
-	}
-
 	private EmbeddedStageInterface getStagePeer() {
 		return this.stagePeer;
 	}
@@ -217,8 +219,17 @@ public class JmeFxContainer {
 			this.picture.setHeight(this.pHeight);
 			this.jmeData = BufferUtils.createByteBuffer(this.pWidth * this.pHeight * 4);
 			this.fxData = BufferUtils.createByteBuffer(this.pWidth * this.pHeight * 4);
-
+			//TODO 3.1 : use new Image(this.nativeFormat.get(), this.pWidth, this.pHeight, this.jmeData, com.jme3.texture.image.ColorSpace.sRGB);
 			this.jmeImage = new Image(this.nativeFormat.get(), this.pWidth, this.pHeight, this.jmeData);
+			//HACK pre-3.1 to support gamma correction with jme pre-implementation of ColorSpace
+			try {
+				Class<?> classColorSpace = Class.forName("com.jme3.texture.image.ColorSpace");
+				Method m = Image.class.getMethod("setColorSpace", classColorSpace);
+				m.invoke(this.jmeImage, classColorSpace.getField("sRGB").get(null));
+			} catch(Throwable exc) {
+				// ignore jme 3.1 not available
+			}
+			//HACK pre-3.1 End
 			if (this.tex != null) {
 				this.tex.setImage(this.jmeImage);
 			}
@@ -259,16 +270,34 @@ public class JmeFxContainer {
 
 			@Override
 			public void run() {
+				//TODO 3.1: use Format.ARGB8 and Format.BGRA8 and remove used of exchangeData, fx2jme_ARGB82ABGR8,...
 				switch (Pixels.getNativeFormat()) {
 				case Pixels.Format.BYTE_ARGB:
-					JmeFxContainer.this.nativeFormat.complete(Format.ARGB8);
+					try {
+						JmeFxContainer.this.nativeFormat.complete(Format.valueOf("ARGB8"));
+						reorderData = null;
+					} catch(Exception exc) {
+						JmeFxContainer.this.nativeFormat.complete(Format.ABGR8);
+						reorderData = JmeFxContainer::reorder_ARGB82ABGR8;
+					}
 					break;
 				case Pixels.Format.BYTE_BGRA_PRE:
-					JmeFxContainer.this.nativeFormat.complete(Format.BGRA8);
+					try {
+						JmeFxContainer.this.nativeFormat.complete(Format.valueOf("BGRA8"));
+						reorderData = null;
+					} catch(Exception exc) {
+						JmeFxContainer.this.nativeFormat.complete(Format.ABGR8);
+						reorderData = JmeFxContainer::reorder_BGRA82ABGR8;
+					}
 					break;
 				default:
-					// this is wrong, but at least will display something
-					JmeFxContainer.this.nativeFormat.complete(Format.ARGB8);
+					try {
+						JmeFxContainer.this.nativeFormat.complete(Format.valueOf("ARGB8"));
+						reorderData = null;
+					} catch(Exception exc) {
+						JmeFxContainer.this.nativeFormat.complete(Format.ABGR8);
+						reorderData = JmeFxContainer::reorder_ARGB82ABGR8;
+					}
 					break;
 				}
 			}
@@ -366,6 +395,11 @@ public class JmeFxContainer {
 			}
 
 			data.flip();
+			data.limit(this.pWidth * this.pHeight * 4);
+			if (this.reorderData != null) {
+				this.reorderData.apply(data);
+				data.position(0);
+			}
 			this.fxDataReady = true;
 
 		} catch (final Exception exc) {
@@ -403,6 +437,35 @@ public class JmeFxContainer {
 
 	}
 
+	//TODO benchmark
+	private static Void reorder_ARGB82ABGR8(ByteBuffer data){
+		int limit = data.limit() - 3;
+		byte v;
+		for (int i = 0; i < limit; i += 4) {
+			v = data.get(i+1);
+			data.put(i + 1, data.get(i+3) );
+			data.put(i + 3, v );
+		}
+		return null;
+	}
+
+	//TODO benchmark
+	private static Void reorder_BGRA82ABGR8(ByteBuffer data) {
+		int limit = data.limit() - 3;
+		byte v0, v1, v2, v3;
+		for (int i = 0; i < limit; i += 4) {
+			v0 = data.get(i + 0);
+			v1 = data.get(i + 1);
+			v2 = data.get(i + 2);
+			v3 = data.get(i + 3);
+			data.put(i + 0, v3);
+			data.put(i + 1, v0);
+			data.put(i + 2, v1);
+			data.put(i + 3, v2);
+		}
+		return null;
+	}
+
 	boolean[]	mouseButtonState	= new boolean[3];
 
 	public boolean isCovered(final int x, final int y) {
@@ -433,7 +496,6 @@ public class JmeFxContainer {
 		}
 	}
 
-	private final char[]	keyCharSet	= new char[0xFF];
 	private final BitSet	keyStateSet	= new BitSet(0xFF);
 
 	int retrieveKeyState() {
@@ -516,7 +578,7 @@ public class JmeFxContainer {
 									if (Display.isFullscreen()) {
 										final PopupSnapper ps = JmeFxContainer.this.snappers.remove(window);
 										if (ps == null) {
-											System.out.println("Cannot find snapper for window " + window);
+											logger.warn("Cannot find snapper for window " + window);
 										} else {
 											ps.stop();
 										}
@@ -541,7 +603,7 @@ public class JmeFxContainer {
 
 	/**
 	 * call via gui manager!
-	 * 
+	 *
 	 * @param rawInputListenerAdapter
 	 */
 	public void setEverListeningRawInputListener(final RawInputListener rawInputListenerAdapter) {

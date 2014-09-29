@@ -13,6 +13,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jme3.app.Application;
 import com.jme3.asset.AssetManager;
 import com.jme3.input.RawInputListener;
@@ -27,9 +30,11 @@ import com.jme3x.jfx.cursor.ICursorDisplayProvider;
 import com.sun.javafx.cursor.CursorType;
 
 public class GuiManager {
+	private static final Logger logger = LoggerFactory.getLogger(GuiManager.class);
+
 	private JmeFxContainer		jmefx;
 	private Group				highLevelGroup;
-	private Scene				mainScene;
+
 	/**
 	 * a list of all attached huds, using copyonwrite to allow reading from other threads in a save way
 	 */
@@ -52,7 +57,7 @@ public class GuiManager {
 
 	/**
 	 * creates a new JMEFX container, this is a rather expensive operation and should only be done one time fr the 2d fullscreengui. Additionals should only be necessary for 3d guis, should be called from JME thread
-	 * 
+	 *
 	 * @param guiParent
 	 * @param assetManager
 	 * @param application
@@ -85,9 +90,9 @@ public class GuiManager {
 
 	private void initRootGroup() {
 		/*
-		 * 
+		 *
 		 * Group baseHighLevelGroup = new Group(); Scene baseScene = new Scene(baseHighLevelGroup); baseScene.setFill(new Color(0, 0, 0, 0)); switchRootGroup(baseHighLevelGroup); }
-		 * 
+		 *
 		 * private void switchRootGroup(Group newRootGroup) {
 		 */
 		final Semaphore waitForInit = new Semaphore(0);
@@ -118,9 +123,9 @@ public class GuiManager {
 					}
 				});
 
-				GuiManager.this.mainScene = new Scene(GuiManager.this.highLevelGroup);
-				GuiManager.this.mainScene.setFill(new Color(0, 0, 0, 0));
-				GuiManager.this.jmefx.setScene(GuiManager.this.mainScene, GuiManager.this.highLevelGroup);
+				Scene scene = new Scene(GuiManager.this.highLevelGroup);
+				scene.setFill(new Color(0, 0, 0, 0));
+				GuiManager.this.jmefx.setScene(scene, GuiManager.this.highLevelGroup);
 				waitForInit.release();
 			}
 		});
@@ -129,7 +134,7 @@ public class GuiManager {
 
 	/**
 	 * bind your input suppliery here, for 2d the normal inputmanager will suffice, Events are expected to be in the JME thread
-	 * 
+	 *
 	 * @return
 	 */
 	public RawInputListener getInputRedirector() {
@@ -138,17 +143,21 @@ public class GuiManager {
 
 	/**
 	 * removes a hud, if this is not called in the jfx thread this is done async, else it is done instantly
-	 * 
+	 *
 	 * @param hud
 	 */
 	public void detachHudAsync(final AbstractHud hud) {
+		if (hud == null) {
+			logger.warn("trying to remove null hud!");
+			return;
+		}
 		final Runnable attachTask = new Runnable() {
 			@Override
 			public void run() {
 				if (!hud.isAttached()) {
 					return;
 				}
-				System.out.println("Detaching " + hud);
+				logger.debug("Detaching {}", hud);
 				GuiManager.this.attachedHuds.remove(hud);
 				GuiManager.this.highLevelGroup.getChildren().remove(hud.getNode());
 				hud.setAttached(false, null);
@@ -159,7 +168,7 @@ public class GuiManager {
 
 	/**
 	 * adds a hud, if this is not called in the jfx thread this is done async, else it is done instantly
-	 * 
+	 *
 	 * @param hud
 	 */
 	public void attachHudAsync(final AbstractHud hud) {
@@ -169,10 +178,10 @@ public class GuiManager {
 				if (hud.isAttached()) {
 					return;
 				}
-				System.out.println("Attaching " + hud);
+				logger.debug("Attaching {}", hud);
 				assert !GuiManager.this.attachedHuds.contains(hud) : "Duplicated attach of " + hud + " isAttached state error?";
 				if (!hud.isInitialized()) {
-					System.err.println("Late init of " + hud.getClass().getName() + " call initialize early to prevent microlags");
+					logger.warn("Late init of {} call initialize early to prevent microlags", hud.getClass().getName());
 					hud.precache();
 				}
 				GuiManager.this.attachedHuds.add(hud);
@@ -229,7 +238,7 @@ public class GuiManager {
 		currentOrder.clear();
 		// put everything else somewhare + ugly hack for dragimage
 		for (final javafx.scene.Node other : others) {
-			if (!("dragimage:true;".equals(other.getStyle()))) {
+			if (!"dragimage:true;".equals(other.getStyle())) {
 				currentOrder.add(other);
 			}
 		}
@@ -254,7 +263,7 @@ public class GuiManager {
 			}
 		}
 		if (!switchToModal && orderedModalWindows.size() > 0) {
-			System.out.println("TODO FocusDenied sound/visual representation");
+			logger.warn("TODO FocusDenied sound/visual representation");
 		}
 
 	}
@@ -266,7 +275,7 @@ public class GuiManager {
 	/**
 	 * this inputlistener recives all! events, even those that are normally consumed by JFX. <br>
 	 * Usecase
-	 * 
+	 *
 	 * @param rawInputListenerAdapter
 	 */
 	public void setEverListeningRawInputListener(final RawInputListener rawInputListenerAdapter) {
