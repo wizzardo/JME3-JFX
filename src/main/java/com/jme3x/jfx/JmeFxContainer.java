@@ -108,7 +108,7 @@ public class JmeFxContainer {
 		return this.inputListener;
 	}
 
-	private JmeFxContainer(final AssetManager assetManager, final Application app, final boolean fullScreenSupport, final ICursorDisplayProvider cursorDisplayProvider) {
+	protected JmeFxContainer(final AssetManager assetManager, final Application app, final boolean fullScreenSupport, final ICursorDisplayProvider cursorDisplayProvider) {
 		this.initFx();
 
 		final Point decorationSize = JFXUtils.getWindowDecorationSize();
