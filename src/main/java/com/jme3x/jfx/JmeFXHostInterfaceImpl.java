@@ -7,6 +7,7 @@ package com.jme3x.jfx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jme3x.jfx.cursor.ICursorDisplayProvider;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
@@ -15,49 +16,100 @@ import com.sun.javafx.embed.HostInterface;
 
 /**
  * Fakes a top level window
- *
  */
 public class JmeFXHostInterfaceImpl implements HostInterface {
+	
 	private static final Logger logger = LoggerFactory.getLogger(JmeFXHostInterfaceImpl.class);
 
+	/** контейнер JavaFX UI */
 	private final JmeFxContainer jmeFxContainer;
 
 	public JmeFXHostInterfaceImpl(final JmeFxContainer jmeFxContainer) {
 		this.jmeFxContainer = jmeFxContainer;
 	}
-
-	@Override
-	public void setEmbeddedStage(final EmbeddedStageInterface embeddedStage) {
-		this.jmeFxContainer.stagePeer = embeddedStage;
-		if(this.jmeFxContainer.stagePeer == null) {
-			return;
-		}
-		if(this.jmeFxContainer.pWidth > 0 && this.jmeFxContainer.pHeight > 0) {
-			this.jmeFxContainer.stagePeer.setSize(this.jmeFxContainer.pWidth, this.jmeFxContainer.pHeight);
-		}
-
-		this.jmeFxContainer.stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
+	
+	/**
+	 * @return контейнер JavaFX UI.
+	 */
+	private JmeFxContainer getJmeFxContainer() {
+		return jmeFxContainer;
 	}
 
 	@Override
-	public void setEmbeddedScene(final EmbeddedSceneInterface embeddedScene) {
-		this.jmeFxContainer.scenePeer = embeddedScene;
-		if(this.jmeFxContainer.scenePeer == null) {
-			return;
-		}
-		if(this.jmeFxContainer.pWidth > 0 && this.jmeFxContainer.pHeight > 0) {
-			this.jmeFxContainer.scenePeer.setSize(this.jmeFxContainer.pWidth, this.jmeFxContainer.pHeight);
-		}
+	public boolean grabFocus() {
+		return true;
+	}
 
-		if(this.jmeFxContainer.scenePeer != null) {
-			this.jmeFxContainer.scenePeer.setDragStartListener(new JmeFxDNDHandler(this.jmeFxContainer));
-		}
-
+	@Override
+	public void repaint() {
+		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+		jmeFxContainer.paintComponent();
 	}
 
 	@Override
 	public boolean requestFocus() {
 		return true;
+	}
+
+	@Override
+	public void setCursor(final CursorFrame cursorFrame) {
+		
+		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+		final ICursorDisplayProvider cursorDisplayProvider = jmeFxContainer.getCursorDisplayProvider();
+		
+		if(cursorDisplayProvider != null) {
+			cursorDisplayProvider.showCursor(cursorFrame);
+		}
+	}
+
+	@Override
+	public void setEmbeddedScene(final EmbeddedSceneInterface embeddedScene) {
+
+		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+		jmeFxContainer.setScenePeer(embeddedScene);
+
+		if(embeddedScene == null) {
+			return;
+		}
+		
+		final int width = jmeFxContainer.getPictureWidth();
+		final int heigh = jmeFxContainer.getPictureHeight();
+		
+		if(width > 0 && heigh > 0) {
+			embeddedScene.setSize(jmeFxContainer.getPictureWidth(), jmeFxContainer.getPictureHeight());
+		}
+		
+		embeddedScene.setDragStartListener(new JmeFxDNDHandler(jmeFxContainer));
+	}
+
+	@Override
+	public void setEmbeddedStage(final EmbeddedStageInterface embeddedStage) {
+		
+		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+		jmeFxContainer.setStagePeer(embeddedStage);
+		
+		if(embeddedStage == null) {
+			return;
+		}
+		
+		final int width = jmeFxContainer.getPictureWidth();
+		final int heigh = jmeFxContainer.getPictureHeight();
+		
+		if(width > 0 && heigh > 0) {
+			embeddedStage.setSize(jmeFxContainer.getPictureWidth(), jmeFxContainer.getPictureHeight());
+		}
+
+		embeddedStage.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
+	}
+
+	@Override
+	public void setEnabled(final boolean enabled) {
+		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+		jmeFxContainer.setFxEnabled(enabled);
+	}
+
+	@Override
+	public void setPreferredSize(final int width, final int height) {
 	}
 
 	@Override
@@ -67,35 +119,6 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
 	}
 
 	@Override
-	public void setPreferredSize(final int width, final int height) {
-	}
-
-	int repaintCounter = 0;
-
-	@Override
-	public void repaint() {
-		this.jmeFxContainer.paintComponent();
-	}
-
-	@Override
-	public void setEnabled(final boolean enabled) {
-		this.jmeFxContainer.setFxEnabled(enabled);
-	}
-
-	@Override
-	public void setCursor(final CursorFrame cursorFrame) {
-		if(this.jmeFxContainer.cursorDisplayProvider != null) {
-			this.jmeFxContainer.cursorDisplayProvider.showCursor(cursorFrame);
-		}
-	}
-
-	@Override
-	public boolean grabFocus() {
-		return true;
-	}
-
-	@Override
 	public void ungrabFocus() {
 	}
-
 }
