@@ -36,9 +36,9 @@ public class JmeFXInputListener implements RawInputListener {
 	private final BitSet keyStateSet = new BitSet(0xFF);
 
 	/** набор массивов для каждого символа */
-	private final char[][] keyCharArray = new char[Short.MAX_VALUE * 2][];
+	private final char[][] keyCharArray = new char[Character.MAX_CODE_POINT][];
 	/** таблица символов */
-	private final char[] keyCharSet = new char[Short.MAX_VALUE * 2];
+	private final char[] keyCharSet = new char[Character.MAX_CODE_POINT];
 
 	/** состояние кнопок мыши */
 	private final boolean[] mouseButtonState = new boolean[3];
@@ -223,7 +223,7 @@ public class JmeFXInputListener implements RawInputListener {
 		// TODO: Process events in separate thread ?
 		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
 
-		if(jmeFxContainer.getScenePeer() == null) {
+		if(!jmeFxContainer.isVisibleCursor() || jmeFxContainer.getScenePeer() == null) {
 			return;
 		}
 
@@ -298,7 +298,7 @@ public class JmeFXInputListener implements RawInputListener {
 
 		final JmeFxContainer jmeFxContainer = getJmeFxContainer();
 
-		if(jmeFxContainer.getScenePeer() == null) {
+		if(!jmeFxContainer.isVisibleCursor() || jmeFxContainer.getScenePeer() == null) {
 			return;
 		}
 

@@ -26,6 +26,7 @@ import org.lwjgl.opengl.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rlib.concurrent.atomic.AtomicInteger;
 import rlib.concurrent.lock.AsynReadSynWriteLock;
 import rlib.concurrent.lock.LockFactory;
 import rlib.util.array.Array;
@@ -137,6 +138,8 @@ public class JmeFxContainer {
 
 	protected final Array<PopupSnapper> activeSnappers;
 
+	/** кол-во незаписанных в JME кадров */
+	protected final AtomicInteger waitCount;
 	/** блокировщик доступа к данным изображений */
 	protected final AsynReadSynWriteLock imageLock;
 	/** изображение для отрисовки UI */
@@ -199,6 +202,9 @@ public class JmeFxContainer {
 	/** поддержка полноэкранного режима */
 	protected volatile boolean fullScreenSuppport;
 
+	/** отображается ли курсор */
+	protected volatile boolean visibleCursor;
+
 	public CursorType lastcursor;
 
 	/** набор состояний клавиш */
@@ -211,6 +217,7 @@ public class JmeFxContainer {
 
 		final Point decorationSize = JFXUtils.getWindowDecorationSize();
 
+		this.waitCount = new AtomicInteger();
 		this.activeSnappers = ArrayFactory.newConcurrentAtomicArray(PopupSnapper.class);
 		this.imageLock = LockFactory.newPrimitiveAtomicARSWLock();
 		this.paintListeners = new PaintListener[0];
@@ -219,6 +226,7 @@ public class JmeFxContainer {
 		this.cursorDisplayProvider = cursorDisplayProvider;
 		this.app = app;
 		this.fullScreenSuppport = fullScreenSupport;
+		this.visibleCursor = true;
 
 		final AppStateManager stateManager = app.getStateManager();
 		stateManager.attach(fxAppState);
@@ -233,7 +241,36 @@ public class JmeFxContainer {
 		this.texture = new Texture2D(jmeImage);
 		this.picture.setTexture(assetManager, texture, true);
 	}
+	
+	
+	/**
+	 * @param visibleCursor отображается ли курсор.
+	 */
+	public void setVisibleCursor(boolean visibleCursor) {
+		this.visibleCursor = visibleCursor;
+	}
+	
+	/**
+	 * @return отображается ли курсор.
+	 */
+	public boolean isVisibleCursor() {
+		return visibleCursor;
+	}
 
+	/**
+	 * @return нужна ли отрисовка.
+	 */
+	public boolean isNeedWriteToJME(){
+		return waitCount.get() > 0;
+	}
+	
+	/**
+	 * @return кол-во незаписанных в JME кадров.
+	 */
+	public AtomicInteger getWaitCount() {
+		return waitCount;
+	}
+	
 	/**
 	 * Добавление нового слушателя.
 	 */
@@ -713,8 +750,8 @@ public class JmeFxContainer {
 
 		final long diff = System.currentTimeMillis() - time;
 
-		if(diff > 2) {
-			System.out.println("slow write FX frame(" + diff + ")");
+		if(diff > 3) {
+			//System.out.println("slow write FX frame(" + diff + ")");
 		}
 
 		if(paintListeners.length > 0) {
@@ -722,8 +759,9 @@ public class JmeFxContainer {
 				paintListener.postPaint();
 			}
 		}
-
-		addWriteTask();
+		
+		final AtomicInteger waitCount = getWaitCount();
+		waitCount.incrementAndGet();
 	}
 
 	public void paintPopupSnapper(final IntBuffer intBuffer, final int pictureWidth, final int pictureHeight) {
@@ -915,6 +953,9 @@ public class JmeFxContainer {
 	 */
 	public void writeToJME() {
 
+		final AtomicInteger waitCount = getWaitCount();
+		final int currentCount = waitCount.get();
+		
 		final long time = System.currentTimeMillis();
 
 		final ByteBuffer jmeData = getJmeData();
@@ -932,11 +973,13 @@ public class JmeFxContainer {
 
 		final long diff = System.currentTimeMillis() - time;
 
-		if(diff > 2) {
+		if(diff > 3) {
 			System.out.println("slow write JME FX frame(" + diff + ")");
 		}
 
 		final Image jmeImage = getJmeImage();
 		jmeImage.setUpdateNeeded();
+		
+		waitCount.subAndGet(currentCount);
 	}
 }
