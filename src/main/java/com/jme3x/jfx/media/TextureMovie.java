@@ -176,7 +176,7 @@ public class TextureMovie {
                     }
 
 
-                    ByteBuffer src = argbFrame.getBuffer();
+                    ByteBuffer src = argbFrame.getBufferForPlane(0);
                     ByteBuffer bb = image.getData(0);
                     bb.clear();
 

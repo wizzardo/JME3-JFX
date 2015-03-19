@@ -1,20 +1,18 @@
 package com.jme3x.jfx;
 
+import static rlib.util.ReflectionUtils.getStaticFieldValue;
+
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -29,8 +27,11 @@ import org.slf4j.LoggerFactory;
 import rlib.concurrent.atomic.AtomicInteger;
 import rlib.concurrent.lock.AsynReadSynWriteLock;
 import rlib.concurrent.lock.LockFactory;
+import rlib.util.ReflectionUtils;
 import rlib.util.array.Array;
 import rlib.util.array.ArrayFactory;
+import rlib.util.dictionary.DictionaryFactory;
+import rlib.util.dictionary.ObjectDictionary;
 
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
@@ -50,6 +51,7 @@ import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.cursor.ICursorDisplayProvider;
 import com.jme3x.jfx.listener.PaintListener;
 import com.jme3x.jfx.util.JFXUtils;
+import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.Pixels;
 import com.sun.javafx.application.PlatformImpl;
 import com.sun.javafx.cursor.CursorType;
@@ -69,6 +71,8 @@ import com.sun.javafx.stage.EmbeddedWindow;
 public class JmeFxContainer {
 
 	private static final Logger logger = LoggerFactory.getLogger(JmeFxContainer.class);
+
+	public static final String FIELD_SCENE_ACCESSOR = "sceneAccessor";
 
 	public static JmeFxContainer install(final Application app, final Node guiNode, final boolean fullScreenSupport, final ICursorDisplayProvider cursorDisplayProvider) {
 
@@ -174,6 +178,8 @@ public class JmeFxContainer {
 	protected volatile ByteBuffer jmeData;
 	/** данные кадра отрисованного в JavaFX */
 	protected volatile ByteBuffer fxData;
+	/** временные данные кадра отрисованного в JavaFX */
+	protected volatile ByteBuffer tempData;
 
 	protected volatile CompletableFuture<Format> nativeFormat = new CompletableFuture<Format>();
 	/** провайдер по отображению нужных курсоров */
@@ -210,13 +216,15 @@ public class JmeFxContainer {
 	/** набор состояний клавиш */
 	private final BitSet keyStateSet = new BitSet(0xFF);
 
-	Map<Window, PopupSnapper> snappers = new IdentityHashMap<>();
+	/** словарь с набором созданных всплывающих окон */
+	private final ObjectDictionary<Window, PopupSnapper> snappers;
 
 	protected JmeFxContainer(final AssetManager assetManager, final Application app, final boolean fullScreenSupport, final ICursorDisplayProvider cursorDisplayProvider) {
 		this.initFx();
 
 		final Point decorationSize = JFXUtils.getWindowDecorationSize();
 
+		this.snappers = DictionaryFactory.newObjectDictionary();
 		this.waitCount = new AtomicInteger();
 		this.activeSnappers = ArrayFactory.newConcurrentAtomicArray(PopupSnapper.class);
 		this.imageLock = LockFactory.newPrimitiveAtomicARSWLock();
@@ -241,15 +249,14 @@ public class JmeFxContainer {
 		this.texture = new Texture2D(jmeImage);
 		this.picture.setTexture(assetManager, texture, true);
 	}
-	
-	
+
 	/**
 	 * @param visibleCursor отображается ли курсор.
 	 */
-	public void setVisibleCursor(boolean visibleCursor) {
+	public void setVisibleCursor(final boolean visibleCursor) {
 		this.visibleCursor = visibleCursor;
 	}
-	
+
 	/**
 	 * @return отображается ли курсор.
 	 */
@@ -258,19 +265,26 @@ public class JmeFxContainer {
 	}
 
 	/**
+	 * @return словарь с набором созданных всплывающих окон.
+	 */
+	public ObjectDictionary<Window, PopupSnapper> getSnappers() {
+		return snappers;
+	}
+
+	/**
 	 * @return нужна ли отрисовка.
 	 */
-	public boolean isNeedWriteToJME(){
+	public boolean isNeedWriteToJME() {
 		return waitCount.get() > 0;
 	}
-	
+
 	/**
 	 * @return кол-во незаписанных в JME кадров.
 	 */
 	public AtomicInteger getWaitCount() {
 		return waitCount;
 	}
-	
+
 	/**
 	 * Добавление нового слушателя.
 	 */
@@ -494,7 +508,24 @@ public class JmeFxContainer {
 			picture.setWidth(pictureWidth);
 			picture.setHeight(pictureHeight);
 
+			if(fxData != null) {
+				BufferUtils.destroyDirectBuffer(fxData);
+			}
+
+			if(tempData != null) {
+				BufferUtils.destroyDirectBuffer(tempData);
+			}
+
+			if(jmeData != null) {
+				BufferUtils.destroyDirectBuffer(jmeData);
+			}
+
+			if(jmeImage != null) {
+				jmeImage.dispose();
+			}
+
 			fxData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
+			tempData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
 			jmeData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
 			jmeImage = new Image(nativeFormat.get(), pictureWidth, pictureHeight, jmeData, ColorSpace.sRGB);
 
@@ -565,31 +596,38 @@ public class JmeFxContainer {
 	protected void installSceneAccessorHack() {
 
 		try {
-			final Field f = SceneHelper.class.getDeclaredField("sceneAccessor");
-			f.setAccessible(true);
-			final SceneAccessor orig = (SceneAccessor) f.get(null);
 
-			final SceneAccessor sa = new SceneAccessor() {
+			final SceneAccessor originalSceneAccessor = getStaticFieldValue(SceneHelper.class, FIELD_SCENE_ACCESSOR);
+			final SceneAccessor newSceneAccessor = new SceneAccessor() {
 
 				@Override
 				public Scene createPopupScene(final Parent root) {
-					final Scene scene = orig.createPopupScene(root);
-					scene.windowProperty().addListener((ChangeListener<Window>) (observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-						if(Display.isFullscreen()) {
-							final PopupSnapper ps = new PopupSnapper(JmeFxContainer.this, window, scene);
-							JmeFxContainer.this.snappers.put(window, ps);
-							ps.start();
+
+					final Scene scene = originalSceneAccessor.createPopupScene(root);
+					scene.windowProperty().addListener((observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
+
+						if(!Display.isFullscreen()) {
+							return;
 						}
+
+						final PopupSnapper popupSnapper = new PopupSnapper(JmeFxContainer.this, window, scene);
+						final ObjectDictionary<Window, PopupSnapper> snappers = getSnappers();
+						snappers.put(window, popupSnapper);
+						popupSnapper.start();
 					}));
 
-					scene.windowProperty().addListener((ChangeListener<Window>) (observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
-						if(Display.isFullscreen()) {
-							final PopupSnapper ps = JmeFxContainer.this.snappers.remove(window);
-							if(ps == null) {
-								logger.warn("Cannot find snapper for window " + window);
-							} else {
-								ps.stop();
-							}
+					scene.windowProperty().addListener((observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
+
+						if(!Display.isFullscreen()) {
+							return;
+						}
+
+						final ObjectDictionary<Window, PopupSnapper> snappers = getSnappers();
+						final PopupSnapper popupSnapper = snappers.remove(window);
+						if(popupSnapper == null) {
+							logger.warn("Cannot find snapper for window " + window);
+						} else {
+							popupSnapper.stop();
 						}
 					}));
 
@@ -598,26 +636,31 @@ public class JmeFxContainer {
 
 				@Override
 				public Camera getEffectiveCamera(final Scene scene) {
-					return orig.getEffectiveCamera(scene);
+					return originalSceneAccessor.getEffectiveCamera(scene);
 				}
 
 				@Override
 				public void parentEffectiveOrientationInvalidated(final Scene scene) {
-					orig.parentEffectiveOrientationInvalidated(scene);
+					originalSceneAccessor.parentEffectiveOrientationInvalidated(scene);
 				}
 
 				@Override
 				public void setPaused(final boolean paused) {
-					orig.setPaused(paused);
+					originalSceneAccessor.setPaused(paused);
 				}
 
 				@Override
 				public void setTransientFocusContainer(final Scene scene, final javafx.scene.Node node) {
+				}
 
+				@Override
+				public Accessible getAccessible(final Scene scene) {
+					return originalSceneAccessor.getAccessible(scene);
 				}
 			};
 
-			f.set(null, sa);
+			ReflectionUtils.setStaticFieldValue(SceneHelper.class, FIELD_SCENE_ACCESSOR, newSceneAccessor);
+
 		} catch(final Exception exc) {
 			exc.printStackTrace();
 		}
@@ -684,12 +727,18 @@ public class JmeFxContainer {
 		return activeSnappers;
 	}
 
+	/**
+	 * @return данные кадра отрисованного в JavaFX.
+	 */
 	public ByteBuffer getFxData() {
 		return fxData;
 	}
 
-	public void setFxData(final ByteBuffer fxData) {
-		this.fxData = fxData;
+	/**
+	 * @return временные данные кадра отрисованного в JavaFX.
+	 */
+	public ByteBuffer getTempData() {
+		return tempData;
 	}
 
 	/**
@@ -711,29 +760,33 @@ public class JmeFxContainer {
 			}
 		}
 
-		final ByteBuffer fxData = getFxData();
-
 		final long time = System.currentTimeMillis();
+
+		final ByteBuffer tempData = getTempData();
+		tempData.clear();
+
+		final IntBuffer intBuffer = tempData.asIntBuffer();
+
+		final int pictureWidth = getPictureWidth();
+		final int pictureHeight = getPictureHeight();
+
+		if(!scenePeer.getPixels(intBuffer, pictureWidth, pictureHeight)) {
+			return;
+		}
+
+		paintPopupSnapper(intBuffer, pictureWidth, pictureHeight);
+
+		tempData.flip();
+		tempData.limit(pictureWidth * pictureHeight * 4);
 
 		final AsynReadSynWriteLock imageLock = getImageLock();
 		imageLock.synLock();
 		try {
 
+			final ByteBuffer fxData = getFxData();
 			fxData.clear();
-
-			final IntBuffer intBuffer = fxData.asIntBuffer();
-
-			final int pictureWidth = getPictureWidth();
-			final int pictureHeight = getPictureHeight();
-
-			if(!scenePeer.getPixels(intBuffer, pictureWidth, pictureHeight)) {
-				return;
-			}
-
-			paintPopupSnapper(intBuffer, pictureWidth, pictureHeight);
-
+			fxData.put(tempData);
 			fxData.flip();
-			fxData.limit(pictureWidth * pictureHeight * 4);
 
 			final Function<ByteBuffer, Void> reorderData = getReorderData();
 
@@ -751,7 +804,7 @@ public class JmeFxContainer {
 		final long diff = System.currentTimeMillis() - time;
 
 		if(diff > 3) {
-			//System.out.println("slow write FX frame(" + diff + ")");
+			// System.out.println("slow write FX frame(" + diff + ")");
 		}
 
 		if(paintListeners.length > 0) {
@@ -759,7 +812,7 @@ public class JmeFxContainer {
 				paintListener.postPaint();
 			}
 		}
-		
+
 		final AtomicInteger waitCount = getWaitCount();
 		waitCount.incrementAndGet();
 	}
@@ -955,12 +1008,12 @@ public class JmeFxContainer {
 
 		final AtomicInteger waitCount = getWaitCount();
 		final int currentCount = waitCount.get();
-		
+
 		final long time = System.currentTimeMillis();
 
 		final ByteBuffer jmeData = getJmeData();
 		jmeData.clear();
-		
+
 		final AsynReadSynWriteLock imageLock = getImageLock();
 		imageLock.synLock();
 		try {
@@ -974,12 +1027,12 @@ public class JmeFxContainer {
 		final long diff = System.currentTimeMillis() - time;
 
 		if(diff > 3) {
-			System.out.println("slow write JME FX frame(" + diff + ")");
+			// System.out.println("slow write JME FX frame(" + diff + ")");
 		}
 
 		final Image jmeImage = getJmeImage();
 		jmeImage.setUpdateNeeded();
-		
+
 		waitCount.subAndGet(currentCount);
 	}
 }
