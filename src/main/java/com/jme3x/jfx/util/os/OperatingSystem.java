@@ -5,78 +5,89 @@ package com.jme3x.jfx.util.os;
  */
 public class OperatingSystem {
 
-	/** name of the operating system */
-	private String name;
-	/** version of the operating system kernel */
-	private String version;
-	/** operating system architecture */
-	private String arch;
-	/** distribution name of the operating system */
-	private String distribution;
+    /**
+     * Name of the operating system.
+     */
+    private String name;
 
-	public OperatingSystem() {
-		final OperatingSystemResolver resolver = new OperatingSystemResolver();
-		resolver.resolve(this);
-	}
+    /**
+     * Version of the operating system kernel.
+     */
+    private String version;
 
-	/**
-	 * @return operating system architecture.
-	 */
-	public String getArch() {
-		return arch;
-	}
+    /**
+     * Operating system architecture.
+     */
+    private String arch;
 
-	/**
-	 * @return distribution name of the operating system.
-	 */
-	public String getDistribution() {
-		return distribution;
-	}
+    /**
+     * Distribution name of the operating system.
+     */
+    private String distribution;
 
-	/**
-	 * @return name of the operating system.
-	 */
-	public String getName() {
-		return name;
-	}
+    public OperatingSystem() {
+        final OperatingSystemResolver resolver = new OperatingSystemResolver();
+        resolver.resolve(this);
+    }
 
-	/**
-	 * @return version of the operating system kernel.
-	 */
-	public String getVersion() {
-		return version;
-	}
+    /**
+     * @return operating system architecture.
+     */
+    public String getArch() {
+        return arch;
+    }
 
-	/**
-	 * @param arch operating system architecture.
-	 */
-	public void setArch(final String arch) {
-		this.arch = arch;
-	}
+    /**
+     * @param arch operating system architecture.
+     */
+    public void setArch(final String arch) {
+        this.arch = arch;
+    }
 
-	/**
-	 * @param platform distribution name of the operating system.
-	 */
-	public void setDistribution(final String platform) {
-		this.distribution = platform;
-	}
+    /**
+     * @return distribution name of the operating system.
+     */
+    public String getDistribution() {
+        return distribution;
+    }
 
-	/**
-	 * @param name name of the operating system.
-	 */
-	public void setName(final String name) {
-		this.name = name;
-	}
+    /**
+     * @param platform distribution name of the operating system.
+     */
+    public void setDistribution(final String platform) {
+        this.distribution = platform;
+    }
 
-	/**
-	 * @param version version of the operating system kernel.
-	 */
-	public void setVersion(final String version) {
-		this.version = version;
-	}
+    /**
+     * @return name of the operating system.
+     */
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + " [name=" + name + ", version=" + version + ", arch=" + arch + ", distribution=" + distribution + "]";
-	}
+    /**
+     * @param name name of the operating system.
+     */
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return version of the operating system kernel.
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * @param version version of the operating system kernel.
+     */
+    public void setVersion(final String version) {
+        this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [name=" + name + ", version=" + version + ", arch=" + arch + ", distribution=" + distribution + "]";
+    }
 }
