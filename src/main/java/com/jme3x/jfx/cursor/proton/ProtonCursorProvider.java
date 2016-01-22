@@ -39,7 +39,7 @@ public class ProtonCursorProvider implements CursorDisplayProvider {
     }
 
     @Override
-    public void setUp(final CursorType ctyp) {
+    public void setup(final CursorType ctyp) {
         JmeCursor loaded = null;
         switch (ctyp) {
             case CLOSED_HAND:

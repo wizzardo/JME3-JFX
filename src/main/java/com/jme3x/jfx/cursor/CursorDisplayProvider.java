@@ -10,7 +10,7 @@ public interface CursorDisplayProvider {
      *
      * @param normal
      */
-    void setUp(CursorType normal);
+    void setup(CursorType normal);
 
     void showCursor(CursorFrame cursorFrame);
 }
