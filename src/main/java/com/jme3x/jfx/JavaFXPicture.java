@@ -1,9 +1,11 @@
 package com.jme3x.jfx;
 
+import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
+import com.jme3x.jfx.util.JFXUtils;
 import com.sun.javafx.embed.EmbeddedStageInterface;
+
 import javafx.application.Platform;
-import org.lwjgl.opengl.Display;
 
 /**
  * Реализация картинки с UI для JME.
@@ -33,6 +35,8 @@ public class JavaFXPicture extends Picture {
     public void updateLogicalState(float tpf) {
 
         final JmeFxContainer container = getContainer();
+        final JmeContext jmeContext = container.getJmeContext();
+
         final EmbeddedStageInterface currentStage = container.getStagePeer();
 
         try {
@@ -41,15 +45,15 @@ public class JavaFXPicture extends Picture {
                 return;
             }
 
-            final int currentWidth = Display.getWidth();
-            final int currentHeight = Display.getHeight();
+            final int currentWidth = JFXUtils.getWidth(jmeContext);
+            final int currentHeight = JFXUtils.getHeight(jmeContext);
 
             if (currentWidth != container.getPictureWidth() || currentHeight != container.getPictureHeight()) {
                 container.handleResize();
             }
 
-            final int x = Display.getX() + (Display.isFullscreen() ? 0 : container.getWindowOffsetX());
-            final int y = Display.getY() + (Display.isFullscreen() ? 0 : container.getWindowOffsetY());
+            final int x = JFXUtils.getX(jmeContext) + container.getWindowOffsetX();
+            final int y = JFXUtils.getY(jmeContext) + container.getWindowOffsetY();
 
             if (container.getOldX() != x || container.getOldY() != y) {
 

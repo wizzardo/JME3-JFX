@@ -9,6 +9,7 @@ import com.jme3.input.InputManager;
 import com.jme3.input.RawInputListener;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
+import com.jme3.system.JmeContext;
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
@@ -28,8 +29,6 @@ import com.sun.javafx.embed.HostInterface;
 import com.sun.javafx.scene.SceneHelper;
 import com.sun.javafx.scene.SceneHelper.SceneAccessor;
 import com.sun.javafx.stage.EmbeddedWindow;
-
-import org.lwjgl.opengl.Display;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -284,8 +283,15 @@ public class JmeFxContainer {
      */
     private final ObjectDictionary<Window, PopupSnapper> snappers;
 
+    /**
+     * Контекст JME.
+     */
+    private final JmeContext jmeContext;
+
     protected JmeFxContainer(final AssetManager assetManager, final Application app, final boolean fullScreenSupport, final CursorDisplayProvider cursorDisplayProvider) {
         this.initFx();
+
+        this.jmeContext = app.getContext();
 
         final Point decorationSize = JFXUtils.getWindowDecorationSize();
 
@@ -313,6 +319,13 @@ public class JmeFxContainer {
 
         this.texture = new Texture2D(jmeImage);
         this.picture.setTexture(assetManager, texture, true);
+    }
+
+    /**
+     * @return контекст JME.
+     */
+    public JmeContext getJmeContext() {
+        return jmeContext;
     }
 
     /**
@@ -629,12 +642,17 @@ public class JmeFxContainer {
      */
     public void handleResize() {
 
+        final JmeContext jmeContext = getJmeContext();
+
+        final int displayWidth = JFXUtils.getWidth(jmeContext);
+        final int displayHeight = JFXUtils.getHeight(jmeContext);
+
         final AsyncReadSyncWriteLock lock = getImageLock();
         lock.syncLock();
         try {
 
-            final int pictureWidth = Math.max(Display.getWidth(), 64);
-            final int pictureHeight = Math.max(Display.getHeight(), 64);
+            final int pictureWidth = Math.max(displayWidth, 64);
+            final int pictureHeight = Math.max(displayHeight, 64);
 
             final Picture picture = getPicture();
             picture.setWidth(pictureWidth);
@@ -734,11 +752,13 @@ public class JmeFxContainer {
                 @Override
                 public Scene createPopupScene(final Parent root) {
 
+                    final JmeContext jmeContext = getJmeContext();
+
                     final Scene scene = originalSceneAccessor.createPopupScene(root);
                     final ReadOnlyObjectProperty<Window> windowProperty = scene.windowProperty();
                     windowProperty.addListener((observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
 
-                        if (!Display.isFullscreen()) {
+                        if (!JFXUtils.isFullscreen(jmeContext)) {
                             return;
                         }
 
@@ -750,7 +770,7 @@ public class JmeFxContainer {
 
                     windowProperty.addListener((observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
 
-                        if (!Display.isFullscreen()) {
+                        if (!JFXUtils.isFullscreen(jmeContext)) {
                             return;
                         }
 
