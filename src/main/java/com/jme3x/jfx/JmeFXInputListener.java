@@ -15,8 +15,6 @@ import com.jme3.input.event.TouchEvent;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 
-import org.lwjgl.opengl.Display;
-
 import java.awt.event.KeyEvent;
 import java.util.BitSet;
 
@@ -296,20 +294,37 @@ public class JmeFXInputListener implements RawInputListener {
             return;
         }
 
-        Platform.runLater(() -> {
+        Platform.runLater(() -> onMouseButtonEventImpl(x, y, button, type));
+    }
 
-            final boolean[] mouseButtonState = getMouseButtonState();
-            final JmeFxDNDHandler jfxdndHandler = getJfxdndHandler();
+    private void onMouseButtonEventImpl(int x, int y, int button, int type) {
 
-            if (jfxdndHandler != null) {
-                jfxdndHandler.mouseUpdate(x, y, mouseButtonState[0]);
-            }
+        final boolean[] mouseButtonState = getMouseButtonState();
+        final JmeFxDNDHandler jfxdndHandler = getJfxdndHandler();
 
-            final JmeFxContainer fxContainer = getJmeFxContainer();
-            final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
+        final boolean primaryBtnDown = mouseButtonState[0];
+        final boolean middleBtnDown = mouseButtonState[1];
+        final boolean secondaryBtnDown = mouseButtonState[2];
 
-            scenePeer.mouseEvent(type, button, mouseButtonState[0], mouseButtonState[1], mouseButtonState[2], x, y, fxContainer.getOldX() + x, fxContainer.getOldY() + y, keyStateSet.get(KeyEvent.VK_SHIFT), keyStateSet.get(KeyEvent.VK_CONTROL), keyStateSet.get(KeyEvent.VK_ALT), keyStateSet.get(KeyEvent.VK_META), 0, button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON);
-        });
+        if (jfxdndHandler != null) {
+            jfxdndHandler.mouseUpdate(x, y, primaryBtnDown);
+        }
+
+        final JmeFxContainer fxContainer = getJmeFxContainer();
+        final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
+
+        final int screenX = fxContainer.getOldX() + x;
+        final int screenY = fxContainer.getOldY() + y;
+
+        final BitSet keyStateSet = getKeyStateSet();
+
+        final boolean shift = keyStateSet.get(KeyEvent.VK_SHIFT);
+        final boolean ctrl = keyStateSet.get(KeyEvent.VK_CONTROL);
+        final boolean alt = keyStateSet.get(KeyEvent.VK_ALT);
+        final boolean meta = keyStateSet.get(KeyEvent.VK_META);
+        final boolean popupTrigger = button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON;
+
+        scenePeer.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY, shift, ctrl, alt, meta, 0, popupTrigger);
     }
 
     @Override
@@ -338,6 +353,7 @@ public class JmeFXInputListener implements RawInputListener {
             event.setConsumed();
         }
 
+        final boolean[] mouseButtonState = getMouseButtonState();
         // not sure if should be grabbing focus on mouse motion event
         // grabFocus();
 
@@ -345,8 +361,6 @@ public class JmeFXInputListener implements RawInputListener {
         int button = AbstractEvents.MOUSEEVENT_NONE_BUTTON;
 
         final int wheelRotation = (int) Math.round(event.getDeltaWheel() / -120.0);
-
-        final boolean[] mouseButtonState = getMouseButtonState();
 
         if (wheelRotation != 0) {
             type = AbstractEvents.MOUSEEVENT_WHEEL;
@@ -368,12 +382,36 @@ public class JmeFXInputListener implements RawInputListener {
         /**
          * ensure drag and drop is handled before the mouse release event fires
          */
-        Platform.runLater(() -> {
-            if (JmeFXInputListener.this.jfxdndHandler != null) {
-                JmeFXInputListener.this.jfxdndHandler.mouseUpdate(x, y, JmeFXInputListener.this.mouseButtonState[0]);
-            }
-            JmeFXInputListener.this.jmeFxContainer.scenePeer.mouseEvent(ftype, fbutton, JmeFXInputListener.this.mouseButtonState[0], JmeFXInputListener.this.mouseButtonState[1], JmeFXInputListener.this.mouseButtonState[2], x, y, Display.getX() + x, Display.getY() + y, JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_SHIFT), JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_CONTROL), JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_ALT), JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_META), wheelRotation, false);
-        });
+        Platform.runLater(() -> onMouseMotionEventImpl(x, y, wheelRotation, ftype, fbutton));
+    }
+
+    private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int ftype, int fbutton) {
+
+        final JmeFxDNDHandler dndHandler = getJfxdndHandler();
+        final boolean[] mouseButtonState = getMouseButtonState();
+
+        final boolean primaryBtnDown = mouseButtonState[0];
+        final boolean middleBtnDown = mouseButtonState[1];
+        final boolean secondaryBtnDown = mouseButtonState[2];
+
+        if (dndHandler != null) {
+            dndHandler.mouseUpdate(x, y, primaryBtnDown);
+        }
+
+        final JmeFxContainer fxContainer = getJmeFxContainer();
+        final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
+
+        final int screenX = fxContainer.getOldX() + x;
+        final int screenY = fxContainer.getOldY() + y;
+
+        final BitSet keyStateSet = getKeyStateSet();
+
+        final boolean shift = keyStateSet.get(KeyEvent.VK_SHIFT);
+        final boolean ctrl = keyStateSet.get(KeyEvent.VK_CONTROL);
+        final boolean alt = keyStateSet.get(KeyEvent.VK_ALT);
+        final boolean meta = keyStateSet.get(KeyEvent.VK_META);
+
+        scenePeer.mouseEvent(ftype, fbutton, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY, shift, ctrl, alt, meta, wheelRotation, false);
     }
 
     @Override
