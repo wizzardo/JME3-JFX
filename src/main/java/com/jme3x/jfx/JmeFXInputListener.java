@@ -4,6 +4,7 @@
  */
 package com.jme3x.jfx;
 
+import com.jme3.input.KeyInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.awt.AwtKeyInput;
 import com.jme3.input.event.JoyAxisEvent;
@@ -177,9 +178,15 @@ public class JmeFXInputListener implements RawInputListener {
 
         final char[][] keyCharArray = getKeyCharArray();
         final char[] keyCharSet = getKeyCharSet();
-        final char keyChar = event.getKeyChar();
 
+        char keyChar = event.getKeyChar();
         int fxKeyCode = AwtKeyInput.convertJmeCode(event.getKeyCode());
+
+        switch (event.getKeyCode()) {
+            case KeyInput.KEY_BACK: keyChar = KeyEvent.VK_BACK_SPACE; break;
+            case KeyInput.KEY_DELETE: keyChar = KeyEvent.VK_DELETE; break;
+            case KeyInput.KEY_RETURN: keyChar = KeyEvent.VK_ENTER; break;
+        }
 
         final int keyState = retrieveKeyState();
 
