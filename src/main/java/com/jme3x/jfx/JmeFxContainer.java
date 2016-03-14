@@ -28,25 +28,8 @@ import com.sun.javafx.embed.HostInterface;
 import com.sun.javafx.scene.SceneHelper;
 import com.sun.javafx.scene.SceneHelper.SceneAccessor;
 import com.sun.javafx.stage.EmbeddedWindow;
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.scene.Camera;
-import javafx.scene.Group;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+
 import org.lwjgl.opengl.Display;
-import rlib.concurrent.atomic.AtomicInteger;
-import rlib.concurrent.lock.AsyncReadSyncWriteLock;
-import rlib.concurrent.lock.LockFactory;
-import rlib.logging.Logger;
-import rlib.logging.LoggerManager;
-import rlib.util.ReflectionUtils;
-import rlib.util.array.Array;
-import rlib.util.array.ArrayFactory;
-import rlib.util.dictionary.DictionaryFactory;
-import rlib.util.dictionary.ObjectDictionary;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -57,6 +40,25 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.scene.Camera;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import rlib.concurrent.atomic.AtomicInteger;
+import rlib.concurrent.lock.AsyncReadSyncWriteLock;
+import rlib.concurrent.lock.LockFactory;
+import rlib.logging.Logger;
+import rlib.logging.LoggerManager;
+import rlib.util.ReflectionUtils;
+import rlib.util.array.Array;
+import rlib.util.array.ArrayFactory;
+import rlib.util.dictionary.DictionaryFactory;
+import rlib.util.dictionary.ObjectDictionary;
 
 import static rlib.util.ReflectionUtils.getStaticFieldValue;
 
@@ -333,7 +335,7 @@ public class JmeFxContainer {
      * Создание задачи по записи FX UI на JME.
      */
     protected void addWriteTask() {
-        app.enqueue(() -> writeToJME());
+        app.enqueue(this::writeToJME);
     }
 
     /**

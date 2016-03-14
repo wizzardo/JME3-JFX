@@ -64,7 +64,6 @@ classes/
 */bin/*
 
 .gradle/
-build/
 libs/jme3/test-data
 libs/jme3/town.zip
 libs/jme3/wildhouse.zip

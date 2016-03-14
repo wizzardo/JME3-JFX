@@ -21,6 +21,7 @@ public class JFXUtils {
         OFFSET_MAPPING.put("Ubuntu 14.04 LTS (trusty)", new Point(10, 37));
         OFFSET_MAPPING.put("Ubuntu 14.04.1 LTS (trusty)", new Point(10, 37));
         OFFSET_MAPPING.put("Ubuntu 14.04.2 LTS (trusty)", new Point(0, 26));
+        OFFSET_MAPPING.put("Ubuntu 14.04", new Point(0, 26));
     }
 
     /**
@@ -32,10 +33,20 @@ public class JFXUtils {
             return new Point(0, 0);
         }
 
-        OperatingSystem system = new OperatingSystem();
+        final OperatingSystem system = new OperatingSystem();
+        final String distribution = system.getDistribution();
 
-        if (OFFSET_MAPPING.containsKey(system.getDistribution())) {
-            return OFFSET_MAPPING.get(system.getDistribution());
+        if (OFFSET_MAPPING.containsKey(distribution)) {
+            return OFFSET_MAPPING.get(distribution);
+        }
+
+        for (final Map.Entry<String, Point> entry : OFFSET_MAPPING.entrySet()) {
+
+            final String key = entry.getKey();
+
+            if(distribution.startsWith(key)) {
+                return entry.getValue();
+            }
         }
 
         return new Point(3, 25);

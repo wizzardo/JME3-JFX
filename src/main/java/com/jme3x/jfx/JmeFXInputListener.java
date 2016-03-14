@@ -6,15 +6,22 @@ package com.jme3x.jfx;
 
 import com.jme3.input.RawInputListener;
 import com.jme3.input.awt.AwtKeyInput;
-import com.jme3.input.event.*;
+import com.jme3.input.event.JoyAxisEvent;
+import com.jme3.input.event.JoyButtonEvent;
+import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.input.event.TouchEvent;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
-import javafx.application.Platform;
-import javafx.scene.Scene;
+
 import org.lwjgl.opengl.Display;
 
 import java.awt.event.KeyEvent;
 import java.util.BitSet;
+
+import javafx.application.Platform;
+import javafx.scene.Scene;
 
 /**
  * Converts JMEEvents to JFXEvents
@@ -24,32 +31,34 @@ import java.util.BitSet;
 public class JmeFXInputListener implements RawInputListener {
 
     /**
-     * контейнер Java FX
+     * Контейнер Java FX.
      */
     private final JmeFxContainer jmeFxContainer;
 
     private final BitSet keyStateSet = new BitSet(0xFF);
 
     /**
-     * набор массивов для каждого символа
+     * Набор массивов для каждого символа.
      */
     private final char[][] keyCharArray = new char[Character.MAX_CODE_POINT][];
+
     /**
-     * таблица символов
+     * Таблица символов.
      */
     private final char[] keyCharSet = new char[Character.MAX_CODE_POINT];
 
     /**
-     * состояние кнопок мыши
+     * Состояние кнопок мыши.
      */
     private final boolean[] mouseButtonState = new boolean[3];
 
     /**
-     * слушатель ввода пользователя
+     * Слушатель ввода пользователя.
      */
     private volatile RawInputListener everListeningInputListenerAdapter;
+
     /**
-     * обработчик DnD Java FX
+     * Обработчик DnD Java FX.
      */
     private volatile JmeFxDNDHandler jfxdndHandler;
 
@@ -59,6 +68,13 @@ public class JmeFXInputListener implements RawInputListener {
         for (int i = 0, length = keyCharArray.length; i < length; i++) {
             keyCharArray[i] = new char[]{(char) i};
         }
+    }
+
+    /**
+     * @return обработчик DnD Java FX.
+     */
+    private JmeFxDNDHandler getJfxdndHandler() {
+        return jfxdndHandler;
     }
 
     @Override
@@ -281,10 +297,18 @@ public class JmeFXInputListener implements RawInputListener {
         }
 
         Platform.runLater(() -> {
-            if (JmeFXInputListener.this.jfxdndHandler != null) {
-                JmeFXInputListener.this.jfxdndHandler.mouseUpdate(x, y, JmeFXInputListener.this.mouseButtonState[0]);
+
+            final boolean[] mouseButtonState = getMouseButtonState();
+            final JmeFxDNDHandler jfxdndHandler = getJfxdndHandler();
+
+            if (jfxdndHandler != null) {
+                jfxdndHandler.mouseUpdate(x, y, mouseButtonState[0]);
             }
-            JmeFXInputListener.this.jmeFxContainer.scenePeer.mouseEvent(type, button, JmeFXInputListener.this.mouseButtonState[0], JmeFXInputListener.this.mouseButtonState[1], JmeFXInputListener.this.mouseButtonState[2], x, y, Display.getX() + x, Display.getY() + y, JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_SHIFT), JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_CONTROL), JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_ALT), JmeFXInputListener.this.keyStateSet.get(KeyEvent.VK_META), 0, button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON);
+
+            final JmeFxContainer fxContainer = getJmeFxContainer();
+            final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
+
+            scenePeer.mouseEvent(type, button, mouseButtonState[0], mouseButtonState[1], mouseButtonState[2], x, y, fxContainer.getOldX() + x, fxContainer.getOldY() + y, keyStateSet.get(KeyEvent.VK_SHIFT), keyStateSet.get(KeyEvent.VK_CONTROL), keyStateSet.get(KeyEvent.VK_ALT), keyStateSet.get(KeyEvent.VK_META), 0, button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON);
         });
     }
 
