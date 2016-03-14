@@ -362,8 +362,6 @@ public class JmeFXInputListener implements RawInputListener {
 
         final int wheelRotation = (int) Math.round(event.getDeltaWheel() / -120.0);
 
-        System.out.println(event);
-
         if (wheelRotation != 0) {
             type = AbstractEvents.MOUSEEVENT_WHEEL;
             button = AbstractEvents.MOUSEEVENT_NONE_BUTTON;
