@@ -7,8 +7,6 @@ public interface CursorDisplayProvider {
 
     /**
      * called by the GuiManager during startup, should be used to create the necessary cursors
-     *
-     * @param normal
      */
     void setup(CursorType normal);
 

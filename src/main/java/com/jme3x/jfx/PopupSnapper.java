@@ -5,6 +5,10 @@
 package com.jme3x.jfx;
 
 import com.sun.javafx.perf.PerformanceTracker;
+
+import java.nio.IntBuffer;
+import java.util.concurrent.Semaphore;
+
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.image.PixelFormat;
@@ -13,9 +17,6 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.stage.Window;
 import rlib.util.array.Array;
-
-import java.nio.IntBuffer;
-import java.util.concurrent.Semaphore;
 
 /**
  * Redirect popups to the Bridge

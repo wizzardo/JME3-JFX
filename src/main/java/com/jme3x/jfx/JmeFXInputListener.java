@@ -180,25 +180,11 @@ public class JmeFXInputListener implements RawInputListener {
 
         final char[][] keyCharArray = getKeyCharArray();
         final char[] keyCharSet = getKeyCharSet();
+        final char keyChar = event.getKeyChar();
 
-        char keyChar = event.getKeyChar();
-        int fxKeyCode = AwtKeyInput.convertJmeCode(event.getKeyCode());
+        final int keyCode = event.getKeyCode();
 
-        switch (event.getKeyCode()) {
-            case KeyInput.KEY_BACK: keyChar = KeyEvent.VK_BACK_SPACE; break;
-            case KeyInput.KEY_DELETE: keyChar = KeyEvent.VK_DELETE; break;
-            case KeyInput.KEY_RETURN: keyChar = KeyEvent.VK_ENTER; break;
-            case KeyInput.KEY_RCONTROL: keyChar = KeyEvent.VK_CONTROL; break;
-            case KeyInput.KEY_LCONTROL: keyChar = KeyEvent.VK_CONTROL; break;
-            case KeyInput.KEY_RMENU: keyChar = KeyEvent.VK_ALT; break;
-            case KeyInput.KEY_LMENU: keyChar = KeyEvent.VK_ALT; break;
-            case KeyInput.KEY_RSHIFT: keyChar = KeyEvent.VK_SHIFT; break;
-            case KeyInput.KEY_LSHIFT: keyChar = KeyEvent.VK_SHIFT; break;
-            case KeyInput.KEY_LEFT: keyChar = '\0'; break;
-            case KeyInput.KEY_RIGHT: keyChar = '\0'; break;
-            case KeyInput.KEY_UP: keyChar = '\0'; break;
-            case KeyInput.KEY_DOWN: keyChar = '\0'; break;
-        }
+        int fxKeyCode = keyCode == KeyInput.KEY_UNKNOWN ? KeyEvent.VK_UNDEFINED : AwtKeyInput.convertJmeCode(keyCode);
 
         final int keyState = retrieveKeyState();
 
@@ -359,7 +345,7 @@ public class JmeFXInputListener implements RawInputListener {
         final Application application = fxContainer.getApplication();
         final InputManager inputManager = application.getInputManager();
 
-        if(!inputManager.isCursorVisible()) {
+        if (!inputManager.isCursorVisible()) {
             return;
         }
 
@@ -418,7 +404,7 @@ public class JmeFXInputListener implements RawInputListener {
         final Application application = fxContainer.getApplication();
         final InputManager inputManager = application.getInputManager();
 
-        if(!inputManager.isCursorVisible()) {
+        if (!inputManager.isCursorVisible()) {
             return;
         }
 
@@ -486,10 +472,8 @@ public class JmeFXInputListener implements RawInputListener {
     }
 
     /**
-     * set on drag start /nulled on end<br>
-     * necessary so that the drag events can be generated appropiatly
-     *
-     * @param jfxdndHandler
+     * set on drag start /nulled on end<br> necessary so that the drag events can be generated
+     * appropiatly
      */
     public void setMouseDNDListener(final JmeFxDNDHandler jfxdndHandler) {
         assert this.jfxdndHandler == null || jfxdndHandler == null : "duplicate jfxdndn handler register? ";

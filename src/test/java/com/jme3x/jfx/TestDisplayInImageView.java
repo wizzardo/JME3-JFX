@@ -14,6 +14,9 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.util.TangentBinormalGenerator;
 import com.jme3x.jfx.injfx.JmeForImageView;
+
+import java.net.URL;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -31,8 +34,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
-import java.net.URL;
 
 public class TestDisplayInImageView extends Application {
 

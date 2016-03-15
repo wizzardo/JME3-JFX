@@ -8,16 +8,16 @@ import com.jme3.input.InputManager;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.cursor.CursorType;
-import rlib.logging.Logger;
-import rlib.logging.LoggerManager;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
+import rlib.logging.Logger;
+import rlib.logging.LoggerManager;
+
 /**
- * http://www.rw-designer.com/cursor-set/proton by juanello <br>
- * A cursorProvider that simulates the native JFX one and tries to behave similar,<br>
- * using native cursors and 2D surface logic.
+ * http://www.rw-designer.com/cursor-set/proton by juanello <br> A cursorProvider that simulates the
+ * native JFX one and tries to behave similar,<br> using native cursors and 2D surface logic.
  *
  * @author empire
  */

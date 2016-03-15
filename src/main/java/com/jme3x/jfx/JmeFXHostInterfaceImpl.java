@@ -10,6 +10,7 @@ import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 import com.sun.javafx.embed.HostInterface;
+
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
 
@@ -118,7 +119,7 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
     @Override
     public boolean traverseFocusOut(final boolean forward) {
 
-        if(LOGGER.isEnabledDebug()) {
+        if (LOGGER.isEnabledDebug()) {
             LOGGER.debug("Called traverseFocusOut(" + forward + ")");
         }
 

@@ -4,6 +4,9 @@ import com.sun.javafx.embed.EmbeddedSceneDSInterface;
 import com.sun.javafx.embed.EmbeddedSceneDTInterface;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 import com.sun.javafx.embed.HostDragStartListener;
+
+import java.nio.ByteBuffer;
+
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -16,12 +19,9 @@ import javafx.scene.input.TransferMode;
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
 
-import java.nio.ByteBuffer;
-
 /**
- * A very hacky implementation of a DND system, similar to SwingDND but for jme context. <br>
- * Allows for inner application drag and drop support. <br>
- * Cross GuiManager support is untested.
+ * A very hacky implementation of a DND system, similar to SwingDND but for jme context. <br> Allows
+ * for inner application drag and drop support. <br> Cross GuiManager support is untested.
  *
  * @author empire
  */
@@ -43,9 +43,6 @@ public class JmeFxDNDHandler implements HostDragStartListener {
 
     /**
      * this is kinda ridiculous, but well at least it seems to work
-     *
-     * @param jmeJfxDragImage
-     * @param offset
      */
     private void createDragImageProxy(final Object jmeJfxDragImage, final Object offset) {
 
@@ -80,7 +77,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
                 final int x = ((ByteBuffer) offset).getInt();
                 final int y = ((ByteBuffer) offset).getInt();
 
-                if(LOGGER.isEnabledDebug()) LOGGER.debug("Img offset " + x + ", " + y);
+                if (LOGGER.isEnabledDebug()) LOGGER.debug("Img offset " + x + ", " + y);
             }
 
         } catch (final Exception e) {

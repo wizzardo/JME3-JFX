@@ -15,17 +15,12 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**
- * Example usage
- * <p>
- * PlatformImpl.startup(() -> {}); media = new
- * Media("http://download.oracle.com/otndocs/products/javafx/oow2010-2.flv"); mp
- * = new javafx.scene.media.MediaPlayer(media); mp.play(); tm = new
- * TextureMovie(mp, LetterboxMode.VALID_LETTERBOX);
- * tm.setLetterboxColor(ColorRGBA.Black); texture = tm.getTexture();
- * <p>
- * material.setTexture("ColorMap",texture); Please be sure you do not lose
- * reference to TextureMove while you need the result texture - if it ever gets
- * garbage collected, movie can stop playing.
+ * Example usage <p> PlatformImpl.startup(() -> {}); media = new Media("http://download.oracle.com/otndocs/products/javafx/oow2010-2.flv");
+ * mp = new javafx.scene.media.MediaPlayer(media); mp.play(); tm = new TextureMovie(mp,
+ * LetterboxMode.VALID_LETTERBOX); tm.setLetterboxColor(ColorRGBA.Black); texture = tm.getTexture();
+ * <p> material.setTexture("ColorMap",texture); Please be sure you do not lose reference to
+ * TextureMove while you need the result texture - if it ever gets garbage collected, movie can stop
+ * playing.
  */
 public class TextureMovie {
 
@@ -184,8 +179,8 @@ public class TextureMovie {
     }
 
     /**
-     * @return aspect ratio of played movie (width/height) - for widescreen
-     * movies it will be in range of 1.8-2.9
+     * @return aspect ratio of played movie (width/height) - for widescreen movies it will be in
+     * range of 1.8-2.9
      */
     public float getAspectRatio() {
         return aspectRatio;
@@ -193,8 +188,6 @@ public class TextureMovie {
 
     /**
      * Corner texture coordinates of valid movie area
-     *
-     * @return
      */
     public Vector2f getBottomRightCorner() {
         return bottomRightCorner;
@@ -210,18 +203,14 @@ public class TextureMovie {
 
     /**
      * Corner texture coordinates of valid movie area
-     *
-     * @return
      */
     public Vector2f getUpperLeftCorner() {
         return upperLeftCorner;
     }
 
     /**
-     * Sets the color which should be used for letterbox fill. It is annoying
-     * red by default to help with debugging.
-     *
-     * @param letterboxColor
+     * Sets the color which should be used for letterbox fill. It is annoying red by default to help
+     * with debugging.
      */
     public void setLetterboxColor(ColorRGBA letterboxColor) {
         this.letterboxColor.set(letterboxColor);
@@ -229,22 +218,20 @@ public class TextureMovie {
 
     public enum LetterboxMode {
         /**
-         * This mode uses entire texture including some garbage data on right
-         * and bottom side; always utilize together with corner data to cut the
-         * texture and aspectRatio to size it properly
+         * This mode uses entire texture including some garbage data on right and bottom side;
+         * always utilize together with corner data to cut the texture and aspectRatio to size it
+         * properly
          */
         RAW_SQUARE,
         /**
-         * THis mode uses entire texture, but fills it only with valid data.
-         * Proper texture coordinates will be always 0-1, but you should use
-         * aspectRatio for it to look proper
+         * THis mode uses entire texture, but fills it only with valid data. Proper texture
+         * coordinates will be always 0-1, but you should use aspectRatio for it to look proper
          */
         VALID_SQUARE,
         /**
-         * This is cinema-like presentation, with borders on shorter sides
-         * (mostly top and down). Displaying it on square object will make it
-         * look proper aspectRatio-wise. You can utilize corner data to display
-         * only interesting part of the movie.
+         * This is cinema-like presentation, with borders on shorter sides (mostly top and down).
+         * Displaying it on square object will make it look proper aspectRatio-wise. You can utilize
+         * corner data to display only interesting part of the movie.
          */
         VALID_LETTERBOX
     }

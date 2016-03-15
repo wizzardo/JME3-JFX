@@ -9,6 +9,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3x.jfx.media.TextureMovie;
 import com.jme3x.jfx.media.TextureMovie.LetterboxMode;
 import com.sun.javafx.application.PlatformImpl;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.media.Media;

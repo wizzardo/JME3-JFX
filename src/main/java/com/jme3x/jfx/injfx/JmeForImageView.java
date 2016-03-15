@@ -3,23 +3,19 @@ package com.jme3x.jfx.injfx;
 import com.jme3.app.DebugKeysAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.system.AppSettings;
-import javafx.scene.image.ImageView;
 
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
+import javafx.scene.image.ImageView;
+
 /**
- * JmeForImageView create a jme'SimpleApplication viewable into an JavaFX's ImageView.
- * <p>
- * You can manage the wrapped SimpleApplication by calling enqueue (by example to add/remove
- * AppState, Node, Light, to change the AppSettings...).
- * <p>
- * See TestDisplayInImageView.java for sample usage.
- * <p>
- * The usage of the class is optional, it can avoid some
- * pitfall in the configuration. If you want a better control, I suggest you to browse
- * the source of this class to see sample of configuration and usage of
- * SceneProcessorCopyToImage.
+ * JmeForImageView create a jme'SimpleApplication viewable into an JavaFX's ImageView. <p> You can
+ * manage the wrapped SimpleApplication by calling enqueue (by example to add/remove AppState, Node,
+ * Light, to change the AppSettings...). <p> See TestDisplayInImageView.java for sample usage. <p>
+ * The usage of the class is optional, it can avoid some pitfall in the configuration. If you want a
+ * better control, I suggest you to browse the source of this class to see sample of configuration
+ * and usage of SceneProcessorCopyToImage.
  *
  * @author davidB
  * @TODO auto-stop when the ImageView is removed from JavaFX Stage
@@ -51,12 +47,8 @@ public class JmeForImageView {
     private SceneProcessorCopyToImageView jmeAppDisplayBinder = new SceneProcessorCopyToImageView();
 
     /**
-     * Bind the wrapped SimpleApplication to an imageView.
-     * <p>
-     * <ul>
-     * <li>Only one imageView can be binded.</li>
-     * <li>Only jmeApp.getViewPort(), jmeApp.getGuiViewPort() are binded</li>
-     * </ul>
+     * Bind the wrapped SimpleApplication to an imageView. <p> <ul> <li>Only one imageView can be
+     * binded.</li> <li>Only jmeApp.getViewPort(), jmeApp.getGuiViewPort() are binded</li> </ul>
      *
      * @param imageView destination
      * @return Future when bind is done (async)
@@ -69,8 +61,7 @@ public class JmeForImageView {
     }
 
     /**
-     * Enqueue action to apply in Jme's Thread
-     * Action can be add/remove AppState, Node, Light,
+     * Enqueue action to apply in Jme's Thread Action can be add/remove AppState, Node, Light,
      * change the AppSettings....
      *
      * @param f(jmeApp) the action to apply
