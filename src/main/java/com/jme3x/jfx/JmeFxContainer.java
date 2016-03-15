@@ -314,6 +314,13 @@ public class JmeFxContainer {
     }
 
     /**
+     * @return приложение JME.
+     */
+    public Application getApplication() {
+        return application;
+    }
+
+    /**
      * @return контекст JME.
      */
     public JmeContext getJmeContext() {

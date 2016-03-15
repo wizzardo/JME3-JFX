@@ -4,6 +4,8 @@
  */
 package com.jme3x.jfx;
 
+import com.jme3.app.Application;
+import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.awt.AwtKeyInput;
@@ -353,6 +355,14 @@ public class JmeFXInputListener implements RawInputListener {
             adapter.onMouseMotionEvent(event);
         }
 
+        final JmeFxContainer fxContainer = getJmeFxContainer();
+        final Application application = fxContainer.getApplication();
+        final InputManager inputManager = application.getInputManager();
+
+        if(!inputManager.isCursorVisible()) {
+            return;
+        }
+
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
 
         if (!jmeFxContainer.isVisibleCursor() || jmeFxContainer.getScenePeer() == null) {
@@ -404,6 +414,14 @@ public class JmeFXInputListener implements RawInputListener {
 
     private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int ftype, int fbutton) {
 
+        final JmeFxContainer fxContainer = getJmeFxContainer();
+        final Application application = fxContainer.getApplication();
+        final InputManager inputManager = application.getInputManager();
+
+        if(!inputManager.isCursorVisible()) {
+            return;
+        }
+
         final JmeFxDNDHandler dndHandler = getJfxdndHandler();
         final boolean[] mouseButtonState = getMouseButtonState();
 
@@ -415,7 +433,6 @@ public class JmeFXInputListener implements RawInputListener {
             dndHandler.mouseUpdate(x, y, primaryBtnDown);
         }
 
-        final JmeFxContainer fxContainer = getJmeFxContainer();
         final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
 
         final int screenX = fxContainer.getOldX() + x;

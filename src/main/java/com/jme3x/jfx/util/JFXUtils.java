@@ -25,10 +25,10 @@ public class JFXUtils {
     private static final Map<String, Point> OFFSET_MAPPING = new HashMap<>();
 
     static {
-       // OFFSET_MAPPING.put("Ubuntu 14.04 LTS (trusty)", new Point(10, 37));
-       // OFFSET_MAPPING.put("Ubuntu 14.04.1 LTS (trusty)", new Point(10, 37));
-       // OFFSET_MAPPING.put("Ubuntu 14.04.2 LTS (trusty)", new Point(0, 26));
-        //OFFSET_MAPPING.put("Ubuntu 14.04", new Point(0, 26));
+        // OFFSET_MAPPING.put("Ubuntu 14.04 LTS (trusty)", new Point(10, 37));
+        // OFFSET_MAPPING.put("Ubuntu 14.04.1 LTS (trusty)", new Point(10, 37));
+        // OFFSET_MAPPING.put("Ubuntu 14.04.2 LTS (trusty)", new Point(0, 26));
+        OFFSET_MAPPING.put("Ubuntu", new Point(0, 25));
     }
 
     private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = new ThreadLocal<IntBuffer>() {
@@ -67,12 +67,12 @@ public class JFXUtils {
 
             final String key = entry.getKey();
 
-            if(distribution.startsWith(key)) {
+            if (distribution.startsWith(key)) {
                 return entry.getValue();
             }
         }
 
-        return new Point(0, 25);
+        return new Point(0, 0);
     }
 
     public static int getX(final JmeContext context) {
