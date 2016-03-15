@@ -186,6 +186,12 @@ public class JmeFXInputListener implements RawInputListener {
             case KeyInput.KEY_BACK: keyChar = KeyEvent.VK_BACK_SPACE; break;
             case KeyInput.KEY_DELETE: keyChar = KeyEvent.VK_DELETE; break;
             case KeyInput.KEY_RETURN: keyChar = KeyEvent.VK_ENTER; break;
+            case KeyInput.KEY_RCONTROL: keyChar = KeyEvent.VK_CONTROL; break;
+            case KeyInput.KEY_LCONTROL: keyChar = KeyEvent.VK_CONTROL; break;
+            case KeyInput.KEY_RMENU: keyChar = KeyEvent.VK_ALT; break;
+            case KeyInput.KEY_LMENU: keyChar = KeyEvent.VK_ALT; break;
+            case KeyInput.KEY_RSHIFT: keyChar = KeyEvent.VK_SHIFT; break;
+            case KeyInput.KEY_LSHIFT: keyChar = KeyEvent.VK_SHIFT; break;
         }
 
         final int keyState = retrieveKeyState();

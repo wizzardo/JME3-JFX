@@ -52,8 +52,8 @@ public class JavaFXPicture extends Picture {
                 container.handleResize();
             }
 
-            final int x = JFXUtils.getX(jmeContext) + container.getWindowOffsetX();
-            final int y = JFXUtils.getY(jmeContext) + container.getWindowOffsetY();
+            final int x = JFXUtils.getX(jmeContext) + (JFXUtils.isFullscreen(jmeContext)? 0 : container.getWindowOffsetX());
+            final int y = JFXUtils.getY(jmeContext) + (JFXUtils.isFullscreen(jmeContext)? 0 : container.getWindowOffsetY());
 
             if (container.getOldX() != x || container.getOldY() != y) {
 

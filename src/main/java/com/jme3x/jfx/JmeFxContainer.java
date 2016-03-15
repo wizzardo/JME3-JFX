@@ -19,15 +19,12 @@ import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
 import com.jme3x.jfx.listener.PaintListener;
 import com.jme3x.jfx.util.JFXUtils;
-import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.Pixels;
 import com.sun.javafx.application.PlatformImpl;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 import com.sun.javafx.embed.HostInterface;
-import com.sun.javafx.scene.SceneHelper;
-import com.sun.javafx.scene.SceneHelper.SceneAccessor;
 import com.sun.javafx.stage.EmbeddedWindow;
 
 import java.awt.*;
@@ -41,25 +38,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 import rlib.concurrent.atomic.AtomicInteger;
 import rlib.concurrent.lock.AsyncReadSyncWriteLock;
 import rlib.concurrent.lock.LockFactory;
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
-import rlib.util.ReflectionUtils;
 import rlib.util.array.Array;
 import rlib.util.array.ArrayFactory;
 import rlib.util.dictionary.DictionaryFactory;
 import rlib.util.dictionary.ObjectDictionary;
-
-import static rlib.util.ReflectionUtils.getStaticFieldValue;
 
 /**
  * Need to pass -Dprism.dirtyopts=false on startup
@@ -85,7 +75,6 @@ public class JmeFxContainer {
         inputManager.addRawInputListener(inputListener);
 
         if (fullScreenSupport) {
-            container.installSceneAccessorHack();
         }
 
         return container;
@@ -193,7 +182,10 @@ public class JmeFxContainer {
      */
     protected volatile Scene scene;
 
-    protected volatile Application app;
+    /**
+     * Приложение JME.
+     */
+    protected volatile Application application;
 
     /**
      * Рутовый узел текущей сцены.
@@ -266,7 +258,7 @@ public class JmeFxContainer {
     /**
      * Поддержка полноэкранного режима.
      */
-    protected volatile boolean fullScreenSuppport;
+    protected volatile boolean fullScreenSupport;
 
     /**
      * Отображается ли курсор.
@@ -288,10 +280,10 @@ public class JmeFxContainer {
      */
     private final JmeContext jmeContext;
 
-    protected JmeFxContainer(final AssetManager assetManager, final Application app, final boolean fullScreenSupport, final CursorDisplayProvider cursorDisplayProvider) {
+    protected JmeFxContainer(final AssetManager assetManager, final Application application, final boolean fullScreenSupport, final CursorDisplayProvider cursorDisplayProvider) {
         this.initFx();
 
-        this.jmeContext = app.getContext();
+        this.jmeContext = application.getContext();
 
         final Point decorationSize = JFXUtils.getWindowDecorationSize();
 
@@ -303,11 +295,11 @@ public class JmeFxContainer {
         this.windowOffsetX = (int) decorationSize.getX();
         this.windowOffsetY = (int) decorationSize.getY();
         this.cursorDisplayProvider = cursorDisplayProvider;
-        this.app = app;
-        this.fullScreenSuppport = fullScreenSupport;
+        this.application = application;
+        this.fullScreenSupport = fullScreenSupport;
         this.visibleCursor = true;
 
-        final AppStateManager stateManager = app.getStateManager();
+        final AppStateManager stateManager = application.getStateManager();
         stateManager.attach(fxAppState);
 
         this.hostContainer = new JmeFXHostInterfaceImpl(this);
@@ -348,7 +340,7 @@ public class JmeFxContainer {
      * Создание задачи по записи FX UI на JME.
      */
     protected void addWriteTask() {
-        app.enqueue(this::writeToJME);
+        application.enqueue(this::writeToJME);
     }
 
     /**
@@ -742,83 +734,6 @@ public class JmeFxContainer {
         });
     }
 
-    protected void installSceneAccessorHack() {
-
-        try {
-
-            final SceneAccessor originalSceneAccessor = getStaticFieldValue(SceneHelper.class, FIELD_SCENE_ACCESSOR);
-            final SceneAccessor newSceneAccessor = new SceneAccessor() {
-
-                @Override
-                public Scene createPopupScene(final Parent root) {
-
-                    final JmeContext jmeContext = getJmeContext();
-
-                    final Scene scene = originalSceneAccessor.createPopupScene(root);
-                    final ReadOnlyObjectProperty<Window> windowProperty = scene.windowProperty();
-                    windowProperty.addListener((observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-
-                        if (!JFXUtils.isFullscreen(jmeContext)) {
-                            return;
-                        }
-
-                        final PopupSnapper popupSnapper = new PopupSnapper(JmeFxContainer.this, window, scene);
-                        final ObjectDictionary<Window, PopupSnapper> snappers = getSnappers();
-                        snappers.put(window, popupSnapper);
-                        popupSnapper.start();
-                    }));
-
-                    windowProperty.addListener((observable, oldValue, window) -> window.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
-
-                        if (!JFXUtils.isFullscreen(jmeContext)) {
-                            return;
-                        }
-
-                        final ObjectDictionary<Window, PopupSnapper> snappers = getSnappers();
-                        final PopupSnapper popupSnapper = snappers.remove(window);
-
-                        if (popupSnapper == null) {
-                            LOGGER.warning("Cannot find snapper for window " + window);
-                        } else {
-                            popupSnapper.stop();
-                        }
-                    }));
-
-                    return scene;
-                }
-
-                @Override
-                public Accessible getAccessible(final Scene scene) {
-                    return originalSceneAccessor.getAccessible(scene);
-                }
-
-                @Override
-                public Camera getEffectiveCamera(final Scene scene) {
-                    return originalSceneAccessor.getEffectiveCamera(scene);
-                }
-
-                @Override
-                public void parentEffectiveOrientationInvalidated(final Scene scene) {
-                    originalSceneAccessor.parentEffectiveOrientationInvalidated(scene);
-                }
-
-                @Override
-                public void setPaused(final boolean paused) {
-                    originalSceneAccessor.setPaused(paused);
-                }
-
-                @Override
-                public void setTransientFocusContainer(final Scene scene, final javafx.scene.Node node) {
-                }
-            };
-
-            ReflectionUtils.setStaticFieldValue(SceneHelper.class, FIELD_SCENE_ACCESSOR, newSceneAccessor);
-
-        } catch (final Exception e) {
-            LOGGER.warning(e);
-        }
-    }
-
     /**
      * Есть ли по этим координатом элемент JavaFX на сцене.
      */
@@ -861,8 +776,8 @@ public class JmeFxContainer {
     /**
      * @return поддержка полноэкранного режима.
      */
-    public boolean isFullScreenSuppport() {
-        return fullScreenSuppport;
+    public boolean isFullScreenSupport() {
+        return fullScreenSupport;
     }
 
     /**
@@ -971,7 +886,7 @@ public class JmeFxContainer {
 
         final Array<PopupSnapper> activeSnappers = getActiveSnappers();
 
-        if (!isFullScreenSuppport() || activeSnappers.isEmpty()) {
+        if (!isFullScreenSupport() || activeSnappers.isEmpty()) {
             return;
         }
 
@@ -1049,7 +964,7 @@ public class JmeFxContainer {
     }
 
     /*
-     * Called on JavaFX app thread.
+     * Called on JavaFX application thread.
      */
     private void setSceneImpl(final Scene newScene) {
         if (this.stage != null && newScene == null) {
@@ -1057,7 +972,7 @@ public class JmeFxContainer {
             this.stage = null;
         }
 
-        this.app.enqueue(() -> {
+        this.application.enqueue(() -> {
             JmeFxContainer.this.picture.setCullHint(newScene == null ? CullHint.Always : CullHint.Never);
             return null;
         });

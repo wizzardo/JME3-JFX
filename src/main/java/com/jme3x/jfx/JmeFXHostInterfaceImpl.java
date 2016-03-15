@@ -117,7 +117,11 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
 
     @Override
     public boolean traverseFocusOut(final boolean forward) {
-        LOGGER.debug("Called traverseFocusOut(" + forward + ")");
+
+        if(LOGGER.isEnabledDebug()) {
+            LOGGER.debug("Called traverseFocusOut(" + forward + ")");
+        }
+
         return true;
     }
 
