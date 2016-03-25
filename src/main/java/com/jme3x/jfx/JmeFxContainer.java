@@ -40,16 +40,11 @@ import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.stage.Window;
 import rlib.concurrent.atomic.AtomicInteger;
 import rlib.concurrent.lock.AsyncReadSyncWriteLock;
 import rlib.concurrent.lock.LockFactory;
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
-import rlib.util.array.Array;
-import rlib.util.array.ArrayFactory;
-import rlib.util.dictionary.DictionaryFactory;
-import rlib.util.dictionary.ObjectDictionary;
 
 /**
  * Need to pass -Dprism.dirtyopts=false on startup
@@ -60,11 +55,9 @@ public class JmeFxContainer {
 
     private static final Logger LOGGER = LoggerManager.getLogger(JmeFxContainer.class);
 
-    public static final String FIELD_SCENE_ACCESSOR = "sceneAccessor";
+    public static JmeFxContainer install(final Application app, final Node guiNode, final CursorDisplayProvider cursorDisplayProvider) {
 
-    public static JmeFxContainer install(final Application app, final Node guiNode, final boolean fullScreenSupport, final CursorDisplayProvider cursorDisplayProvider) {
-
-        final JmeFxContainer container = new JmeFxContainer(app.getAssetManager(), app, fullScreenSupport, cursorDisplayProvider);
+        final JmeFxContainer container = new JmeFxContainer(app.getAssetManager(), app, cursorDisplayProvider);
         guiNode.attachChild(container.getJmeNode());
 
         final JmeFXInputListener inputListener = new JmeFXInputListener(container);
@@ -73,9 +66,6 @@ public class JmeFxContainer {
 
         final InputManager inputManager = app.getInputManager();
         inputManager.addRawInputListener(inputListener);
-
-        if (fullScreenSupport) {
-        }
 
         return container;
     }
@@ -129,7 +119,7 @@ public class JmeFxContainer {
         }
     };
 
-    protected final Array<PopupSnapper> activeSnappers;
+    protected volatile CompletableFuture<Format> nativeFormat = new CompletableFuture<>();
 
     /**
      * Кол-во незаписанных в JME кадров.
@@ -212,8 +202,6 @@ public class JmeFxContainer {
      */
     protected volatile ByteBuffer tempData;
 
-    protected volatile CompletableFuture<Format> nativeFormat = new CompletableFuture<>();
-
     /**
      * Провайдер по отображению нужных курсоров.
      */
@@ -266,37 +254,34 @@ public class JmeFxContainer {
     protected volatile boolean visibleCursor;
 
     /**
+     * Доступен ли сейчас JavaFX.
+     */
+    protected volatile boolean enabled;
+
+    /**
      * Набор состояний клавиш.
      */
     private final BitSet keyStateSet = new BitSet(0xFF);
-
-    /**
-     * Словарь с набором созданных всплывающих окон.
-     */
-    private final ObjectDictionary<Window, PopupSnapper> snappers;
 
     /**
      * Контекст JME.
      */
     private final JmeContext jmeContext;
 
-    protected JmeFxContainer(final AssetManager assetManager, final Application application, final boolean fullScreenSupport, final CursorDisplayProvider cursorDisplayProvider) {
+    protected JmeFxContainer(final AssetManager assetManager, final Application application, final CursorDisplayProvider cursorDisplayProvider) {
         this.initFx();
 
         this.jmeContext = application.getContext();
 
         final Point decorationSize = JFXUtils.getWindowDecorationSize();
 
-        this.snappers = DictionaryFactory.newObjectDictionary();
         this.waitCount = new AtomicInteger();
-        this.activeSnappers = ArrayFactory.newConcurrentAtomicArray(PopupSnapper.class);
         this.imageLock = LockFactory.newPrimitiveAtomicARSWLock();
         this.paintListeners = new PaintListener[0];
         this.windowOffsetX = (int) decorationSize.getX();
         this.windowOffsetY = (int) decorationSize.getY();
         this.cursorDisplayProvider = cursorDisplayProvider;
         this.application = application;
-        this.fullScreenSupport = fullScreenSupport;
         this.visibleCursor = true;
 
         final AppStateManager stateManager = application.getStateManager();
@@ -348,13 +333,6 @@ public class JmeFxContainer {
      */
     protected void addWriteTask() {
         application.enqueue(this::writeToJME);
-    }
-
-    /**
-     * @return
-     */
-    public Array<PopupSnapper> getActiveSnappers() {
-        return activeSnappers;
     }
 
     /**
@@ -530,13 +508,6 @@ public class JmeFxContainer {
      */
     public void setScenePeer(final EmbeddedSceneInterface scenePeer) {
         this.scenePeer = scenePeer;
-    }
-
-    /**
-     * @return словарь с набором созданных всплывающих окон.
-     */
-    public ObjectDictionary<Window, PopupSnapper> getSnappers() {
-        return snappers;
     }
 
     /**
@@ -852,8 +823,6 @@ public class JmeFxContainer {
             return;
         }
 
-        paintPopupSnapper(intBuffer, pictureWidth, pictureHeight);
-
         tempData.flip();
         tempData.limit(pictureWidth * pictureHeight * 4);
 
@@ -887,31 +856,6 @@ public class JmeFxContainer {
 
         final AtomicInteger waitCount = getWaitCount();
         waitCount.incrementAndGet();
-    }
-
-    public void paintPopupSnapper(final IntBuffer intBuffer, final int pictureWidth, final int pictureHeight) {
-
-        final Array<PopupSnapper> activeSnappers = getActiveSnappers();
-
-        if (!isFullScreenSupport() || activeSnappers.isEmpty()) {
-            return;
-        }
-
-        activeSnappers.readLock();
-        try {
-
-            for (final PopupSnapper popupSnapper : activeSnappers.array()) {
-
-                if (popupSnapper == null) {
-                    break;
-                }
-
-                popupSnapper.paint(intBuffer, pictureWidth, pictureHeight);
-            }
-
-        } finally {
-            activeSnappers.readUnlock();
-        }
     }
 
     /**
@@ -1022,5 +966,19 @@ public class JmeFxContainer {
 
         waitCount.subAndGet(currentCount);
         return null;
+    }
+
+    /**
+     * @param enabled доступен ли сейчас JavaFX.
+     */
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * @return доступен ли сейчас JavaFX.
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 }

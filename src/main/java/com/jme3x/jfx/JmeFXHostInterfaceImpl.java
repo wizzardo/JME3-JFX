@@ -109,7 +109,7 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
     @Override
     public void setEnabled(final boolean enabled) {
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        jmeFxContainer.setFxEnabled(enabled);
+        jmeFxContainer.setEnabled(enabled);
     }
 
     @Override

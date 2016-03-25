@@ -1,5 +1,6 @@
 package com.jme3x.jfx.util;
 
+import com.jme3.app.Application;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 import com.jme3.system.lwjgl.LwjglWindow;
@@ -25,9 +26,6 @@ public class JFXUtils {
     private static final Map<String, Point> OFFSET_MAPPING = new HashMap<>();
 
     static {
-        // OFFSET_MAPPING.put("Ubuntu 14.04 LTS (trusty)", new Point(10, 37));
-        // OFFSET_MAPPING.put("Ubuntu 14.04.1 LTS (trusty)", new Point(10, 37));
-        // OFFSET_MAPPING.put("Ubuntu 14.04.2 LTS (trusty)", new Point(0, 26));
         OFFSET_MAPPING.put("Ubuntu", new Point(0, 25));
     }
 
@@ -138,5 +136,10 @@ public class JFXUtils {
     public static boolean isFullscreen(final JmeContext jmeContext) {
         final AppSettings settings = jmeContext.getSettings();
         return settings.isFullscreen();
+    }
+
+    public static void requestFocus(final Application application) {
+        final LwjglWindow lwjglContext = (LwjglWindow) application.getContext();
+        GLFW.glfwShowWindow(lwjglContext.getWindowHandle());
     }
 }
