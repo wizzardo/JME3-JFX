@@ -243,10 +243,11 @@ public class JmeFXInputListener implements RawInputListener {
             adapter.onMouseButtonEvent(event);
         }
 
-        // TODO: Process events in separate thread ?
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+        final Application application = jmeFxContainer.getApplication();
+        final InputManager inputManager = application.getInputManager();
 
-        if (!jmeFxContainer.isVisibleCursor() || jmeFxContainer.getScenePeer() == null) {
+        if (jmeFxContainer.getScenePeer() == null) {
             return;
         }
 
@@ -284,12 +285,13 @@ public class JmeFXInputListener implements RawInputListener {
 
         if (!covered) {
             jmeFxContainer.loseFocus();
-        } else {
+        } else if (inputManager.isCursorVisible()) {
             event.setConsumed();
             jmeFxContainer.grabFocus();
         }
 
         int type;
+
         if (event.isPressed()) {
             type = AbstractEvents.MOUSEEVENT_PRESSED;
         } else if (event.isReleased()) {
@@ -299,7 +301,9 @@ public class JmeFXInputListener implements RawInputListener {
             return;
         }
 
-        Platform.runLater(() -> onMouseButtonEventImpl(x, y, button, type));
+        if (inputManager.isCursorVisible() || event.isReleased()) {
+            Platform.runLater(() -> onMouseButtonEventImpl(x, y, button, type));
+        }
     }
 
     private void onMouseButtonEventImpl(int x, int y, int button, int type) {
@@ -341,17 +345,11 @@ public class JmeFXInputListener implements RawInputListener {
             adapter.onMouseMotionEvent(event);
         }
 
-        final JmeFxContainer fxContainer = getJmeFxContainer();
-        final Application application = fxContainer.getApplication();
+        final JmeFxContainer jmeFxContainer = getJmeFxContainer();
+        final Application application = jmeFxContainer.getApplication();
         final InputManager inputManager = application.getInputManager();
 
-        if (!inputManager.isCursorVisible()) {
-            return;
-        }
-
-        final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-
-        if (!jmeFxContainer.isVisibleCursor() || jmeFxContainer.getScenePeer() == null) {
+        if (jmeFxContainer.getScenePeer() == null) {
             return;
         }
 
@@ -392,10 +390,9 @@ public class JmeFXInputListener implements RawInputListener {
         final int ftype = type;
         final int fbutton = button;
 
-        /**
-         * ensure drag and drop is handled before the mouse release event fires
-         */
-        Platform.runLater(() -> onMouseMotionEventImpl(x, y, wheelRotation, ftype, fbutton));
+        if (inputManager.isCursorVisible()) {
+            Platform.runLater(() -> onMouseMotionEventImpl(x, y, wheelRotation, ftype, fbutton));
+        }
     }
 
     private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int ftype, int fbutton) {
