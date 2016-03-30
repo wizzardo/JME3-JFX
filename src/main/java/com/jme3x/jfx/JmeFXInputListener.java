@@ -445,19 +445,21 @@ public class JmeFXInputListener implements RawInputListener {
 
         int embedModifiers = 0;
 
-        if (this.keyStateSet.get(KeyEvent.VK_SHIFT)) {
+        final BitSet keyStateSet = getKeyStateSet();
+
+        if (keyStateSet.get(KeyEvent.VK_SHIFT)) {
             embedModifiers |= AbstractEvents.MODIFIER_SHIFT;
         }
 
-        if (this.keyStateSet.get(KeyEvent.VK_CONTROL)) {
+        if (keyStateSet.get(KeyEvent.VK_CONTROL)) {
             embedModifiers |= AbstractEvents.MODIFIER_CONTROL;
         }
 
-        if (this.keyStateSet.get(KeyEvent.VK_ALT)) {
+        if (keyStateSet.get(KeyEvent.VK_ALT)) {
             embedModifiers |= AbstractEvents.MODIFIER_ALT;
         }
 
-        if (this.keyStateSet.get(KeyEvent.VK_META)) {
+        if (keyStateSet.get(KeyEvent.VK_META)) {
             embedModifiers |= AbstractEvents.MODIFIER_META;
         }
 

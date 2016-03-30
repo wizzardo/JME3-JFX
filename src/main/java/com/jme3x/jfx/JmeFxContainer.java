@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -54,6 +55,25 @@ import rlib.logging.LoggerManager;
 public class JmeFxContainer {
 
     private static final Logger LOGGER = LoggerManager.getLogger(JmeFxContainer.class);
+
+    /**
+     * Актитвировал ли дебаг.
+     */
+    private static boolean debug;
+
+    /**
+     * @param debug актитвировал ли дебаг.
+     */
+    public static void setDebug(boolean debug) {
+        JmeFxContainer.debug = debug;
+    }
+
+    /**
+     * @return актитвировал ли дебаг.
+     */
+    public static boolean isDebug() {
+        return debug;
+    }
 
     public static JmeFxContainer install(final Application app, final Node guiNode, final CursorDisplayProvider cursorDisplayProvider) {
 
@@ -94,11 +114,11 @@ public class JmeFxContainer {
         byte v0, v1, v2, v3;
 
         for (int i = 0; i < limit; i += 4) {
-            v0 = data.get(i + 0);
+            v0 = data.get(i);
             v1 = data.get(i + 1);
             v2 = data.get(i + 2);
             v3 = data.get(i + 3);
-            data.put(i + 0, v3);
+            data.put(i, v3);
             data.put(i + 1, v0);
             data.put(i + 2, v1);
             data.put(i + 3, v2);
@@ -213,6 +233,11 @@ public class JmeFxContainer {
     protected volatile Function<ByteBuffer, Void> reorderData;
 
     /**
+     * Время последнего изменения размера.
+     */
+    protected volatile long lastResized;
+
+    /**
      * Ширина картики для отрисовки UI.
      */
     protected volatile int pictureWidth;
@@ -299,6 +324,20 @@ public class JmeFxContainer {
     }
 
     /**
+     * @param lastResized время последнего изменения размера.
+     */
+    private void setLastResized(final long lastResized) {
+        this.lastResized = lastResized;
+    }
+
+    /**
+     * @return время последнего изменения размера.
+     */
+    private long getLastResized() {
+        return lastResized;
+    }
+
+    /**
      * @return приложение JME.
      */
     public Application getApplication() {
@@ -318,11 +357,7 @@ public class JmeFxContainer {
     public void addPaintListener(final PaintListener paintListener) {
 
         final List<PaintListener> temp = new ArrayList<>();
-
-        for (final PaintListener listener : getPaintListeners()) {
-            temp.add(listener);
-        }
-
+        Collections.addAll(temp, getPaintListeners());
         temp.add(paintListener);
 
         setPaintListeners(temp.toArray(new PaintListener[temp.size()]));
@@ -601,9 +636,15 @@ public class JmeFxContainer {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
 
-        if (!isFocus() && stagePeer != null) {
-            stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
-            setFocus(true);
+        if (isFocus() || stagePeer == null) {
+            return;
+        }
+
+        stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
+        setFocus(true);
+
+        if (isDebug()) {
+            LOGGER.debug("got focus.");
         }
     }
 
@@ -611,6 +652,12 @@ public class JmeFxContainer {
      * Инициализация или обновление размеров изображения.
      */
     public void handleResize() {
+
+        final long time = System.currentTimeMillis();
+
+        if (time - getLastResized() < 1000) {
+            return;
+        }
 
         final JmeContext jmeContext = getJmeContext();
 
@@ -625,6 +672,11 @@ public class JmeFxContainer {
             final int pictureHeight = Math.max(displayHeight, 64);
 
             final Picture picture = getPicture();
+
+            if (isDebug()) {
+                LOGGER.debug("handle resize from [" + getPictureWidth() + "x" + getPictureHeight() + "] to [" + pictureWidth + "x" + pictureHeight + "]");
+            }
+
             picture.setWidth(pictureWidth);
             picture.setHeight(pictureHeight);
 
@@ -674,6 +726,8 @@ public class JmeFxContainer {
         } finally {
             lock.syncUnlock();
         }
+
+        setLastResized(time);
     }
 
     private void initFx() {
@@ -734,6 +788,10 @@ public class JmeFxContainer {
 
         data.limit(0);
 
+        if (isDebug()) {
+            LOGGER.debug("is covered " + x + ", " + y + " = " + (alpha != 0));
+        }
+
         return alpha != 0;
     }
 
@@ -786,9 +844,16 @@ public class JmeFxContainer {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
 
-        if (isFocus() && stagePeer != null) {
-            stagePeer.setFocused(false, AbstractEvents.FOCUSEVENT_DEACTIVATED);
-            setFocus(false);
+        if (!isFocus() || stagePeer == null) {
+            return;
+        }
+
+        stagePeer.setFocused(false, AbstractEvents.FOCUSEVENT_DEACTIVATED);
+
+        setFocus(false);
+
+        if (isDebug()) {
+            LOGGER.debug("lost focus.");
         }
     }
 
@@ -796,6 +861,13 @@ public class JmeFxContainer {
      * Отрисока контейнера.
      */
     public void paintComponent() {
+
+        long time = 0;
+
+        if (isDebug()) {
+            time = System.currentTimeMillis();
+            LOGGER.debug("started paint FX scene...");
+        }
 
         final EmbeddedSceneInterface scenePeer = getScenePeer();
 
@@ -856,6 +928,10 @@ public class JmeFxContainer {
 
         final AtomicInteger waitCount = getWaitCount();
         waitCount.incrementAndGet();
+
+        if (isDebug()) {
+            LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
+        }
     }
 
     /**
@@ -864,11 +940,7 @@ public class JmeFxContainer {
     public void removePaintListener(final PaintListener paintListener) {
 
         final List<PaintListener> temp = new ArrayList<>();
-
-        for (final PaintListener listener : getPaintListeners()) {
-            temp.add(listener);
-        }
-
+        Collections.addAll(temp, getPaintListeners());
         temp.remove(paintListener);
 
         setPaintListeners(temp.toArray(new PaintListener[temp.size()]));
@@ -946,7 +1018,12 @@ public class JmeFxContainer {
         final AtomicInteger waitCount = getWaitCount();
         final int currentCount = waitCount.get();
 
-        final long time = System.currentTimeMillis();
+        long time = 0;
+
+        if (isDebug()) {
+            time = System.currentTimeMillis();
+            LOGGER.debug("started writing FX data to JME...");
+        }
 
         final ByteBuffer jmeData = getJmeData();
         jmeData.clear();
@@ -965,6 +1042,11 @@ public class JmeFxContainer {
         jmeImage.setUpdateNeeded();
 
         waitCount.subAndGet(currentCount);
+
+        if (isDebug()) {
+            LOGGER.debug("finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
+        }
+
         return null;
     }
 

@@ -88,6 +88,11 @@ public class OperatingSystem {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [name=" + name + ", version=" + version + ", arch=" + arch + ", distribution=" + distribution + "]";
+        return "OperatingSystem{" +
+                "name='" + name + '\'' +
+                ", version='" + version + '\'' +
+                ", arch='" + arch + '\'' +
+                ", distribution='" + distribution + '\'' +
+                '}';
     }
 }
