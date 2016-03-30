@@ -636,14 +636,14 @@ public class JmeFxContainer {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
 
-        if (isFocus() || stagePeer == null) {
+        if(isFocus() || stagePeer == null) {
             return;
         }
 
         stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
         setFocus(true);
 
-        if (isDebug()) {
+        if(isDebug()) {
             LOGGER.debug("got focus.");
         }
     }
@@ -655,7 +655,7 @@ public class JmeFxContainer {
 
         final long time = System.currentTimeMillis();
 
-        if (time - getLastResized() < 1000) {
+        if(time - getLastResized() < 1000) {
             return;
         }
 
@@ -673,7 +673,7 @@ public class JmeFxContainer {
 
             final Picture picture = getPicture();
 
-            if (isDebug()) {
+            if(isDebug()) {
                 LOGGER.debug("handle resize from [" + getPictureWidth() + "x" + getPictureHeight() + "] to [" + pictureWidth + "x" + pictureHeight + "]");
             }
 
@@ -788,7 +788,7 @@ public class JmeFxContainer {
 
         data.limit(0);
 
-        if (isDebug()) {
+        if(isDebug()) {
             LOGGER.debug("is covered " + x + ", " + y + " = " + (alpha != 0));
         }
 
@@ -844,7 +844,7 @@ public class JmeFxContainer {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
 
-        if (!isFocus() || stagePeer == null) {
+        if(!isFocus() || stagePeer == null) {
             return;
         }
 
@@ -852,7 +852,7 @@ public class JmeFxContainer {
 
         setFocus(false);
 
-        if (isDebug()) {
+        if(isDebug()) {
             LOGGER.debug("lost focus.");
         }
     }
@@ -864,7 +864,7 @@ public class JmeFxContainer {
 
         long time = 0;
 
-        if (isDebug()) {
+        if(isDebug()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started paint FX scene...");
         }
@@ -929,7 +929,7 @@ public class JmeFxContainer {
         final AtomicInteger waitCount = getWaitCount();
         waitCount.incrementAndGet();
 
-        if (isDebug()) {
+        if(isDebug()) {
             LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
         }
     }
@@ -1020,7 +1020,7 @@ public class JmeFxContainer {
 
         long time = 0;
 
-        if (isDebug()) {
+        if(isDebug()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started writing FX data to JME...");
         }
@@ -1043,7 +1043,7 @@ public class JmeFxContainer {
 
         waitCount.subAndGet(currentCount);
 
-        if (isDebug()) {
+        if(isDebug()) {
             LOGGER.debug("finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
         }
 

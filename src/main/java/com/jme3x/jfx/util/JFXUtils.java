@@ -21,12 +21,10 @@ import java.util.Map;
  */
 public class JFXUtils {
 
-    public static final String PROP_DISPLAY_UNDECORATED = "org.lwjgl.opengl.Window.undecorated";
-
     private static final Map<String, Point> OFFSET_MAPPING = new HashMap<>();
 
     static {
-        OFFSET_MAPPING.put("Ubuntu", new Point(0, 25));
+        OFFSET_MAPPING.put("Ubuntu", new Point(0, 0));
     }
 
     private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = new ThreadLocal<IntBuffer>() {
@@ -49,10 +47,6 @@ public class JFXUtils {
      * Getting the size of the window decorations in the system.
      */
     public static final Point getWindowDecorationSize() {
-
-        if ("true".equalsIgnoreCase(System.getProperty(PROP_DISPLAY_UNDECORATED))) {
-            return new Point(0, 0);
-        }
 
         final OperatingSystem system = new OperatingSystem();
         final String distribution = system.getDistribution();

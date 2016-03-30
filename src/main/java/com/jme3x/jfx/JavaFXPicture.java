@@ -67,8 +67,8 @@ public class JavaFXPicture extends Picture {
 
             if (container.getOldX() != x || container.getOldY() != y) {
 
-                if (JmeFxContainer.isDebug()) {
-                    LOGGER.debug("moved window to [original: " + originalX + ", " + originalY + " offset:" + offsetX + ", " + offsetY + "]");
+                if(JmeFxContainer.isDebug()) {
+                    LOGGER.debug("moved window to [original: " + originalX + ", " + originalY + " offset:" + offsetX + ", " + offsetY +"]");
                 }
 
                 container.setOldX(x);
