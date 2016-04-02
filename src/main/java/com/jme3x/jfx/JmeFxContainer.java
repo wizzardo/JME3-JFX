@@ -655,7 +655,7 @@ public class JmeFxContainer {
 
         final long time = System.currentTimeMillis();
 
-        if(time - getLastResized() < 1000) {
+        if(time - getLastResized() < 300) {
             return;
         }
 
