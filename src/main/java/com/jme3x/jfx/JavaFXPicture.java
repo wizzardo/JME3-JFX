@@ -41,13 +41,10 @@ public class JavaFXPicture extends Picture {
         final JmeFxContainer container = getContainer();
         final JmeContext jmeContext = container.getJmeContext();
 
-        final EmbeddedStageInterface currentStage = container.getStagePeer();
-
         try {
 
-            if (currentStage == null) {
-                return;
-            }
+            final EmbeddedStageInterface currentStage = container.getStagePeer();
+            if (currentStage == null) return;
 
             final int currentWidth = JFXUtils.getWidth(jmeContext);
             final int currentHeight = JFXUtils.getHeight(jmeContext);

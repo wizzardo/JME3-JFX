@@ -3,12 +3,18 @@ package com.jme3x.jfx.cursor;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.cursor.CursorType;
 
+/**
+ * The interface for implementing the provider of cursors.
+ */
 public interface CursorDisplayProvider {
 
     /**
-     * called by the GuiManager during startup, should be used to create the necessary cursors
+     * Setups the type of cursor.
      */
-    void setup(CursorType normal);
+    void setupCursor(CursorType normal);
 
+    /**
+     * Shows ths cursor.
+     */
     void showCursor(CursorFrame cursorFrame);
 }

@@ -70,9 +70,7 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
         jmeFxContainer.setScenePeer(embeddedScene);
 
-        if (embeddedScene == null) {
-            return;
-        }
+        if (embeddedScene == null) return;
 
         embeddedScene.setPixelScaleFactor(1);
 
@@ -92,9 +90,7 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
         jmeFxContainer.setStagePeer(embeddedStage);
 
-        if (embeddedStage == null) {
-            return;
-        }
+        if (embeddedStage == null) return;
 
         final int width = jmeFxContainer.getPictureWidth();
         final int height = jmeFxContainer.getPictureHeight();

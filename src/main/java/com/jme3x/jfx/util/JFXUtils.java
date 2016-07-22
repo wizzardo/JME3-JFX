@@ -6,13 +6,17 @@ import com.jme3.system.JmeContext;
 import com.jme3.system.lwjgl.LwjglWindow;
 import com.jme3x.jfx.util.os.OperatingSystem;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
+
+import javafx.application.Platform;
+
+import static java.lang.ThreadLocal.withInitial;
+import static org.lwjgl.BufferUtils.createIntBuffer;
 
 /**
  * Set of methods for scrap work JFX.
@@ -27,26 +31,13 @@ public class JFXUtils {
         OFFSET_MAPPING.put("Ubuntu", new Point(0, 0));
     }
 
-    private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = new ThreadLocal<IntBuffer>() {
-
-        @Override
-        protected IntBuffer initialValue() {
-            return BufferUtils.createIntBuffer(1);
-        }
-    };
-
-    private static final ThreadLocal<IntBuffer> LOCAL_SECOND_INT_BUFFER = new ThreadLocal<IntBuffer>() {
-
-        @Override
-        protected IntBuffer initialValue() {
-            return BufferUtils.createIntBuffer(1);
-        }
-    };
+    private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = withInitial(() -> createIntBuffer(1));
+    private static final ThreadLocal<IntBuffer> LOCAL_SECOND_INT_BUFFER = withInitial(() -> createIntBuffer(1));
 
     /**
      * Getting the size of the window decorations in the system.
      */
-    public static final Point getWindowDecorationSize() {
+    public static Point getWindowDecorationSize() {
 
         final OperatingSystem system = new OperatingSystem();
         final String distribution = system.getDistribution();
@@ -56,9 +47,7 @@ public class JFXUtils {
         }
 
         for (final Map.Entry<String, Point> entry : OFFSET_MAPPING.entrySet()) {
-
             final String key = entry.getKey();
-
             if (distribution.startsWith(key)) {
                 return entry.getValue();
             }
@@ -135,5 +124,13 @@ public class JFXUtils {
     public static void requestFocus(final Application application) {
         final LwjglWindow lwjglContext = (LwjglWindow) application.getContext();
         GLFW.glfwShowWindow(lwjglContext.getWindowHandle());
+    }
+
+    public static void runOnFxApplication(final Runnable task) {
+        if (Platform.isFxApplicationThread()) {
+            task.run();
+        } else {
+            Platform.runLater(task);
+        }
     }
 }

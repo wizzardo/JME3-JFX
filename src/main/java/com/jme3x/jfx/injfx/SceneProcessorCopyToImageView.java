@@ -8,7 +8,6 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.util.BufferUtils;
-import com.jme3x.jfx.FxPlatformExecutor;
 
 import java.nio.ByteBuffer;
 import java.util.List;

@@ -55,6 +55,7 @@ import rlib.logging.LoggerManager;
 public class JmeFxContainer {
 
     private static final Logger LOGGER = LoggerManager.getLogger(JmeFxContainer.class);
+    public static final int PROP_MIN_RESIZE_INTERVAL = 300;
 
     /**
      * Актитвировал ли дебаг.
@@ -364,13 +365,6 @@ public class JmeFxContainer {
     }
 
     /**
-     * Создание задачи по записи FX UI на JME.
-     */
-    protected void addWriteTask() {
-        application.enqueue(this::writeToJME);
-    }
-
-    /**
      * @return провайдер по отображению нужных курсоров.
      */
     public CursorDisplayProvider getCursorDisplayProvider() {
@@ -635,10 +629,7 @@ public class JmeFxContainer {
     public void grabFocus() {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
-
-        if(isFocus() || stagePeer == null) {
-            return;
-        }
+        if(isFocus() || stagePeer == null) return;
 
         stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
         setFocus(true);
@@ -654,10 +645,7 @@ public class JmeFxContainer {
     public void handleResize() {
 
         final long time = System.currentTimeMillis();
-
-        if(time - getLastResized() < 300) {
-            return;
-        }
+        if(time - getLastResized() < PROP_MIN_RESIZE_INTERVAL) return;
 
         final JmeContext jmeContext = getJmeContext();
 
@@ -680,21 +668,10 @@ public class JmeFxContainer {
             picture.setWidth(pictureWidth);
             picture.setHeight(pictureHeight);
 
-            if (fxData != null) {
-                BufferUtils.destroyDirectBuffer(fxData);
-            }
-
-            if (tempData != null) {
-                BufferUtils.destroyDirectBuffer(tempData);
-            }
-
-            if (jmeData != null) {
-                BufferUtils.destroyDirectBuffer(jmeData);
-            }
-
-            if (jmeImage != null) {
-                jmeImage.dispose();
-            }
+            if (fxData != null) BufferUtils.destroyDirectBuffer(fxData);
+            if (tempData != null) BufferUtils.destroyDirectBuffer(tempData);
+            if (jmeData != null) BufferUtils.destroyDirectBuffer(jmeData);
+            if (jmeImage != null) jmeImage.dispose();
 
             fxData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
             tempData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
@@ -702,10 +679,7 @@ public class JmeFxContainer {
             jmeImage = new Image(nativeFormat.get(), pictureWidth, pictureHeight, jmeData, ColorSpace.sRGB);
 
             final Texture2D texture = getTexture();
-
-            if (texture != null) {
-                texture.setImage(jmeImage);
-            }
+            if (texture != null) texture.setImage(jmeImage);
 
             setPictureHeight(pictureHeight);
             setPictureWidth(pictureWidth);
@@ -843,10 +817,7 @@ public class JmeFxContainer {
     public void loseFocus() {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
-
-        if(!isFocus() || stagePeer == null) {
-            return;
-        }
+        if(!isFocus() || stagePeer == null) return;
 
         stagePeer.setFocused(false, AbstractEvents.FOCUSEVENT_DEACTIVATED);
 
@@ -870,10 +841,7 @@ public class JmeFxContainer {
         }
 
         final EmbeddedSceneInterface scenePeer = getScenePeer();
-
-        if (scenePeer == null) {
-            return;
-        }
+        if (scenePeer == null) return;
 
         final PaintListener[] paintListeners = getPaintListeners();
 
@@ -891,9 +859,7 @@ public class JmeFxContainer {
         final int pictureWidth = getPictureWidth();
         final int pictureHeight = getPictureHeight();
 
-        if (!scenePeer.getPixels(intBuffer, pictureWidth, pictureHeight)) {
-            return;
-        }
+        if (!scenePeer.getPixels(intBuffer, pictureWidth, pictureHeight)) return;
 
         tempData.flip();
         tempData.limit(pictureWidth * pictureHeight * 4);
@@ -981,33 +947,33 @@ public class JmeFxContainer {
 
     public void setScene(final Scene newScene, final Group highLevelGroup) {
         this.rootNode = highLevelGroup;
-        FxPlatformExecutor.runOnFxApplication(() -> JmeFxContainer.this.setSceneImpl(newScene));
+        JFXUtils.runOnFxApplication(() -> setSceneImpl(newScene));
     }
 
     /*
      * Called on JavaFX application thread.
      */
     private void setSceneImpl(final Scene newScene) {
-        if (this.stage != null && newScene == null) {
-            this.stage.hide();
-            this.stage = null;
+
+        if (stage != null && newScene == null) {
+            stage.hide();
+            stage = null;
         }
 
-        this.application.enqueue(() -> {
-            JmeFxContainer.this.picture.setCullHint(newScene == null ? CullHint.Always : CullHint.Never);
+        application.enqueue(() -> {
+            picture.setCullHint(newScene == null ? CullHint.Always : CullHint.Never);
             return null;
         });
 
-        this.scene = newScene;
-        if (this.stage == null && newScene != null) {
-            this.stage = new EmbeddedWindow(this.hostContainer);
+        scene = newScene;
+
+        if (stage == null && newScene != null) {
+            stage = new EmbeddedWindow(hostContainer);
         }
-        if (this.stage != null) {
-            this.stage.setScene(newScene);
-            if (!this.stage.isShowing()) {
-                this.stage.show();
-            }
-        }
+
+        if (stage == null) return;
+        stage.setScene(newScene);
+        if (!stage.isShowing()) stage.show();
     }
 
     /**
