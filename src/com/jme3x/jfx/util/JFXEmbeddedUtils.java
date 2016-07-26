@@ -17,7 +17,9 @@ import javafx.embed.swing.JFXPanel;
 import rlib.util.array.ArrayFactory;
 
 /**
- * Created by ronn on 23.07.16.
+ * Набор утильных методов по работе со встроенным окном JavaFX.
+ *
+ * @author Ronn
  */
 public class JFXEmbeddedUtils {
 
@@ -104,34 +106,58 @@ public class JFXEmbeddedUtils {
         }
     }
 
+    /**
+     * Вытащить из панели EmbeddedStage.
+     */
     public static Object getStage(final JmeJFXPanel panel) {
         return STAGE_VAR_HANDLE.get(panel);
     }
 
+    /**
+     * Вытащить из панели EmbeddedScene.
+     */
     public static Object getScene(final JmeJFXPanel panel) {
         return SCENE_VAR_HANDLE.get(panel);
     }
 
+    /**
+     * Установка новой высоты для EmbeddedScene.
+     */
     public static void setPHeight(final JmeJFXPanel panel, final int value) {
         P_HEIGHT_VAR_HANDLE.set(panel, value);
     }
 
+    /**
+     * Установка новой высоты для EmbeddedStage.
+     */
     public static void setPWidth(final JmeJFXPanel panel, final int value) {
         P_WIDTH_VAR_HANDLE.set(panel, value);
     }
 
+    /**
+     * Установка новой позиции по X для EmbeddedStage.
+     */
     public static void setScreenX(final JmeJFXPanel panel, final int value) {
         SCREEN_X_VAR_HANDLE.getAndSet(panel, value);
     }
 
+    /**
+     * Установка новой позиции по Y для EmbeddedStage.
+     */
     public static void setScreenY(final JmeJFXPanel panel, final int value) {
         SCREEN_Y_VAR_HANDLE.getAndSet(panel, value);
     }
 
+    /**
+     * Установить флаг захвата движения мышкой.
+     */
     public static void setCapturingMouse(final JmeJFXPanel panel, final boolean value) {
         IS_CAPTURING_MOUSE_VAR_HANDLE.set(panel, value);
     }
 
+    /**
+     * Обновить положение EmbeddedScene.
+     */
     public static void sendMoveEventToFX(final JmeJFXPanel panel) {
         try {
             SEND_MOVE_EVENT_TO_FX_HANDLE.invoke(panel);
@@ -140,6 +166,9 @@ public class JFXEmbeddedUtils {
         }
     }
 
+    /**
+     * Обновить размер EmbeddedScene.
+     */
     public static void sendResizeEventToFX(final JmeJFXPanel panel) {
         try {
             SEND_RESIZE_EVENT_TO_FX_HANDLE.invoke(panel);
@@ -148,6 +177,9 @@ public class JFXEmbeddedUtils {
         }
     }
 
+    /**
+     * Отправить на обработку событие связанное с мышью в EmbeddedScene.
+     */
     public static void sendMouseEventToFX(final JmeJFXPanel panel, final MouseEvent event) {
         try {
             SEND_MOUSE_EVENT_TO_FX_HANDLE.invoke(panel, event);
@@ -156,6 +188,9 @@ public class JFXEmbeddedUtils {
         }
     }
 
+    /**
+     * Отправить на обработку событие связанное с фокусом окна в EmbeddedScene.
+     */
     public static void sendFocusEventToFX(final JmeJFXPanel panel, final FocusEvent event) {
         try {
             SEND_FOCUS_EVENT_TO_FX_HANDLE.invoke(panel, event);
@@ -164,6 +199,9 @@ public class JFXEmbeddedUtils {
         }
     }
 
+    /**
+     * Отправить на обработку событие связанное с клавиатурой в EmbeddedScene.
+     */
     public static void sendKeyEventToFX(final JmeJFXPanel panel, final KeyEvent event) {
         try {
             SEND_KEY_EVENT_TO_FX_HANDLE.invoke(panel, event);
@@ -175,9 +213,9 @@ public class JFXEmbeddedUtils {
     /**
      * Запрос на получение данных об отрисованном UI.
      *
-     * @param panel панель из которой надо изъять данные.
+     * @param panel  панель из которой надо изъять данные.
      * @param buffer буффер для размещения данных.
-     * @param width ширина.
+     * @param width  ширина.
      * @param height высота.
      * @return были ли данные получены.
      */
@@ -197,7 +235,7 @@ public class JFXEmbeddedUtils {
     /**
      * Установка маштабирования пикселей в сцене.
      *
-     * @param panel панель в которй находится сцена.
+     * @param panel  панель в которй находится сцена.
      * @param scaleX маштабирование по оси X.
      * @param scaleY маштабирование по оси Y.
      */

@@ -11,6 +11,8 @@ import rlib.util.array.ArrayFactory;
 
 /**
  * Набор утильных методов для работы с JavaFX.
+ *
+ * @author Ronn
  */
 public class JFXPlatform {
 

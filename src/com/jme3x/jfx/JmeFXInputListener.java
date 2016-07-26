@@ -35,6 +35,9 @@ public class JmeFXInputListener implements RawInputListener {
      */
     private final JmeFxContainer jmeFxContainer;
 
+    /**
+     * Набор зажатых кнопок.
+     */
     private final BitSet keyStateSet = new BitSet(0xFF);
 
     /**
@@ -56,7 +59,6 @@ public class JmeFXInputListener implements RawInputListener {
      * Обработчик DnD Java FX.
      */
     //private volatile JmeFxDNDHandler jfxdndHandler;
-
     public JmeFXInputListener(final JmeFxContainer listensOnContainer) {
         this.jmeFxContainer = listensOnContainer;
     }
@@ -67,7 +69,6 @@ public class JmeFXInputListener implements RawInputListener {
    /* private JmeFxDNDHandler getJfxdndHandler() {
         return jfxdndHandler;
     }*/
-
     @Override
     public void beginInput() {
         final RawInputListener adapter = getEverListeningInputListenerAdapter();
@@ -102,7 +103,7 @@ public class JmeFXInputListener implements RawInputListener {
     }
 
     /**
-     * @return
+     * @return набор зажатых кнопок.
      */
     private BitSet getKeyStateSet() {
         return keyStateSet;
@@ -270,7 +271,7 @@ public class JmeFXInputListener implements RawInputListener {
 
         final long when = System.currentTimeMillis();
         final int mask = getMouseMask();
-        final boolean popupTrigger = button == MouseEvent.BUTTON2;
+        final boolean popupTrigger = button == MouseEvent.BUTTON2 && eventId == MouseEvent.MOUSE_PRESSED;
 
         container.handleEvent(new MouseEvent(container, eventId, when, mask, x, y, 1, popupTrigger, button));
     }
@@ -282,31 +283,31 @@ public class JmeFXInputListener implements RawInputListener {
 
         int mask = 0;
 
-        if(mouseButtonState[0]) {
+        if (mouseButtonState[0]) {
             mask |= MouseEvent.BUTTON1_DOWN_MASK;
         }
 
-        if(mouseButtonState[1]) {
+        if (mouseButtonState[1]) {
             mask |= MouseEvent.BUTTON2_DOWN_MASK;
         }
 
-        if(mouseButtonState[2]) {
+        if (mouseButtonState[2]) {
             mask |= MouseEvent.BUTTON3_DOWN_MASK;
         }
 
-        if(keyStateSet.get(KeyEvent.VK_SHIFT)) {
+        if (keyStateSet.get(KeyEvent.VK_SHIFT)) {
             mask |= MouseEvent.SHIFT_DOWN_MASK;
         }
 
-        if(keyStateSet.get(KeyEvent.VK_CONTROL)) {
+        if (keyStateSet.get(KeyEvent.VK_CONTROL)) {
             mask |= MouseEvent.CTRL_DOWN_MASK;
         }
 
-        if(keyStateSet.get(KeyEvent.VK_ALT)) {
+        if (keyStateSet.get(KeyEvent.VK_ALT)) {
             mask |= MouseEvent.ALT_DOWN_MASK;
         }
 
-        if(keyStateSet.get(KeyEvent.VK_META)) {
+        if (keyStateSet.get(KeyEvent.VK_META)) {
             mask |= MouseEvent.META_DOWN_MASK;
         }
 
@@ -370,7 +371,7 @@ public class JmeFXInputListener implements RawInputListener {
         final long when = System.currentTimeMillis();
         final int mask = getMouseMask();
 
-        if(eventId == MouseEvent.MOUSE_WHEEL) {
+        if (eventId == MouseEvent.MOUSE_WHEEL) {
             container.handleEvent(new MouseWheelEvent(container, eventId, when, mask, x, y, 1, false, button, MouseWheelEvent.WHEEL_UNIT_SCROLL, wheelRotation));
         } else {
             container.handleEvent(new MouseEvent(container, eventId, when, mask, x, y, 1, false, button));

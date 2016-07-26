@@ -2,7 +2,7 @@ package com.jme3x.jfx;
 
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
-import com.jme3x.jfx.util.JFXWindowsUtils;
+import com.jme3x.jfx.util.JFXWindowUtils;
 
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
@@ -44,26 +44,26 @@ public class JavaFXPicture extends Picture {
             final JmeJFXPanel panel = container.getHostContainer();
             if (panel == null) return;
 
-            final int currentWidth = JFXWindowsUtils.getWidth(jmeContext);
-            final int currentHeight = JFXWindowsUtils.getHeight(jmeContext);
+            final int currentWidth = JFXWindowUtils.getWidth(jmeContext);
+            final int currentHeight = JFXWindowUtils.getHeight(jmeContext);
 
             if (currentWidth != container.getPictureWidth() || currentHeight != container.getPictureHeight()) {
                 container.handleResize();
             }
 
-            final int originalX = JFXWindowsUtils.getX(jmeContext);
-            final int originalY = JFXWindowsUtils.getY(jmeContext);
+            final int originalX = JFXWindowUtils.getX(jmeContext);
+            final int originalY = JFXWindowUtils.getY(jmeContext);
 
-            final int offsetX = JFXWindowsUtils.isFullscreen(jmeContext) ? 0 : container.getWindowOffsetX();
-            final int offsetY = JFXWindowsUtils.isFullscreen(jmeContext) ? 0 : container.getWindowOffsetY();
+            final int offsetX = JFXWindowUtils.isFullscreen(jmeContext) ? 0 : container.getWindowOffsetX();
+            final int offsetY = JFXWindowUtils.isFullscreen(jmeContext) ? 0 : container.getWindowOffsetY();
 
             final int x = originalX + offsetX;
             final int y = originalY + offsetY;
 
             if (container.getOldX() != x || container.getOldY() != y) {
 
-                if(JmeFxContainer.isDebug()) {
-                    LOGGER.debug("moved window to [original: " + originalX + ", " + originalY + " offset:" + offsetX + ", " + offsetY +"]");
+                if (JmeFxContainer.isDebug()) {
+                    LOGGER.debug("moved window to [original: " + originalX + ", " + originalY + " offset:" + offsetX + ", " + offsetY + "]");
                 }
 
                 container.setOldX(x);

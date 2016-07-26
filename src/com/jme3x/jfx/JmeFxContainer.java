@@ -18,7 +18,7 @@ import com.jme3.ui.Picture;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
 import com.jme3x.jfx.util.JFXEmbeddedUtils;
-import com.jme3x.jfx.util.JFXWindowsUtils;
+import com.jme3x.jfx.util.JFXWindowUtils;
 
 import java.awt.*;
 import java.awt.event.FocusEvent;
@@ -218,7 +218,7 @@ public class JmeFxContainer {
     private final JmeContext jmeContext;
 
     protected JmeFxContainer(final AssetManager assetManager, final Application application, final CursorDisplayProvider cursorDisplayProvider) {
-        final Point decorationSize = JFXWindowsUtils.getWindowDecorationSize();
+        final Point decorationSize = JFXWindowUtils.getWindowDecorationSize();
 
         final AppStateManager stateManager = application.getStateManager();
         stateManager.attach(fxAppState);
@@ -484,12 +484,12 @@ public class JmeFxContainer {
     public void handleResize() {
 
         final long time = System.currentTimeMillis();
-        if(time - getLastResized() < PROP_MIN_RESIZE_INTERVAL) return;
+        if (time - getLastResized() < PROP_MIN_RESIZE_INTERVAL) return;
 
         final JmeContext jmeContext = getJmeContext();
 
-        final int displayWidth = JFXWindowsUtils.getWidth(jmeContext);
-        final int displayHeight = JFXWindowsUtils.getHeight(jmeContext);
+        final int displayWidth = JFXWindowUtils.getWidth(jmeContext);
+        final int displayHeight = JFXWindowUtils.getHeight(jmeContext);
 
         final AsyncReadSyncWriteLock lock = getImageLock();
         lock.syncLock();
@@ -500,7 +500,7 @@ public class JmeFxContainer {
 
             final Picture picture = getPicture();
 
-            if(isDebug()) {
+            if (isDebug()) {
                 LOGGER.debug("handle resize from [" + getPictureWidth() + "x" + getPictureHeight() + "] to [" + pictureWidth + "x" + pictureHeight + "]");
             }
 
@@ -556,7 +556,7 @@ public class JmeFxContainer {
 
         data.limit(0);
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("is covered " + x + ", " + y + " = " + (alpha != 0));
         }
 
@@ -630,7 +630,7 @@ public class JmeFxContainer {
 
         long time = 0;
 
-        if(isDebug()) {
+        if (isDebug()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started paint FX scene...");
         }
@@ -646,7 +646,8 @@ public class JmeFxContainer {
         final int pictureWidth = getPictureWidth();
         final int pictureHeight = getPictureHeight();
 
-        if (!JFXEmbeddedUtils.getPixels(hostContainer, intBuffer, pictureWidth, pictureHeight)) return;
+        if (!JFXEmbeddedUtils.getPixels(hostContainer, intBuffer, pictureWidth, pictureHeight))
+            return;
 
         tempData.flip();
         tempData.limit(pictureWidth * pictureHeight * 4);
@@ -669,7 +670,7 @@ public class JmeFxContainer {
         final AtomicInteger waitCount = getWaitCount();
         waitCount.incrementAndGet();
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
         }
     }
@@ -729,7 +730,7 @@ public class JmeFxContainer {
 
         long time = 0;
 
-        if(isDebug()) {
+        if (isDebug()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started writing FX data to JME...");
         }
@@ -752,7 +753,7 @@ public class JmeFxContainer {
 
         waitCount.subAndGet(currentCount);
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
         }
 

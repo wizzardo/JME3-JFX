@@ -17,11 +17,11 @@ import static java.lang.ThreadLocal.withInitial;
 import static org.lwjgl.BufferUtils.createIntBuffer;
 
 /**
- * Набор методов по работе с окном.
+ * Набор методов по работе с окном в LWJGL3.
  *
  * @author Ronn
  */
-public class JFXWindowsUtils {
+public class JFXWindowUtils {
 
     private static final Map<String, Point> OFFSET_MAPPING = new HashMap<>();
 

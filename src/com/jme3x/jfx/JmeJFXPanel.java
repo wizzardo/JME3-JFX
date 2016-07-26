@@ -21,6 +21,8 @@ public class JmeJFXPanel extends JFXPanel {
 
     private static final Logger LOGGER = LoggerManager.getLogger(JmeJFXPanel.class);
 
+    private static final ThreadLocal<Point> LOCATION_LOCAL = ThreadLocal.withInitial(Point::new);
+
     /**
      * Контейнер JavaFX UI.
      */
@@ -92,7 +94,7 @@ public class JmeJFXPanel extends JFXPanel {
         });
     }
 
-    public void handleMove(final int x, final  int y) {
+    public void handleMove(final int x, final int y) {
         JFXEmbeddedUtils.setScreenX(this, x);
         JFXEmbeddedUtils.setScreenY(this, y);
         JFXPlatform.runInFXThread(() -> JFXEmbeddedUtils.sendMoveEventToFX(this));
@@ -103,6 +105,13 @@ public class JmeJFXPanel extends JFXPanel {
         JFXEmbeddedUtils.setPHeight(this, height);
         JFXEmbeddedUtils.setPWidth(this, width);
         JFXPlatform.runInFXThread(() -> JFXEmbeddedUtils.sendResizeEventToFX(this));
+    }
+
+    @Override
+    public Point getLocationOnScreen() {
+        final Point point = LOCATION_LOCAL.get();
+        point.setLocation(jmeFxContainer.getOldX(), jmeFxContainer.getOldY());
+        return point;
     }
 
     /**
