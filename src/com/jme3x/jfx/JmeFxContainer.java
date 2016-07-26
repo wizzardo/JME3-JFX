@@ -18,6 +18,8 @@ import com.jme3.ui.Picture;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
 import com.jme3x.jfx.util.JFXEmbeddedUtils;
+import com.jme3x.jfx.util.JFXPixels;
+import com.jme3x.jfx.util.JFXPlatform;
 import com.jme3x.jfx.util.JFXWindowUtils;
 
 import java.awt.*;
@@ -25,14 +27,19 @@ import java.awt.event.FocusEvent;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.BitSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import rlib.concurrent.atomic.AtomicInteger;
 import rlib.concurrent.lock.AsyncReadSyncWriteLock;
 import rlib.concurrent.lock.LockFactory;
+import rlib.function.SafeRunnable;
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
+import rlib.util.Util;
 
 /**
  * Need to pass -Dprism.dirtyopts=false on startup
@@ -43,7 +50,7 @@ public class JmeFxContainer {
 
     private static final Logger LOGGER = LoggerManager.getLogger(JmeFxContainer.class);
 
-    public static final int PROP_MIN_RESIZE_INTERVAL = 300;
+    public static final int PROP_MIN_RESIZE_INTERVAL = 100;
 
     /**
      * Актитвировал ли дебаг.
@@ -62,6 +69,43 @@ public class JmeFxContainer {
      */
     public static boolean isDebug() {
         return debug;
+    }
+
+    // TODO benchmark
+    private static Void reorder_ARGB82ABGR8(final ByteBuffer data) {
+
+        final int limit = data.limit() - 3;
+
+        byte v;
+
+        for (int i = 0; i < limit; i += 4) {
+            v = data.get(i + 1);
+            data.put(i + 1, data.get(i + 3));
+            data.put(i + 3, v);
+        }
+
+        return null;
+    }
+
+    // TODO benchmark
+    private static Void reorder_BGRA82ABGR8(final ByteBuffer data) {
+
+        final int limit = data.limit() - 3;
+
+        byte v0, v1, v2, v3;
+
+        for (int i = 0; i < limit; i += 4) {
+            v0 = data.get(i);
+            v1 = data.get(i + 1);
+            v2 = data.get(i + 2);
+            v3 = data.get(i + 3);
+            data.put(i, v3);
+            data.put(i + 1, v0);
+            data.put(i + 2, v1);
+            data.put(i + 3, v2);
+        }
+
+        return null;
     }
 
     public static JmeFxContainer install(final Application app, final Node guiNode, final CursorDisplayProvider cursorDisplayProvider) {
@@ -90,6 +134,8 @@ public class JmeFxContainer {
             super.cleanup();
         }
     };
+
+    protected volatile CompletableFuture<Format> nativeFormat = new CompletableFuture<>();
 
     /**
      * Кол-во незаписанных в JME кадров.
@@ -217,7 +263,14 @@ public class JmeFxContainer {
      */
     private final JmeContext jmeContext;
 
+    /**
+     * Функция реординга данных.
+     */
+    protected volatile Function<ByteBuffer, Void> reorderData;
+
     protected JmeFxContainer(final AssetManager assetManager, final Application application, final CursorDisplayProvider cursorDisplayProvider) {
+        initFx();
+
         final Point decorationSize = JFXWindowUtils.getWindowDecorationSize();
 
         final AppStateManager stateManager = application.getStateManager();
@@ -242,6 +295,33 @@ public class JmeFxContainer {
         this.texture = new Texture2D(jmeImage);
         this.picture.setTexture(assetManager, texture, true);
     }
+
+    private void initFx() {
+        JFXPlatform.startup(this::checkPixelsFormat);
+    }
+
+    private void checkPixelsFormat() {
+
+        final int format = JFXPixels.getNativeFormat();
+
+        if (format == JFXPixels.BYTE_ARGB) {
+            Util.safeExecute((SafeRunnable) () -> nativeFormat.complete(Format.valueOf("ARGB8")), (Consumer<Exception>) e -> {
+                nativeFormat.complete(Format.ABGR8);
+                reorderData = JmeFxContainer::reorder_ARGB82ABGR8;
+            });
+        } else if (format == JFXPixels.BYTE_BGRA_PRE) {
+            Util.safeExecute((SafeRunnable) () -> nativeFormat.complete(Format.valueOf("BGRA8")), (Consumer<Exception>) e -> {
+                nativeFormat.complete(Format.ABGR8);
+                reorderData = JmeFxContainer::reorder_BGRA82ABGR8;
+            });
+        } else {
+            Util.safeExecute((SafeRunnable) () -> nativeFormat.complete(Format.valueOf("ARGB8")), (Consumer<Exception>) e -> {
+                nativeFormat.complete(Format.ABGR8);
+                reorderData = JmeFxContainer::reorder_ARGB82ABGR8;
+            });
+        }
+    }
+
 
     /**
      * @param lastResized время последнего изменения размера.
@@ -515,7 +595,7 @@ public class JmeFxContainer {
             fxData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
             tempData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
             jmeData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
-            jmeImage = new Image(Format.BGRA8, pictureWidth, pictureHeight, jmeData, ColorSpace.sRGB);
+            jmeImage = new Image(nativeFormat.get(), pictureWidth, pictureHeight, jmeData, ColorSpace.sRGB);
 
             final Texture2D texture = getTexture();
             if (texture != null) texture.setImage(jmeImage);
@@ -661,6 +741,10 @@ public class JmeFxContainer {
             fxData.put(tempData);
             fxData.flip();
 
+            if (reorderData != null) {
+                reorderData.apply(fxData);
+            }
+
         } catch (final Exception exc) {
             exc.printStackTrace();
         } finally {
@@ -673,29 +757,6 @@ public class JmeFxContainer {
         if (isDebug()) {
             LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
         }
-    }
-
-    int retrieveKeyState() {
-
-        int embedModifiers = 0;
-
-        /*if (keyStateSet.get(KeyEvent.VK_SHIFT)) {
-            embedModifiers |= AbstractEvents.MODIFIER_SHIFT;
-        }
-
-        if (keyStateSet.get(KeyEvent.VK_CONTROL)) {
-            embedModifiers |= AbstractEvents.MODIFIER_CONTROL;
-        }
-
-        if (keyStateSet.get(KeyEvent.VK_ALT)) {
-            embedModifiers |= AbstractEvents.MODIFIER_ALT;
-        }
-
-        if (keyStateSet.get(KeyEvent.VK_META)) {
-            embedModifiers |= AbstractEvents.MODIFIER_META;
-        }
-*/
-        return embedModifiers;
     }
 
     /**
