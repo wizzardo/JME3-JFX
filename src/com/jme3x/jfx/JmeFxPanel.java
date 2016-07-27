@@ -17,9 +17,9 @@ import rlib.logging.LoggerManager;
 /**
  * Fakes a top level window
  */
-public class JmeJFXPanel extends JFXPanel {
+public class JmeFxPanel extends JFXPanel {
 
-    private static final Logger LOGGER = LoggerManager.getLogger(JmeJFXPanel.class);
+    private static final Logger LOGGER = LoggerManager.getLogger(JmeFxPanel.class);
 
     private static final ThreadLocal<Point> LOCATION_LOCAL = ThreadLocal.withInitial(Point::new);
 
@@ -28,12 +28,17 @@ public class JmeJFXPanel extends JFXPanel {
      */
     private final JmeFxContainer jmeFxContainer;
 
+    /**
+     * Обработчик работы с DnD.
+     */
+    private final JmeFxDNDHandler dndHandler;
 
     private volatile Object embeddedStage;
     private volatile Object embeddedScene;
 
-    public JmeJFXPanel(final JmeFxContainer jmeFxContainer) {
+    public JmeFxPanel(final JmeFxContainer jmeFxContainer) {
         this.jmeFxContainer = jmeFxContainer;
+        this.dndHandler = new JmeFxDNDHandler(jmeFxContainer);
     }
 
     /**
@@ -70,13 +75,12 @@ public class JmeJFXPanel extends JFXPanel {
         if (scene == null) return;
 
         JFXEmbeddedUtils.setPixelScaleFactors(this, 1F, 1F);
+        JFXEmbeddedUtils.setDragStartListener(this, dndHandler.getHandler());
 
         final int width = jmeFxContainer.getPictureWidth();
         final int height = jmeFxContainer.getPictureHeight();
 
         handleResize(width, height);
-
-        //embeddedScene.setDragStartListener(new JmeFxDNDHandler(jmeFxContainer));
     }
 
     public void handleEvent(final KeyEvent event) {

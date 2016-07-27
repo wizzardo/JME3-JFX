@@ -18,7 +18,7 @@ public class TestJFXPanel extends SimpleApplication {
 
     private JmeFxContainer container;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
 
         // фикс рендера шрифтов в FX
         System.setProperty("prism.lcdtext", "false");

@@ -12,16 +12,16 @@ import rlib.logging.LoggerManager;
  *
  * @author Ronn
  */
-public class JavaFXPicture extends Picture {
+public class JmeFxPicture extends Picture {
 
-    private static final Logger LOGGER = LoggerManager.getLogger(JavaFXPicture.class);
+    private static final Logger LOGGER = LoggerManager.getLogger(JmeFxPicture.class);
 
     /**
      * Контейнер UI Java FX.
      */
     private final JmeFxContainer container;
 
-    public JavaFXPicture(JmeFxContainer container) {
+    public JmeFxPicture(final JmeFxContainer container) {
         super("JavaFXContainer", true);
         this.container = container;
     }
@@ -41,7 +41,7 @@ public class JavaFXPicture extends Picture {
 
         try {
 
-            final JmeJFXPanel panel = container.getHostContainer();
+            final JmeFxPanel panel = container.getHostContainer();
             if (panel == null) return;
 
             final int currentWidth = JFXWindowUtils.getWidth(jmeContext);

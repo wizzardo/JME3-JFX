@@ -1,6 +1,7 @@
 package com.jme3x.jfx.util;
 
-import com.jme3x.jfx.JmeJFXPanel;
+import com.jme3x.jfx.JmeFxDNDHandler;
+import com.jme3x.jfx.JmeFxPanel;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -39,6 +40,8 @@ public class JFXEmbeddedUtils {
 
     private static final String METHOD_GET_PIXELS = "getPixels";
     private static final String METHOD_SET_PIXEL_SCALE_FACTORS = "setPixelScaleFactors";
+    private static final String METHOD_CREATE_DROP_TARGET = "createDropTarget";
+    private static final String METHOD_SET_DRAG_START_LISTENER = "setDragStartListener";
 
     private static final String METHOD_SEND_RESIZE_EVENT_TO_FX = "sendResizeEventToFX";
     private static final String METHOD_SEND_MOVE_EVENT_TO_FX = "sendMoveEventToFX";
@@ -65,6 +68,8 @@ public class JFXEmbeddedUtils {
 
     private final static MethodHandle GET_PIXELS_HANDLE;
     private final static MethodHandle SET_PIXEL_SCALE_FACTORS_HANDLE;
+    private final static MethodHandle CREATE_DROP_TARGET_HANDLE;
+    private final static MethodHandle SET_DRAG_START_LISTENER_HANDLE;
 
     static {
 
@@ -100,6 +105,8 @@ public class JFXEmbeddedUtils {
             final MethodHandles.Lookup sceneLookup = lookupConstructor.newInstance(SCENE_TYPE);
             GET_PIXELS_HANDLE = sceneLookup.findVirtual(SCENE_TYPE, METHOD_GET_PIXELS, getPixelsMethodType);
             SET_PIXEL_SCALE_FACTORS_HANDLE = sceneLookup.findVirtual(SCENE_TYPE, METHOD_SET_PIXEL_SCALE_FACTORS, setPixelScaleFactorsMethodType);
+            CREATE_DROP_TARGET_HANDLE = sceneLookup.findVirtual(SCENE_TYPE, METHOD_CREATE_DROP_TARGET, MethodType.methodType(JFXDNDUtils.DRAG_TARGET_TYPE));
+            SET_DRAG_START_LISTENER_HANDLE = sceneLookup.findVirtual(SCENE_TYPE, METHOD_SET_DRAG_START_LISTENER, MethodType.methodType(void.class, JmeFxDNDHandler.LISTENER_TYPE));
 
         } catch (final NoSuchFieldException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -107,58 +114,80 @@ public class JFXEmbeddedUtils {
     }
 
     /**
+     * Установка слушателя DND в сцене JavaFX.
+     */
+    public static void setDragStartListener(final JmeFxPanel panel, final Object listener) {
+        try {
+            SET_DRAG_START_LISTENER_HANDLE.invoke(panel.getEmbeddedScene(), listener);
+        } catch (final Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    /**
+     * Создание целевого элемента для DND.
+     */
+    public static Object createDropTarget(final JmeFxPanel panel) {
+        try {
+            return CREATE_DROP_TARGET_HANDLE.invoke(panel.getEmbeddedScene());
+        } catch (final Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    /**
      * Вытащить из панели EmbeddedStage.
      */
-    public static Object getStage(final JmeJFXPanel panel) {
+    public static Object getStage(final JmeFxPanel panel) {
         return STAGE_VAR_HANDLE.get(panel);
     }
 
     /**
      * Вытащить из панели EmbeddedScene.
      */
-    public static Object getScene(final JmeJFXPanel panel) {
+    public static Object getScene(final JmeFxPanel panel) {
         return SCENE_VAR_HANDLE.get(panel);
     }
 
     /**
      * Установка новой высоты для EmbeddedScene.
      */
-    public static void setPHeight(final JmeJFXPanel panel, final int value) {
+    public static void setPHeight(final JmeFxPanel panel, final int value) {
         P_HEIGHT_VAR_HANDLE.set(panel, value);
     }
 
     /**
      * Установка новой высоты для EmbeddedStage.
      */
-    public static void setPWidth(final JmeJFXPanel panel, final int value) {
+    public static void setPWidth(final JmeFxPanel panel, final int value) {
         P_WIDTH_VAR_HANDLE.set(panel, value);
     }
 
     /**
      * Установка новой позиции по X для EmbeddedStage.
      */
-    public static void setScreenX(final JmeJFXPanel panel, final int value) {
+    public static void setScreenX(final JmeFxPanel panel, final int value) {
         SCREEN_X_VAR_HANDLE.getAndSet(panel, value);
     }
 
     /**
      * Установка новой позиции по Y для EmbeddedStage.
      */
-    public static void setScreenY(final JmeJFXPanel panel, final int value) {
+    public static void setScreenY(final JmeFxPanel panel, final int value) {
         SCREEN_Y_VAR_HANDLE.getAndSet(panel, value);
     }
 
     /**
      * Установить флаг захвата движения мышкой.
      */
-    public static void setCapturingMouse(final JmeJFXPanel panel, final boolean value) {
+    public static void setCapturingMouse(final JmeFxPanel panel, final boolean value) {
         IS_CAPTURING_MOUSE_VAR_HANDLE.set(panel, value);
     }
 
     /**
      * Обновить положение EmbeddedScene.
      */
-    public static void sendMoveEventToFX(final JmeJFXPanel panel) {
+    public static void sendMoveEventToFX(final JmeFxPanel panel) {
         try {
             SEND_MOVE_EVENT_TO_FX_HANDLE.invoke(panel);
         } catch (final Throwable e) {
@@ -169,7 +198,7 @@ public class JFXEmbeddedUtils {
     /**
      * Обновить размер EmbeddedScene.
      */
-    public static void sendResizeEventToFX(final JmeJFXPanel panel) {
+    public static void sendResizeEventToFX(final JmeFxPanel panel) {
         try {
             SEND_RESIZE_EVENT_TO_FX_HANDLE.invoke(panel);
         } catch (final Throwable e) {
@@ -180,7 +209,7 @@ public class JFXEmbeddedUtils {
     /**
      * Отправить на обработку событие связанное с мышью в EmbeddedScene.
      */
-    public static void sendMouseEventToFX(final JmeJFXPanel panel, final MouseEvent event) {
+    public static void sendMouseEventToFX(final JmeFxPanel panel, final MouseEvent event) {
         try {
             SEND_MOUSE_EVENT_TO_FX_HANDLE.invoke(panel, event);
         } catch (final Throwable e) {
@@ -191,7 +220,7 @@ public class JFXEmbeddedUtils {
     /**
      * Отправить на обработку событие связанное с фокусом окна в EmbeddedScene.
      */
-    public static void sendFocusEventToFX(final JmeJFXPanel panel, final FocusEvent event) {
+    public static void sendFocusEventToFX(final JmeFxPanel panel, final FocusEvent event) {
         try {
             SEND_FOCUS_EVENT_TO_FX_HANDLE.invoke(panel, event);
         } catch (final Throwable e) {
@@ -202,7 +231,7 @@ public class JFXEmbeddedUtils {
     /**
      * Отправить на обработку событие связанное с клавиатурой в EmbeddedScene.
      */
-    public static void sendKeyEventToFX(final JmeJFXPanel panel, final KeyEvent event) {
+    public static void sendKeyEventToFX(final JmeFxPanel panel, final KeyEvent event) {
         try {
             SEND_KEY_EVENT_TO_FX_HANDLE.invoke(panel, event);
         } catch (final Throwable e) {
@@ -219,7 +248,7 @@ public class JFXEmbeddedUtils {
      * @param height высота.
      * @return были ли данные получены.
      */
-    public static boolean getPixels(final JmeJFXPanel panel, final IntBuffer buffer, final int width, final int height) {
+    public static boolean getPixels(final JmeFxPanel panel, final IntBuffer buffer, final int width, final int height) {
 
         final Object embeddedScene = panel.getEmbeddedScene();
         final Object result;
@@ -239,7 +268,7 @@ public class JFXEmbeddedUtils {
      * @param scaleX маштабирование по оси X.
      * @param scaleY маштабирование по оси Y.
      */
-    public static void setPixelScaleFactors(final JmeJFXPanel panel, final float scaleX, final float scaleY) {
+    public static void setPixelScaleFactors(final JmeFxPanel panel, final float scaleX, final float scaleY) {
 
         final Object embeddedScene = panel.getEmbeddedScene();
         try {

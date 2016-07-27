@@ -113,7 +113,7 @@ public class JmeFxContainer {
         final JmeFxContainer container = new JmeFxContainer(app.getAssetManager(), app, cursorDisplayProvider);
         guiNode.attachChild(container.getJmeNode());
 
-        final JmeFXInputListener inputListener = new JmeFXInputListener(container);
+        final JmeFxInputListener inputListener = new JmeFxInputListener(container);
 
         container.setInputListener(inputListener);
 
@@ -160,12 +160,12 @@ public class JmeFxContainer {
     /**
      * Контейнер сцены JavaFX.
      */
-    protected volatile JmeJFXPanel hostContainer;
+    protected volatile JmeFxPanel hostContainer;
 
     /**
      * Слушатель ввода пользователя.
      */
-    protected volatile JmeFXInputListener inputListener;
+    protected volatile JmeFxInputListener inputListener;
 
     /**
      * Текущая сцена UI.
@@ -285,8 +285,8 @@ public class JmeFxContainer {
         this.application = application;
         this.visibleCursor = true;
 
-        this.hostContainer = new JmeJFXPanel(this);
-        this.picture = new JavaFXPicture(this);
+        this.hostContainer = new JmeFxPanel(this);
+        this.picture = new JmeFxPicture(this);
         this.picture.move(0, 0, -1);
         this.picture.setPosition(0, 0);
 
@@ -375,14 +375,14 @@ public class JmeFxContainer {
     /**
      * @return слушатель ввода пользователя.
      */
-    public JmeFXInputListener getInputListener() {
+    public JmeFxInputListener getInputListener() {
         return inputListener;
     }
 
     /**
      * @param inputListener слушатель ввода пользователя.
      */
-    public void setInputListener(final JmeFXInputListener inputListener) {
+    public void setInputListener(final JmeFxInputListener inputListener) {
         this.inputListener = inputListener;
     }
 
@@ -552,7 +552,7 @@ public class JmeFxContainer {
      */
     public void grabFocus() {
 
-        final JmeJFXPanel hostContainer = getHostContainer();
+        final JmeFxPanel hostContainer = getHostContainer();
         hostContainer.handleEvent(new FocusEvent(hostContainer, FocusEvent.FOCUS_GAINED));
 
         setFocus(true);
@@ -690,7 +690,7 @@ public class JmeFxContainer {
      */
     public void loseFocus() {
 
-        final JmeJFXPanel hostContainer = getHostContainer();
+        final JmeFxPanel hostContainer = getHostContainer();
         hostContainer.handleEvent(new FocusEvent(hostContainer, FocusEvent.FOCUS_LOST));
 
         setFocus(false);
@@ -699,7 +699,7 @@ public class JmeFxContainer {
     /**
      * @return контейнер сцены JavaFX.
      */
-    public JmeJFXPanel getHostContainer() {
+    public JmeFxPanel getHostContainer() {
         return hostContainer;
     }
 
@@ -715,7 +715,7 @@ public class JmeFxContainer {
             LOGGER.debug("started paint FX scene...");
         }
 
-        final JmeJFXPanel hostContainer = getHostContainer();
+        final JmeFxPanel hostContainer = getHostContainer();
         if (hostContainer == null) return;
 
         final ByteBuffer tempData = getTempData();
