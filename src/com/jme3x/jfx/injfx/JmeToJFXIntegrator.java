@@ -1,0 +1,30 @@
+package com.jme3x.jfx.injfx;
+
+import com.jme3.system.AppSettings;
+
+import java.util.function.Function;
+
+import javafx.application.Platform;
+import javafx.scene.image.ImageView;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
+/**
+ * @author JavaSaBr
+ */
+public class JmeToJFXIntegrator {
+
+    public static void prepareSettings(final AppSettings settings, final int framerate) {
+        settings.setFullscreen(false);
+        settings.setFrameRate(max(1, min(100, framerate + 20)));
+        settings.setCustomRenderer(JmeOffscreenSurfaceContext.class);
+    }
+
+    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Function<Runnable, Thread> factory) {
+        factory.apply(application::start).start();
+        final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
+        Platform.runLater(() -> application.enqueue(() -> processor.bind(imageView, application)));
+        return processor;
+    }
+}

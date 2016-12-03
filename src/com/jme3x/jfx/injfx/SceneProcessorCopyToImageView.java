@@ -1,11 +1,11 @@
 package com.jme3x.jfx.injfx;
 
-import com.jme3.app.Application;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
+import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.util.JFXPlatform;
 
 import java.util.List;
@@ -34,6 +34,8 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     private ViewPort latestViewPorts;
 
     private TransferImage transferImage;
+
+    private volatile JmeToJFXApplication application;
 
     /**
      * The {@link ImageView} for showing the content of jME.
@@ -96,7 +98,7 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         reshapeNeeded.set(true);
     }
 
-    public void bind(final ImageView imageView, final Application application) {
+    public void bind(final ImageView imageView, final JmeToJFXApplication application) {
         unbind();
 
         final RenderManager renderManager = application.getRenderManager();
@@ -106,17 +108,29 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         latestViewPorts = postViews.get(postViews.size() - 1);
         latestViewPorts.addProcessor(this);
 
-        JFXPlatform.runInFXThread(() -> bindImageView(imageView));
+        JFXPlatform.runInFXThread(() -> bindImageView(application, imageView));
     }
 
-    protected void bindImageView(final ImageView imageView) {
-        if (!Platform.isFxApplicationThread())
+    protected void bindImageView(final JmeToJFXApplication application, final ImageView imageView) {
+
+        if (!Platform.isFxApplicationThread()) {
             throw new RuntimeException("this call is not from JavaFX thread.");
+        }
+
+        this.application = application;
+
+        final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
+        final JFXMouseInput mouseInput = context.getMouseInput();
+        mouseInput.bind(imageView);
+
         this.imageView = imageView;
         this.imageView.fitWidthProperty().addListener(widthListener);
         this.imageView.fitHeightProperty().addListener(heightListener);
         this.imageView.preserveRatioProperty().addListener(rationListener);
+        this.imageView.setPickOnBounds(true);
+
         notifyComponentResized((int) imageView.getFitWidth(), (int) imageView.getFitHeight(), imageView.isPreserveRatio());
+
         this.imageView.setScaleY(-1.0);
     }
 
@@ -131,9 +145,20 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     }
 
     protected void unbindImageView() {
-        if (!Platform.isFxApplicationThread())
+
+        if (!Platform.isFxApplicationThread()) {
             throw new RuntimeException("this call is not from JavaFX thread.");
+        }
+
+        if (application != null) {
+            final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
+            final JFXMouseInput mouseInput = context.getMouseInput();
+            mouseInput.unbind();
+            application = null;
+        }
+
         if (imageView == null) return;
+
         imageView.fitWidthProperty().removeListener(widthListener);
         imageView.fitHeightProperty().removeListener(heightListener);
         imageView.preserveRatioProperty().removeListener(rationListener);
@@ -153,6 +178,10 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         transferImage.initFor(renderManager.getRenderer());
 
         renderManager.notifyReshape(transferImage.getWidth(), transferImage.getHeight());
+
+        final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
+        context.setHeight(height);
+        context.setWidth(width);
 
         return transferImage;
     }

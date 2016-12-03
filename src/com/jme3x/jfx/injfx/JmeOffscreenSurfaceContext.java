@@ -1,8 +1,6 @@
 package com.jme3x.jfx.injfx;
 
 import com.jme3.input.JoyInput;
-import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
 import com.jme3.input.TouchInput;
 import com.jme3.opencl.Context;
 import com.jme3.renderer.Renderer;
@@ -11,6 +9,8 @@ import com.jme3.system.JmeContext;
 import com.jme3.system.JmeSystem;
 import com.jme3.system.SystemListener;
 import com.jme3.system.Timer;
+import com.jme3x.jfx.injfx.input.JFXKeyInput;
+import com.jme3x.jfx.injfx.input.JFXMouseInput;
 
 import javafx.stage.Stage;
 
@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author empirephoenix
  */
-public class JmeContextOffscreenSurface implements JmeContext {
+public class JmeOffscreenSurfaceContext implements JmeContext {
 
     private static final ThreadLocal<Stage> STAGE_LOCAL = new ThreadLocal<>();
 
@@ -33,13 +33,61 @@ public class JmeContextOffscreenSurface implements JmeContext {
     protected final Stage window;
     protected final AppSettings settings;
 
+    protected final JFXKeyInput keyInput;
+    protected final JFXMouseInput mouseInput;
+
+    /**
+     * The current width.
+     */
+    private volatile int width;
+
+    /**
+     * The current height.
+     */
+    private volatile int height;
+
+    /**
+     * The background context.
+     */
     protected JmeContext backgroundContext;
 
-    public JmeContextOffscreenSurface() {
+    public JmeOffscreenSurfaceContext() {
         this.window = STAGE_LOCAL.get();
+        this.keyInput = new JFXKeyInput();
+        this.mouseInput = new JFXMouseInput(this);
         requireNonNull(window, "you have to set a Stage to thread local.");
         this.settings = createSettings();
         this.backgroundContext = createBackgroundContext();
+        this.height = 1;
+        this.width = 1;
+    }
+
+    /**
+     * @return the current height.
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * @param height the current height.
+     */
+    public void setHeight(final int height) {
+        this.height = height;
+    }
+
+    /**
+     * @return the current width.
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * @param width the current width.
+     */
+    public void setWidth(final int width) {
+        this.width = width;
     }
 
     protected AppSettings createSettings() {
@@ -85,15 +133,13 @@ public class JmeContextOffscreenSurface implements JmeContext {
     }
 
     @Override
-    public MouseInput getMouseInput() {
-        //return backgroundContext.getMouseInput();
-        return null;
+    public JFXMouseInput getMouseInput() {
+        return mouseInput;
     }
 
     @Override
-    public KeyInput getKeyInput() {
-        //return backgroundContext.getKeyInput();
-        return null;
+    public JFXKeyInput getKeyInput() {
+        return keyInput;
     }
 
     @Override
