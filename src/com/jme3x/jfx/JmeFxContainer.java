@@ -19,7 +19,6 @@ import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
 import com.jme3x.jfx.util.JFXEmbeddedUtils;
 import com.jme3x.jfx.util.JFXPixels;
-import com.jme3x.jfx.util.JFXPlatform;
 import com.jme3x.jfx.util.JFXWindowUtils;
 
 import java.awt.*;
@@ -278,7 +277,7 @@ public class JmeFxContainer {
 
         this.jmeContext = application.getContext();
         this.waitCount = new AtomicInteger();
-        this.imageLock = LockFactory.newPrimitiveAtomicARSWLock();
+        this.imageLock = LockFactory.newAtomicARSWLock();
         this.windowOffsetX = (int) decorationSize.getX();
         this.windowOffsetY = (int) decorationSize.getY();
         this.cursorDisplayProvider = cursorDisplayProvider;
@@ -297,7 +296,7 @@ public class JmeFxContainer {
     }
 
     private void initFx() {
-        JFXPlatform.startup(this::checkPixelsFormat);
+        Platform.startup(this::checkPixelsFormat);
     }
 
     private void checkPixelsFormat() {

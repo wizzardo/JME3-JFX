@@ -15,6 +15,7 @@ import com.jme3.system.Timer;
 import javafx.stage.Stage;
 
 import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
+import static java.util.Objects.requireNonNull;
 
 /**
  * The implementation of the {@link JmeContext} for integrating to JavaFX.
@@ -23,14 +24,22 @@ import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
  */
 public class JmeContextOffscreenSurface implements JmeContext {
 
+    private static final ThreadLocal<Stage> STAGE_LOCAL = new ThreadLocal<>();
+
+    public static void setLocalStage(final Stage stage) {
+        STAGE_LOCAL.set(stage);
+    }
+
     protected final Stage window;
     protected final AppSettings settings;
 
     protected JmeContext backgroundContext;
 
-    public JmeContextOffscreenSurface(final Stage window) {
-        this.window = window;
+    public JmeContextOffscreenSurface() {
+        this.window = STAGE_LOCAL.get();
+        requireNonNull(window, "you have to set a Stage to thread local.");
         this.settings = createSettings();
+        this.backgroundContext = createBackgroundContext();
     }
 
     protected AppSettings createSettings() {
@@ -124,6 +133,7 @@ public class JmeContextOffscreenSurface implements JmeContext {
 
     @Override
     public void create(final boolean waitFor) {
+        backgroundContext.getSettings().setRenderer(AppSettings.LWJGL_OPENGL3);
         backgroundContext.create(waitFor);
     }
 

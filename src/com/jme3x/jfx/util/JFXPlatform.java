@@ -10,9 +10,9 @@ import javafx.application.Platform;
 import rlib.util.array.ArrayFactory;
 
 /**
- * Набор утильных методов для работы с JavaFX.
+ * The class with additional utility methods for JavaFX Platform.
  *
- * @author Ronn
+ * @author JavaSaBr.
  */
 public class JFXPlatform {
 
@@ -20,6 +20,9 @@ public class JFXPlatform {
 
     private static final String METHOD_STARTUP = "startup";
 
+    /**
+     * The example of getting a method handle.
+     */
     private static final MethodHandle STARTUP_HANDLE;
 
     static {
@@ -40,18 +43,7 @@ public class JFXPlatform {
     }
 
     /**
-     * Добавить задачу на выполнение после старта JavaFX.
-     */
-    public static void startup(final Runnable task) {
-        try {
-            STARTUP_HANDLE.invoke(task);
-        } catch (final Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
-    }
-
-    /**
-     * Выполнить задачу в потоке JavaFX.
+     * Execute the task in JavaFX thread.
      */
     public static void runInFXThread(final Runnable task) {
         if (Platform.isFxApplicationThread()) {

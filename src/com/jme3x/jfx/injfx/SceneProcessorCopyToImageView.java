@@ -6,121 +6,160 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
-import com.jme3.texture.Image;
-import com.jme3.texture.Image.Format;
-import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.util.JFXPlatform;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.WritableImage;
 
-//https://github.com/caprica/vlcj-javafx/blob/master/src/test/java/uk/co/caprica/vlcj/javafx/test/JavaFXDirectRenderingTest.java
-//http://stackoverflow.com/questions/15951284/javafx-image-resizing
-//http://hub.jmonkeyengine.org/forum/topic/offscreen-rendering-problem/
-//TODO manage suspend/resume (eg when image/stage is hidden)
+/**
+ * The implementation of the {@link SceneProcessor} for transfering content between jME and
+ * ImageView.
+ */
 public class SceneProcessorCopyToImageView implements SceneProcessor {
 
-    private RenderManager rm;
+    /**
+     * The listeners.
+     */
+    private final ChangeListener<? super Number> widthListener;
+    private final ChangeListener<? super Number> heightListener;
+    private final ChangeListener<? super Boolean> rationListener;
+
+    private final AtomicBoolean reshapeNeeded;
+
+    private RenderManager renderManager;
     private ViewPort latestViewPorts;
-    private int askWidth  = 1;
+
+    private TransferImage transferImage;
+
+    /**
+     * The {@link ImageView} for showing the content of jME.
+     */
+    private volatile ImageView imageView;
+
+    private int askWidth = 1;
     private int askHeight = 1;
+
     private boolean askFixAspect = true;
-    private TransfertImage timage;
-    private AtomicBoolean reshapeNeeded  = new AtomicBoolean(true);
 
-    private ImageView imgView;
-    private ChangeListener<? super Number> wlistener = (w,o,n)->{
-        componentResized(n.intValue(), (int)this.imgView.getFitHeight(), this.imgView.preserveRatioProperty().get());
-    };
-    private ChangeListener<? super Number> hlistener = (w,o,n)->{
-        componentResized((int)this.imgView.getFitWidth(), n.intValue(), this.imgView.preserveRatioProperty().get());
-    };
-    private ChangeListener<? super Boolean> rlistener = (w,o,n)->{
-        componentResized((int)this.imgView.getFitWidth(), (int)this.imgView.getFitHeight(), n.booleanValue());
-    };
-
-    public void componentResized(int w, int h, boolean fixAspect) {
-        int newWidth2 = Math.max(w, 1);
-        int newHeight2 = Math.max(h, 1);
-        if (askWidth != newWidth2 || askWidth != newHeight2 || askFixAspect != fixAspect){
-            askWidth = newWidth2;
-            askHeight = newHeight2;
-            askFixAspect = fixAspect;
-            reshapeNeeded.set(true);
-        }
+    public SceneProcessorCopyToImageView() {
+        reshapeNeeded = new AtomicBoolean(true);
+        widthListener = (view, oldValue, newValue) -> notifyChangedWidth(newValue);
+        heightListener = (view, oldValue, newValue) -> notifyChangedHeight(newValue);
+        rationListener = (view, oldValue, newValue) -> notifyChangedRatio(newValue);
     }
 
-    public void bind(ImageView view, Application jmeApp){
+    /**
+     * @return the {@link ImageView} for showing the content of jME.
+     */
+    protected ImageView getImageView() {
+        return imageView;
+    }
+
+    /**
+     * Notify about that the ratio was changed.
+     *
+     * @param newValue the new value of the ratio.
+     */
+    protected void notifyChangedRatio(final Boolean newValue) {
+        notifyComponentResized((int) imageView.getFitWidth(), (int) imageView.getFitHeight(), newValue);
+    }
+
+    /**
+     * Notify about that the height was changed.
+     *
+     * @param newValue the new value of the height.
+     */
+    protected void notifyChangedHeight(final Number newValue) {
+        notifyComponentResized((int) imageView.getFitWidth(), newValue.intValue(), imageView.isPreserveRatio());
+    }
+
+    /**
+     * Notify about that the width was changed.
+     *
+     * @param newValue the new value of the width.
+     */
+    protected void notifyChangedWidth(final Number newValue) {
+        notifyComponentResized(newValue.intValue(), (int) imageView.getFitHeight(), imageView.isPreserveRatio());
+    }
+
+    protected void notifyComponentResized(int newWidth, int newHeight, boolean fixAspect) {
+        newWidth = Math.max(newWidth, 1);
+        newHeight = Math.max(newHeight, 1);
+        if (askWidth == newWidth && askWidth == newHeight && askFixAspect == fixAspect) return;
+        askWidth = newWidth;
+        askHeight = newHeight;
+        askFixAspect = fixAspect;
+        reshapeNeeded.set(true);
+    }
+
+    public void bind(final ImageView imageView, final Application application) {
         unbind();
 
-        if (jmeApp != null) {
-            List<ViewPort> vps = jmeApp.getRenderManager().getPostViews();
-            latestViewPorts = vps.get(vps.size() - 1);
-            latestViewPorts.addProcessor(this);
-        }
+        final RenderManager renderManager = application.getRenderManager();
+        final List<ViewPort> postViews = renderManager.getPostViews();
+        if (postViews.isEmpty()) throw new RuntimeException("the list of a post view is empty.");
 
-        JFXPlatform.runInFXThread(() -> {
-            imgView = view;
-            if (imgView != null) {
-                imgView.fitWidthProperty().addListener(wlistener);
-                imgView.fitHeightProperty().addListener(hlistener);
-                imgView.preserveRatioProperty().addListener(rlistener);
-                componentResized((int)imgView.getFitWidth(), (int)imgView.getFitHeight(), imgView.isPreserveRatio());
-                imgView.setScaleY(-1.0);
-            }
-        });
+        latestViewPorts = postViews.get(postViews.size() - 1);
+        latestViewPorts.addProcessor(this);
+
+        JFXPlatform.runInFXThread(() -> bindImageView(imageView));
     }
 
-    public void unbind(){
+    protected void bindImageView(final ImageView imageView) {
+        if (!Platform.isFxApplicationThread())
+            throw new RuntimeException("this call is not from JavaFX thread.");
+        this.imageView = imageView;
+        this.imageView.fitWidthProperty().addListener(widthListener);
+        this.imageView.fitHeightProperty().addListener(heightListener);
+        this.imageView.preserveRatioProperty().addListener(rationListener);
+        notifyComponentResized((int) imageView.getFitWidth(), (int) imageView.getFitHeight(), imageView.isPreserveRatio());
+        this.imageView.setScaleY(-1.0);
+    }
 
-        if (latestViewPorts != null){
+    public void unbind() {
+
+        if (latestViewPorts != null) {
             latestViewPorts.removeProcessor(this); // call this.cleanup()
             latestViewPorts = null;
         }
 
-        JFXPlatform.runInFXThread(() -> {
-            if (imgView != null) {
-                imgView.fitWidthProperty().removeListener(wlistener);
-                imgView.fitHeightProperty().removeListener(hlistener);
-            }
-        });
+        JFXPlatform.runInFXThread(this::unbindImageView);
+    }
+
+    protected void unbindImageView() {
+        if (!Platform.isFxApplicationThread())
+            throw new RuntimeException("this call is not from JavaFX thread.");
+        if (imageView == null) return;
+        imageView.fitWidthProperty().removeListener(widthListener);
+        imageView.fitHeightProperty().removeListener(heightListener);
+        imageView.preserveRatioProperty().removeListener(rationListener);
+        imageView = null;
     }
 
     @Override
-    public void initialize(RenderManager rm, ViewPort vp) {
-        if (this.rm == null){
-            // First time called in OGL thread
-            this.rm = rm;
+    public void initialize(final RenderManager renderManager, final ViewPort viewPort) {
+        if (this.renderManager == null) {
+            this.renderManager = renderManager;
         }
     }
 
-    private TransfertImage reshapeInThread(int width0, int height0, boolean fixAspect) {
-        TransfertImage ti = new TransfertImage(width0, height0);
+    private TransferImage reshapeInThread(final int width, final int height, final boolean fixAspect) {
 
-        rm.getRenderer().setMainFrameBufferOverride(ti.fb);
-        rm.notifyReshape(ti.width, ti.height);
+        final TransferImage transferImage = new TransferImage(imageView, width, height);
+        transferImage.initFor(renderManager.getRenderer());
 
-//		for (ViewPort vp : viewPorts){
-//			vp.getCamera().resize(ti.width, ti.height, fixAspect);
-//
-//			// NOTE: Hack alert. This is done ONLY for custom framebuffers.
-//			// Main framebuffer should use RenderManager.notifyReshape().
-//			for (SceneProcessor sp : vp.getProcessors()){
-//				sp.reshape(vp, ti.width, ti.height);
-//			}
-//		}
-        return ti;
+        renderManager.notifyReshape(transferImage.getWidth(), transferImage.getHeight());
+
+        return transferImage;
     }
 
     @Override
     public boolean isInitialized() {
-        return timage != null;
+        return transferImage != null;
     }
 
     @Override
@@ -128,77 +167,31 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     }
 
     @Override
-    public void postQueue(RenderQueue rq) {
+    public void postQueue(final RenderQueue renderQueue) {
     }
 
     @Override
-    public void postFrame(FrameBuffer out) {
-        if (imgView != null && timage != null) {
-            //		if (out != timage.fb){
-            //			throw new IllegalStateException("Why did you change the output framebuffer? " + out + " != " + timage.fb);
-            //		}
-            timage.copyFrameBufferToImage(rm, imgView);
+    public void postFrame(final FrameBuffer out) {
+        if (transferImage != null) {
+            transferImage.copyFrameBufferToImage(renderManager);
         }
+
         // for the next frame
-        if (reshapeNeeded.getAndSet(false)){
-            timage = reshapeInThread(askWidth, askHeight, askFixAspect);
-            //TODO dispose previous timage ASAP (when no longer used in JavafFX thread)
+        if (reshapeNeeded.getAndSet(false)) {
+            transferImage = reshapeInThread(askWidth, askHeight, askFixAspect);
+            //TODO dispose previous transferImage ASAP (when no longer used in JavafFX thread)
         }
     }
 
     @Override
     public void cleanup() {
-        if (timage != null) {
-            timage.dispose();
-            timage = null;
+        if (transferImage != null) {
+            transferImage.dispose();
+            transferImage = null;
         }
     }
 
     @Override
-    public void reshape(ViewPort vp, int w, int h) {
-    }
-
-    static class TransfertImage {
-        public final int width;
-        public final int height;
-        public final FrameBuffer fb;
-        public final ByteBuffer byteBuf;
-        public final WritableImage img;
-        private ImageView lastIv = null;
-
-        TransfertImage(int width, int height) {
-            this.width = width;
-            this.height = height;
-
-            fb = new FrameBuffer(width, height, 1);
-            fb.setDepthBuffer(Format.Depth);
-            fb.setColorBuffer(Format.BGRA8);
-
-            byteBuf = BufferUtils.createByteBuffer(width * height * 4);
-
-            img = new WritableImage(width, height);
-        }
-
-        /** SHOULD run in JME'Display thread */
-        void copyFrameBufferToImage(RenderManager rm, ImageView iv) {
-            synchronized (byteBuf) {
-                // Convert screenshot.
-                byteBuf.clear();
-                rm.getRenderer().readFrameBufferWithFormat(fb, byteBuf, Image.Format.BGRA8);
-            }
-            JFXPlatform.runInFXThread(() -> {
-                synchronized (byteBuf) {
-                    if (lastIv != iv) {
-                        lastIv = iv;
-                        lastIv.setImage(img);
-                    }
-                    img.getPixelWriter().setPixels(0, 0, width, height, PixelFormat.getByteBgraInstance(), byteBuf, width * 4);
-                }
-            });
-        }
-
-        void dispose() {
-            fb.dispose();
-        }
+    public void reshape(final ViewPort viewPort, final int width, final int height) {
     }
 }
