@@ -5,6 +5,7 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
+import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.util.JFXPlatform;
 
@@ -123,6 +124,9 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         final JFXMouseInput mouseInput = context.getMouseInput();
         mouseInput.bind(imageView);
 
+        final JFXKeyInput keyInput = context.getKeyInput();
+        keyInput.bind(imageView);
+
         this.imageView = imageView;
         this.imageView.fitWidthProperty().addListener(widthListener);
         this.imageView.fitHeightProperty().addListener(heightListener);
@@ -154,6 +158,8 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
             final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
             final JFXMouseInput mouseInput = context.getMouseInput();
             mouseInput.unbind();
+            final JFXKeyInput keyInput = context.getKeyInput();
+            keyInput.unbind();
             application = null;
         }
 

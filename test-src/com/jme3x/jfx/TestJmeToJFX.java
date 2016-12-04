@@ -13,7 +13,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
 import com.jme3.system.NativeLibraryLoader;
-import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
 import com.jme3x.jfx.injfx.JmeToJFXApplication;
 import com.jme3x.jfx.injfx.JmeToJFXIntegrator;
 
@@ -57,7 +56,7 @@ public class TestJmeToJFX extends Application {
         final AppSettings settings = new AppSettings(true);
         JmeToJFXIntegrator.prepareSettings(settings, 60);
 
-        JmeToJFXApplication app = new JmeToJFXApplication() {
+        JmeToJFXApplication app = new JmeToJFXApplication(stage) {
 
             protected Geometry player;
             Boolean isRunning = true;
@@ -75,12 +74,7 @@ public class TestJmeToJFX extends Application {
                 NativeLibraryLoader.loadNativeLibrary("jinput", true);
                 NativeLibraryLoader.loadNativeLibrary("jinput-dx8", true);
 
-                JmeOffscreenSurfaceContext.setLocalStage(stage);
-                try {
-                    super.start();
-                } finally {
-                    JmeOffscreenSurfaceContext.setLocalStage(null);
-                }
+                super.start();
             }
 
             @Override

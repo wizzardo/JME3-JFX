@@ -53,7 +53,7 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
 
     public JmeOffscreenSurfaceContext() {
         this.window = STAGE_LOCAL.get();
-        this.keyInput = new JFXKeyInput();
+        this.keyInput = new JFXKeyInput(this);
         this.mouseInput = new JFXMouseInput(this);
         requireNonNull(window, "you have to set a Stage to thread local.");
         this.settings = createSettings();

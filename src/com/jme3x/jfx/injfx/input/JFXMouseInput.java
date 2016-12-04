@@ -6,6 +6,9 @@ import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javafx.event.EventHandler;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -16,12 +19,23 @@ import rlib.util.linkedlist.LinkedList;
 import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
 
 /**
- * The implementation of the {@link MouseInput} for using in the ImageView.
+ * The implementation of the {@link MouseInput} for using in the {@link ImageView}.
  *
  * @author JavaSaBr.
  */
 public class JFXMouseInput extends JFXInput implements MouseInput {
 
+    private static final Map<MouseButton, Integer> MOUSE_BUTTON_TO_JME = new HashMap<>();
+
+    static {
+        MOUSE_BUTTON_TO_JME.put(MouseButton.PRIMARY, BUTTON_LEFT);
+        MOUSE_BUTTON_TO_JME.put(MouseButton.SECONDARY, BUTTON_RIGHT);
+        MOUSE_BUTTON_TO_JME.put(MouseButton.MIDDLE, BUTTON_MIDDLE);
+    }
+
+    /**
+     * The scale factor for scrolling.
+     */
     private static final int WHEEL_SCALE = 10;
 
     private final EventHandler<MouseEvent> processMotion = this::processMotion;
@@ -45,19 +59,19 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     @Override
     public void bind(final ImageView imageView) {
         super.bind(imageView);
-        imageView.setOnMouseMoved(processMotion);
-        imageView.setOnMousePressed(processPressed);
-        imageView.setOnMouseReleased(processReleased);
-        imageView.setOnScroll(processScroll);
+        scene.addEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
+        scene.addEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
+        scene.addEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
+        scene.addEventHandler(ScrollEvent.ANY, processScroll);
     }
 
     @Override
     public void unbind() {
+        scene.removeEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
+        scene.removeEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
+        scene.removeEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
+        scene.removeEventHandler(ScrollEvent.ANY, processScroll);
         super.unbind();
-        imageView.setOnMouseMoved(null);
-        imageView.setOnMousePressed(null);
-        imageView.setOnMouseReleased(null);
-        imageView.setOnScroll(null);
     }
 
     @Override
@@ -70,18 +84,30 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
         }
     }
 
+    /**
+     * Handle the scroll event.
+     */
     private void processScroll(final ScrollEvent mouseEvent) {
         onWheelScroll(mouseEvent.getDeltaX() * WHEEL_SCALE, mouseEvent.getDeltaY() * WHEEL_SCALE);
     }
 
+    /**
+     * Handle the mouse released event.
+     */
     private void processReleased(final MouseEvent mouseEvent) {
         onMouseButton(mouseEvent.getButton(), false);
     }
 
+    /**
+     * Handle the mouse pressed event.
+     */
     private void processPressed(final MouseEvent mouseEvent) {
         onMouseButton(mouseEvent.getButton(), true);
     }
 
+    /**
+     * Handle the mouse motion event.
+     */
     private void processMotion(final MouseEvent mouseEvent) {
         onCursorPos(mouseEvent.getSceneX(), mouseEvent.getSceneY());
     }
@@ -129,20 +155,8 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     }
 
     private int convertButton(final MouseButton button) {
-        switch (button) {
-            case PRIMARY: {
-                return MouseInput.BUTTON_LEFT;
-            }
-            case MIDDLE: {
-                return MouseInput.BUTTON_MIDDLE;
-            }
-            case SECONDARY: {
-                return MouseInput.BUTTON_RIGHT;
-            }
-            default: {
-                return 0;
-            }
-        }
+        final Integer result = MOUSE_BUTTON_TO_JME.get(button);
+        return result == null ? 0 : result;
     }
 
     @Override
