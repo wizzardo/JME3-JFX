@@ -100,7 +100,9 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     }
 
     public void bind(final ImageView imageView, final JmeToJFXApplication application) {
-        unbind();
+        if (this.application != null) throw new RuntimeException("This process is already bonded.");
+
+        this.application = application;
 
         final RenderManager renderManager = application.getRenderManager();
         final List<ViewPort> postViews = renderManager.getPostViews();
@@ -117,8 +119,6 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         if (!Platform.isFxApplicationThread()) {
             throw new RuntimeException("this call is not from JavaFX thread.");
         }
-
-        this.application = application;
 
         final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
         final JFXMouseInput mouseInput = context.getMouseInput();
@@ -207,14 +207,15 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
 
     @Override
     public void postFrame(final FrameBuffer out) {
+
         if (transferImage != null) {
             transferImage.copyFrameBufferToImage(renderManager);
         }
 
         // for the next frame
         if (reshapeNeeded.getAndSet(false)) {
+            if (transferImage != null) transferImage.dispose();
             transferImage = reshapeInThread(askWidth, askHeight, askFixAspect);
-            //TODO dispose previous transferImage ASAP (when no longer used in JavafFX thread)
         }
     }
 

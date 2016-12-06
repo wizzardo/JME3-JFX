@@ -153,8 +153,10 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
 
     @Override
     public void unbind() {
-        scene.removeEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
-        scene.removeEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
+        if (scene != null) {
+            scene.removeEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
+            scene.removeEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
+        }
         super.unbind();
     }
 
