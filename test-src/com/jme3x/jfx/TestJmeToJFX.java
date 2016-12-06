@@ -49,7 +49,7 @@ public class TestJmeToJFX extends Application {
 
         final JmeToJFXApplication application = makeJmeApplication(stage, 80);
 
-        JmeToJFXIntegrator.bind(application, imageView, Thread::new);
+        JmeToJFXIntegrator.startAndBind(application, imageView, Thread::new);
     }
 
     private static JmeToJFXApplication makeJmeApplication(Stage stage, int framerate) {

@@ -59,18 +59,22 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     @Override
     public void bind(final ImageView imageView) {
         super.bind(imageView);
-        scene.addEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
-        scene.addEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
-        scene.addEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
+        scene.addEventFilter(MouseEvent.MOUSE_MOVED, processMotion);
+        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, processPressed);
+        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, processReleased);
+        scene.addEventFilter(MouseEvent.MOUSE_DRAGGED, processMotion);
         scene.addEventHandler(ScrollEvent.ANY, processScroll);
     }
 
     @Override
     public void unbind() {
-        scene.removeEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
-        scene.removeEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
-        scene.removeEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
-        scene.removeEventHandler(ScrollEvent.ANY, processScroll);
+        if (scene != null) {
+            scene.removeEventFilter(MouseEvent.MOUSE_MOVED, processMotion);
+            scene.removeEventFilter(MouseEvent.MOUSE_DRAGGED, processMotion);
+            scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, processPressed);
+            scene.removeEventFilter(MouseEvent.MOUSE_RELEASED, processReleased);
+            scene.removeEventHandler(ScrollEvent.ANY, processScroll);
+        }
         super.unbind();
     }
 

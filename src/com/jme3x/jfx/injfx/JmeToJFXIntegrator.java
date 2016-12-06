@@ -21,10 +21,16 @@ public class JmeToJFXIntegrator {
         settings.setCustomRenderer(JmeOffscreenSurfaceContext.class);
     }
 
-    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Function<Runnable, Thread> factory) {
+    public static SceneProcessorCopyToImageView startAndBind(final JmeToJFXApplication application, final ImageView imageView, final Function<Runnable, Thread> factory) {
         factory.apply(application::start).start();
         final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
         Platform.runLater(() -> application.enqueue(() -> processor.bind(imageView, application)));
+        return processor;
+    }
+
+    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Function<Runnable, Thread> factory) {
+        final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
+        processor.bind(imageView, application);
         return processor;
     }
 }
