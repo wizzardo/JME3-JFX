@@ -7,8 +7,8 @@ import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
 
 import java.util.Objects;
 
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
 
 /**
  * The base implementation of the {@link Input} for using in the ImageView.
@@ -23,7 +23,7 @@ public class JFXInput implements Input {
 
     protected RawInputListener listener;
 
-    protected ImageView imageView;
+    protected Node node;
 
     protected Scene scene;
 
@@ -33,15 +33,15 @@ public class JFXInput implements Input {
         this.context = context;
     }
 
-    public void bind(final ImageView imageView) {
-        this.imageView = imageView;
-        this.scene = imageView.getScene();
-        Objects.requireNonNull(this.imageView, "ImageView can' be null");
+    public void bind(final Node node) {
+        this.node = node;
+        this.scene = node.getScene();
+        Objects.requireNonNull(this.node, "ImageView can' be null");
         Objects.requireNonNull(this.scene, "The scene of the ImageView can' be null");
     }
 
     public void unbind() {
-        this.imageView = null;
+        this.node = null;
         this.scene = null;
     }
 

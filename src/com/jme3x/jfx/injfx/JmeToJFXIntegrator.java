@@ -5,6 +5,7 @@ import com.jme3.system.AppSettings;
 import java.util.function.Function;
 
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 
 import static java.lang.Math.max;
@@ -28,9 +29,15 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
-    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Function<Runnable, Thread> factory) {
+    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView) {
         final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
         processor.bind(imageView, application);
+        return processor;
+    }
+
+    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Node inputNode) {
+        final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
+        processor.bind(imageView, application, inputNode);
         return processor;
     }
 }

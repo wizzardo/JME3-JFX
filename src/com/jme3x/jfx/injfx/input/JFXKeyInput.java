@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -145,17 +146,17 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
     }
 
     @Override
-    public void bind(final ImageView imageView) {
-        super.bind(imageView);
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
+    public void bind(final Node node) {
+        super.bind(node);
+        node.addEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
+        node.addEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
     }
 
     @Override
     public void unbind() {
-        if (scene != null) {
-            scene.removeEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
-            scene.removeEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
+        if (node != null) {
+            node.removeEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
+            node.removeEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
         }
         super.unbind();
     }

@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 
 /**
@@ -100,6 +101,10 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     }
 
     public void bind(final ImageView imageView, final JmeToJFXApplication application) {
+        bind(imageView, application, imageView);
+    }
+
+    public void bind(final ImageView imageView, final JmeToJFXApplication application, final Node inputNode) {
         if (this.application != null) throw new RuntimeException("This process is already bonded.");
 
         this.application = application;
@@ -111,10 +116,10 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         latestViewPorts = postViews.get(postViews.size() - 1);
         latestViewPorts.addProcessor(this);
 
-        JFXPlatform.runInFXThread(() -> bindImageView(application, imageView));
+        JFXPlatform.runInFXThread(() -> bindImageView(application, imageView, inputNode));
     }
 
-    protected void bindImageView(final JmeToJFXApplication application, final ImageView imageView) {
+    protected void bindImageView(final JmeToJFXApplication application, final ImageView imageView, final Node inputNode) {
 
         if (!Platform.isFxApplicationThread()) {
             throw new RuntimeException("this call is not from JavaFX thread.");
@@ -122,10 +127,10 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
 
         final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
         final JFXMouseInput mouseInput = context.getMouseInput();
-        mouseInput.bind(imageView);
+        mouseInput.bind(inputNode);
 
         final JFXKeyInput keyInput = context.getKeyInput();
-        keyInput.bind(imageView);
+        keyInput.bind(inputNode);
 
         this.imageView = imageView;
         this.imageView.fitWidthProperty().addListener(widthListener);

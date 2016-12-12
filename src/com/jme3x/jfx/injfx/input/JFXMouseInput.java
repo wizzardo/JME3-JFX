@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -57,23 +58,23 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     }
 
     @Override
-    public void bind(final ImageView imageView) {
-        super.bind(imageView);
-        scene.addEventFilter(MouseEvent.MOUSE_MOVED, processMotion);
-        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, processPressed);
-        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, processReleased);
-        scene.addEventFilter(MouseEvent.MOUSE_DRAGGED, processMotion);
-        scene.addEventHandler(ScrollEvent.ANY, processScroll);
+    public void bind(final Node node) {
+        super.bind(node);
+        node.addEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
+        node.addEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
+        node.addEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
+        node.addEventHandler(MouseEvent.MOUSE_DRAGGED, processMotion);
+        node.addEventHandler(ScrollEvent.ANY, processScroll);
     }
 
     @Override
     public void unbind() {
-        if (scene != null) {
-            scene.removeEventFilter(MouseEvent.MOUSE_MOVED, processMotion);
-            scene.removeEventFilter(MouseEvent.MOUSE_DRAGGED, processMotion);
-            scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, processPressed);
-            scene.removeEventFilter(MouseEvent.MOUSE_RELEASED, processReleased);
-            scene.removeEventHandler(ScrollEvent.ANY, processScroll);
+        if (node != null) {
+            node.removeEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
+            node.removeEventHandler(MouseEvent.MOUSE_DRAGGED, processMotion);
+            node.removeEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
+            node.removeEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
+            node.removeEventHandler(ScrollEvent.ANY, processScroll);
         }
         super.unbind();
     }
