@@ -6,8 +6,10 @@ import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.util.JFXPlatform;
+import com.sun.istack.internal.NotNull;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.scene.image.ImageView;
@@ -49,20 +51,30 @@ public class TransferImage {
      */
     private final int height;
 
-    public TransferImage(final ImageView imageView, final int width, final int height) {
+    public TransferImage(@NotNull final ImageView imageView, @NotNull int width, int height) {
+        this(imageView, null, width, height);
+    }
+
+    public TransferImage(@NotNull final ImageView imageView, @NotNull final FrameBuffer frameBuffer, final int width, final int height) {
+        Objects.requireNonNull(imageView, "ImageView can't be null.");
+
         this.frameState = new AtomicInteger(WAITING_STATE);
         this.imageState = new AtomicInteger(WAITING_STATE);
-        this.width = width;
-        this.height = height;
+        this.width = frameBuffer != null ? frameBuffer.getWidth() : width;
+        this.height = frameBuffer != null ? frameBuffer.getHeight() : height;
 
-        frameBuffer = new FrameBuffer(width, height, 1);
-        frameBuffer.setDepthBuffer(Image.Format.Depth);
-        frameBuffer.setColorBuffer(Image.Format.BGRA8);
+        if (frameBuffer != null) {
+            this.frameBuffer = frameBuffer;
+        } else {
+            this.frameBuffer = new FrameBuffer(width, height, 1);
+            this.frameBuffer.setDepthBuffer(Image.Format.Depth);
+            this.frameBuffer.setColorBuffer(Image.Format.BGRA8);
+        }
 
-        frameByteBuffer = BufferUtils.createByteBuffer(width * height * 4);
-        byteBuffer = BufferUtils.createByteBuffer(width * height * 4);
-        imageByteBuffer = BufferUtils.createByteBuffer(width * height * 4);
-        writableImage = new WritableImage(width, height);
+        frameByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
+        byteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
+        imageByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
+        writableImage = new WritableImage(getWidth(), getHeight());
 
         JFXPlatform.runInFXThread(() -> imageView.setImage(writableImage));
     }
@@ -72,8 +84,8 @@ public class TransferImage {
      *
      * @param renderer the render.
      */
-    public void initFor(final Renderer renderer) {
-        renderer.setMainFrameBufferOverride(frameBuffer);
+    public void initFor(final Renderer renderer, final boolean main) {
+        if (main) renderer.setMainFrameBufferOverride(frameBuffer);
     }
 
     /**

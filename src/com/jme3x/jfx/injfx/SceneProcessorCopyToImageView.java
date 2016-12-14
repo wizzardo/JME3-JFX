@@ -1,10 +1,12 @@
 package com.jme3x.jfx.injfx;
 
 import com.jme3.post.SceneProcessor;
+import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
 import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.util.JFXPlatform;
@@ -33,7 +35,7 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     private final AtomicBoolean reshapeNeeded;
 
     private RenderManager renderManager;
-    private ViewPort latestViewPorts;
+    private ViewPort viewPort;
 
     private TransferImage transferImage;
 
@@ -44,12 +46,16 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
      */
     private volatile ImageView imageView;
 
+    private volatile boolean main;
+
     private int askWidth = 1;
     private int askHeight = 1;
 
-    private boolean askFixAspect = true;
+    private boolean askFixAspect;
 
     public SceneProcessorCopyToImageView() {
+        askFixAspect = true;
+        main = true;
         reshapeNeeded = new AtomicBoolean(true);
         widthListener = (view, oldValue, newValue) -> notifyChangedWidth(newValue);
         heightListener = (view, oldValue, newValue) -> notifyChangedHeight(newValue);
@@ -104,17 +110,24 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         bind(imageView, application, imageView);
     }
 
+    public void bind(final ImageView imageView, final JmeToJFXApplication application, final ViewPort viewPort) {
+        bind(imageView, application, imageView, viewPort, true);
+    }
+
     public void bind(final ImageView imageView, final JmeToJFXApplication application, final Node inputNode) {
-        if (this.application != null) throw new RuntimeException("This process is already bonded.");
-
-        this.application = application;
-
         final RenderManager renderManager = application.getRenderManager();
         final List<ViewPort> postViews = renderManager.getPostViews();
         if (postViews.isEmpty()) throw new RuntimeException("the list of a post view is empty.");
+        bind(imageView, application, inputNode, postViews.get(postViews.size() - 1), true);
+    }
 
-        latestViewPorts = postViews.get(postViews.size() - 1);
-        latestViewPorts.addProcessor(this);
+    public void bind(final ImageView imageView, final JmeToJFXApplication application, final Node inputNode, final ViewPort viewPort, final boolean main) {
+        if (this.application != null) throw new RuntimeException("This process is already bonded.");
+
+        this.main = main;
+        this.application = application;
+        this.viewPort = viewPort;
+        this.viewPort.addProcessor(this);
 
         JFXPlatform.runInFXThread(() -> bindImageView(application, imageView, inputNode));
     }
@@ -125,12 +138,13 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
             throw new RuntimeException("this call is not from JavaFX thread.");
         }
 
-        final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
-        final JFXMouseInput mouseInput = context.getMouseInput();
-        mouseInput.bind(inputNode);
-
-        final JFXKeyInput keyInput = context.getKeyInput();
-        keyInput.bind(inputNode);
+        if (isMain()) {
+            final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
+            final JFXMouseInput mouseInput = context.getMouseInput();
+            mouseInput.bind(inputNode);
+            final JFXKeyInput keyInput = context.getKeyInput();
+            keyInput.bind(inputNode);
+        }
 
         this.imageView = imageView;
         this.imageView.fitWidthProperty().addListener(widthListener);
@@ -145,9 +159,9 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
 
     public void unbind() {
 
-        if (latestViewPorts != null) {
-            latestViewPorts.removeProcessor(this); // call this.cleanup()
-            latestViewPorts = null;
+        if (viewPort != null) {
+            viewPort.removeProcessor(this); // call this.cleanup()
+            viewPort = null;
         }
 
         JFXPlatform.runInFXThread(this::unbindImageView);
@@ -159,14 +173,15 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
             throw new RuntimeException("this call is not from JavaFX thread.");
         }
 
-        if (application != null) {
+        if (application != null && isMain()) {
             final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
             final JFXMouseInput mouseInput = context.getMouseInput();
             mouseInput.unbind();
             final JFXKeyInput keyInput = context.getKeyInput();
             keyInput.unbind();
-            application = null;
         }
+
+        application = null;
 
         if (imageView == null) return;
 
@@ -183,18 +198,57 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         }
     }
 
+    public boolean isMain() {
+        return main;
+    }
+
     private TransferImage reshapeInThread(final int width, final int height, final boolean fixAspect) {
+        reshapeCurrentViewPort(width, height);
 
-        final TransferImage transferImage = new TransferImage(imageView, width, height);
-        transferImage.initFor(renderManager.getRenderer());
+        final FrameBuffer frameBuffer = viewPort.getOutputFrameBuffer();
+        final TransferImage transferImage = new TransferImage(imageView, isMain() ? null : frameBuffer, width, height);
+        transferImage.initFor(renderManager.getRenderer(), isMain());
 
-        renderManager.notifyReshape(transferImage.getWidth(), transferImage.getHeight());
-
-        final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
-        context.setHeight(height);
-        context.setWidth(width);
+        if (isMain()) {
+            final JmeOffscreenSurfaceContext context = (JmeOffscreenSurfaceContext) application.getContext();
+            context.setHeight(height);
+            context.setWidth(width);
+        }
 
         return transferImage;
+    }
+
+    private void reshapeCurrentViewPort(final int width, final int height) {
+
+        if (isMain()) {
+            renderManager.notifyReshape(width, height);
+            return;
+        }
+
+        final Camera cam = viewPort.getCamera();
+        cam.resize(width, height, true);
+
+        final FrameBuffer frameBuffer = new FrameBuffer(width, height, 1);
+        frameBuffer.setDepthBuffer(Image.Format.Depth);
+        frameBuffer.setColorBuffer(Image.Format.BGRA8);
+
+        final FrameBuffer old = viewPort.getOutputFrameBuffer();
+
+        if (old != null) {
+            old.dispose();
+        }
+
+        viewPort.setOutputFrameBuffer(frameBuffer);
+
+        final List<SceneProcessor> processors = viewPort.getProcessors();
+
+        for (final SceneProcessor sceneProcessor : processors) {
+            if (!sceneProcessor.isInitialized()) {
+                sceneProcessor.initialize(renderManager, viewPort);
+            } else {
+                sceneProcessor.reshape(viewPort, width, height);
+            }
+        }
     }
 
     @Override
@@ -218,7 +272,7 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         }
 
         // for the next frame
-        if (reshapeNeeded.getAndSet(false)) {
+        if (imageView != null && reshapeNeeded.getAndSet(false)) {
             if (transferImage != null) transferImage.dispose();
             transferImage = reshapeInThread(askWidth, askHeight, askFixAspect);
         }

@@ -1,5 +1,6 @@
 package com.jme3x.jfx.injfx;
 
+import com.jme3.renderer.ViewPort;
 import com.jme3.system.AppSettings;
 
 import java.util.function.Function;
@@ -35,9 +36,21 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final ViewPort viewPort) {
+        final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
+        processor.bind(imageView, application, viewPort);
+        return processor;
+    }
+
     public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Node inputNode) {
         final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
         processor.bind(imageView, application, inputNode);
+        return processor;
+    }
+
+    public static SceneProcessorCopyToImageView bind(final JmeToJFXApplication application, final ImageView imageView, final Node inputNode, final ViewPort viewPort, final boolean main) {
+        final SceneProcessorCopyToImageView processor = new SceneProcessorCopyToImageView();
+        processor.bind(imageView, application, inputNode, viewPort, main);
         return processor;
     }
 }
