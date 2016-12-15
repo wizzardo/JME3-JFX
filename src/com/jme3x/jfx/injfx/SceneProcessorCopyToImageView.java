@@ -12,6 +12,7 @@ import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.util.JFXPlatform;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.application.Platform;
@@ -39,6 +40,9 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
 
     private TransferImage transferImage;
 
+    /**
+     * THe JME application.
+     */
     private volatile JmeToJFXApplication application;
 
     /**
@@ -46,14 +50,20 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
      */
     private volatile ImageView imageView;
 
+    /**
+     * The main processor is it.
+     */
     private volatile boolean main;
 
-    private int askWidth = 1;
-    private int askHeight = 1;
+    private int askWidth;
+    private int askHeight;
 
     private boolean askFixAspect;
+    private boolean enabled;
 
     public SceneProcessorCopyToImageView() {
+        askWidth = 1;
+        askHeight = 1;
         askFixAspect = true;
         main = true;
         reshapeNeeded = new AtomicBoolean(true);
@@ -96,6 +106,9 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         notifyComponentResized(newValue.intValue(), (int) imageView.getFitHeight(), imageView.isPreserveRatio());
     }
 
+    /**
+     * Handle resizing.
+     */
     protected void notifyComponentResized(int newWidth, int newHeight, boolean fixAspect) {
         newWidth = Math.max(newWidth, 1);
         newHeight = Math.max(newHeight, 1);
@@ -124,6 +137,7 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
     public void bind(final ImageView imageView, final JmeToJFXApplication application, final Node inputNode, final ViewPort viewPort, final boolean main) {
         if (this.application != null) throw new RuntimeException("This process is already bonded.");
 
+        this.enabled = true;
         this.main = main;
         this.application = application;
         this.viewPort = viewPort;
@@ -198,8 +212,25 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         }
     }
 
-    public boolean isMain() {
+    /**
+     * @return if this processor is main.
+     */
+    private boolean isMain() {
         return main;
+    }
+
+    /**
+     * @return true if this processor is enabled.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * @param enabled true if this processor is enabled.
+     */
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
     }
 
     private TransferImage reshapeInThread(final int width, final int height, final boolean fixAspect) {
@@ -228,19 +259,19 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
         final Camera cam = viewPort.getCamera();
         cam.resize(width, height, true);
 
-        final FrameBuffer frameBuffer = new FrameBuffer(width, height, 1);
-        frameBuffer.setDepthBuffer(Image.Format.Depth);
-        frameBuffer.setColorBuffer(Image.Format.BGRA8);
-
-        final FrameBuffer old = viewPort.getOutputFrameBuffer();
-
-        if (old != null) {
-            old.dispose();
-        }
-
-        viewPort.setOutputFrameBuffer(frameBuffer);
-
         final List<SceneProcessor> processors = viewPort.getProcessors();
+        final Optional<SceneProcessor> any = processors.stream()
+                .filter(sceneProcessor -> !(sceneProcessor instanceof SceneProcessorCopyToImageView))
+                .findAny();
+
+        if (!any.isPresent()) {
+
+            final FrameBuffer frameBuffer = new FrameBuffer(width, height, 1);
+            frameBuffer.setDepthBuffer(Image.Format.Depth);
+            frameBuffer.setColorBuffer(Image.Format.BGRA8);
+
+            viewPort.setOutputFrameBuffer(frameBuffer);
+        }
 
         for (final SceneProcessor sceneProcessor : processors) {
             if (!sceneProcessor.isInitialized()) {
@@ -266,6 +297,7 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
 
     @Override
     public void postFrame(final FrameBuffer out) {
+        if (!isEnabled()) return;
 
         if (transferImage != null) {
             transferImage.copyFrameBufferToImage(renderManager);
