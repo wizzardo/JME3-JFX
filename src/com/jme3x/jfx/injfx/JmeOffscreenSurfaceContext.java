@@ -12,11 +12,6 @@ import com.jme3.system.Timer;
 import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
 
-import javafx.stage.Stage;
-
-import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
-import static java.util.Objects.requireNonNull;
-
 /**
  * The implementation of the {@link JmeContext} for integrating to JavaFX.
  *
@@ -24,13 +19,6 @@ import static java.util.Objects.requireNonNull;
  */
 public class JmeOffscreenSurfaceContext implements JmeContext {
 
-    private static final ThreadLocal<Stage> STAGE_LOCAL = new ThreadLocal<>();
-
-    public static void setLocalStage(final Stage stage) {
-        STAGE_LOCAL.set(stage);
-    }
-
-    protected final Stage window;
     protected final AppSettings settings;
 
     protected final JFXKeyInput keyInput;
@@ -52,10 +40,8 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
     protected JmeContext backgroundContext;
 
     public JmeOffscreenSurfaceContext() {
-        this.window = STAGE_LOCAL.get();
         this.keyInput = new JFXKeyInput(this);
         this.mouseInput = new JFXMouseInput(this);
-        requireNonNull(window, "you have to set a Stage to thread local.");
         this.settings = createSettings();
         this.backgroundContext = createBackgroundContext();
         this.height = 1;
@@ -159,7 +145,6 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
 
     @Override
     public void setTitle(final String title) {
-        runInFXThread(() -> window.setTitle(title));
     }
 
     @Override

@@ -56,7 +56,7 @@ public class TestJmeToJFX extends Application {
         final AppSettings settings = new AppSettings(true);
         JmeToJFXIntegrator.prepareSettings(settings, 60);
 
-        JmeToJFXApplication app = new JmeToJFXApplication(stage) {
+        JmeToJFXApplication app = new JmeToJFXApplication() {
 
             protected Geometry player;
             Boolean isRunning = true;
