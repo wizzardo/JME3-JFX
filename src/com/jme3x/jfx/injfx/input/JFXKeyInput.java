@@ -1,5 +1,7 @@
 package com.jme3x.jfx.injfx.input;
 
+import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
+
 import com.jme3.input.KeyInput;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
@@ -13,8 +15,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import rlib.util.linkedlist.LinkedList;
-
-import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
 
 /**
  * The implementation of the {@link KeyInput} for using in the {@link ImageView}.

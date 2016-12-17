@@ -1,7 +1,7 @@
 package com.jme3x.jfx.cursor;
 
 
-import java.awt.*;
+import java.awt.Cursor;
 
 /**
  * The interface for implementing the provider of cursors.

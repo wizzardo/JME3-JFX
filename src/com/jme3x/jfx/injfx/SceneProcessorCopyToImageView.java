@@ -251,13 +251,16 @@ public class SceneProcessorCopyToImageView implements SceneProcessor {
 
     private void reshapeCurrentViewPort(final int width, final int height) {
 
+        final Camera cam = viewPort.getCamera();
+
         if (isMain()) {
             renderManager.notifyReshape(width, height);
+            cam.setFrustumPerspective(45, (float) cam.getWidth() / cam.getHeight(), 1f, 10000);
             return;
         }
 
-        final Camera cam = viewPort.getCamera();
         cam.resize(width, height, true);
+        cam.setFrustumPerspective(45, (float) cam.getWidth() / cam.getHeight(), 1f, 10000);
 
         final List<SceneProcessor> processors = viewPort.getProcessors();
         final Optional<SceneProcessor> any = processors.stream()

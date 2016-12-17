@@ -1,5 +1,8 @@
 package com.jme3x.jfx.util.os;
 
+import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -9,9 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-import static java.lang.Double.parseDouble;
-import static java.lang.Integer.parseInt;
 
 /**
  * Name resolver OS distribution.

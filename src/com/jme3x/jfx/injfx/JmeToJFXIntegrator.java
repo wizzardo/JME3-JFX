@@ -1,5 +1,8 @@
 package com.jme3x.jfx.injfx;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import com.jme3.renderer.ViewPort;
 import com.jme3.system.AppSettings;
 
@@ -8,9 +11,6 @@ import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
-
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
  * @author JavaSaBr

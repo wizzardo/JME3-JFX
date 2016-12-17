@@ -7,7 +7,7 @@ import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.InputManager;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
 
-import java.awt.*;
+import java.awt.Cursor;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

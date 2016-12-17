@@ -1,5 +1,7 @@
 package com.jme3x.jfx.injfx.input;
 
+import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
+
 import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.MouseInput;
 import com.jme3.input.event.MouseButtonEvent;
@@ -16,8 +18,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import rlib.util.linkedlist.LinkedList;
-
-import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
 
 /**
  * The implementation of the {@link MouseInput} for using in the {@link ImageView}.
