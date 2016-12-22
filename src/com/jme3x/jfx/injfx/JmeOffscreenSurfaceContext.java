@@ -164,7 +164,8 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
 
     @Override
     public void create(final boolean waitFor) {
-        backgroundContext.getSettings().setRenderer(AppSettings.LWJGL_OPENGL3);
+        final String render = System.getProperty("jfx.background.render", AppSettings.LWJGL_OPENGL3);
+        backgroundContext.getSettings().setRenderer(render);
         backgroundContext.create(waitFor);
     }
 

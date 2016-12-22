@@ -61,6 +61,7 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
         KEY_CODE_TO_JME.put(KeyCode.G, KEY_G);
         KEY_CODE_TO_JME.put(KeyCode.H, KEY_H);
         KEY_CODE_TO_JME.put(KeyCode.J, KEY_J);
+        KEY_CODE_TO_JME.put(KeyCode.Y, KEY_Y);
         KEY_CODE_TO_JME.put(KeyCode.K, KEY_K);
         KEY_CODE_TO_JME.put(KeyCode.L, KEY_L);
         KEY_CODE_TO_JME.put(KeyCode.SEMICOLON, KEY_SEMICOLON);
