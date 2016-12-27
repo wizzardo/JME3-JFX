@@ -26,7 +26,7 @@ import javafx.stage.Stage;
 /**
  * Created by ronn on 03.12.16.
  */
-public class TestJmeToJFX extends Application {
+public class TestJmeToJFXImageView extends Application {
 
     public static void main(final String[] args) {
         launch(args);
@@ -46,6 +46,7 @@ public class TestJmeToJFX extends Application {
         stage.setTitle("Test");
         stage.setScene(scene);
         stage.show();
+        stage.setOnCloseRequest(event -> System.exit(0));
 
         final JmeToJFXApplication application = makeJmeApplication(stage, 80);
 
