@@ -1,45 +1,43 @@
-package com.jme3x.jfx.injfx;
+package com.jme3x.jfx.injfx.transfer.impl;
 
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
 import com.jme3.util.BufferUtils;
+import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
 import com.sun.istack.internal.NotNull;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 import javafx.scene.image.WritablePixelFormat;
 
 /**
- * The class for transferring content from the jME to {@link ImageView}.
+ * The base implementation of a frame transfer.
  *
- * @author JavaSaBr.
+ * @author JavaSaBr
  */
-public class TransferImage {
+public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
-    private static final int RUNNING_STATE = 1;
-    private static final int WAITING_STATE = 2;
-    private static final int DISPOSING_STATE = 3;
-    private static final int DISPOSED_STATE = 4;
+    protected static final int RUNNING_STATE = 1;
+    protected static final int WAITING_STATE = 2;
+    protected static final int DISPOSING_STATE = 3;
+    protected static final int DISPOSED_STATE = 4;
 
-    private final AtomicInteger frameState;
-    private final AtomicInteger imageState;
+    protected final AtomicInteger frameState;
+    protected final AtomicInteger imageState;
 
-    private final FrameBuffer frameBuffer;
+    protected final FrameBuffer frameBuffer;
 
-    private final WritableImage writableImage;
+    protected final PixelWriter pixelWriter;
 
-    private final ByteBuffer frameByteBuffer;
-    private final ByteBuffer byteBuffer;
-    private final ByteBuffer imageByteBuffer;
+    protected final ByteBuffer frameByteBuffer;
+    protected final ByteBuffer byteBuffer;
+    protected final ByteBuffer imageByteBuffer;
 
     /**
      * The width.
@@ -51,13 +49,11 @@ public class TransferImage {
      */
     private final int height;
 
-    public TransferImage(@NotNull final ImageView imageView, @NotNull int width, int height) {
-        this(imageView, null, width, height);
+    public AbstractFrameTransfer(@NotNull final T destination, final int width, final int height) {
+        this(destination, null, width, height);
     }
 
-    public TransferImage(@NotNull final ImageView imageView, @NotNull final FrameBuffer frameBuffer, final int width, final int height) {
-        Objects.requireNonNull(imageView, "ImageView can't be null.");
-
+    public AbstractFrameTransfer(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer, final int width, final int height) {
         this.frameState = new AtomicInteger(WAITING_STATE);
         this.imageState = new AtomicInteger(WAITING_STATE);
         this.width = frameBuffer != null ? frameBuffer.getWidth() : width;
@@ -74,38 +70,31 @@ public class TransferImage {
         frameByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
         byteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
         imageByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
-        writableImage = new WritableImage(getWidth(), getHeight());
-
-        JFXPlatform.runInFXThread(() -> imageView.setImage(writableImage));
+        pixelWriter = getPixelWriter(destination, frameBuffer, width, height);
     }
 
-    /**
-     * Init this transfer for the render.
-     *
-     * @param renderer the render.
-     */
-    public void initFor(final Renderer renderer, final boolean main) {
+    @Override
+    public void initFor(@NotNull final Renderer renderer, final boolean main) {
         if (main) renderer.setMainFrameBufferOverride(frameBuffer);
     }
 
-    /**
-     * @return the width.
-     */
+    protected PixelWriter getPixelWriter(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer, final int width, final int height) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public int getWidth() {
         return width;
     }
 
-    /**
-     * @return the height.
-     */
+    @Override
     public int getHeight() {
         return height;
     }
 
-    /**
-     * Copy the content from render to the frameByteBuffer and write this content to image view.
-     */
+    @Override
     public void copyFrameBufferToImage(final RenderManager renderManager) {
+
         while (!frameState.compareAndSet(WAITING_STATE, RUNNING_STATE)) {
             if (frameState.get() == DISPOSED_STATE) {
                 return;
@@ -132,13 +121,14 @@ public class TransferImage {
             byteBuffer.flip();
         }
 
-        JFXPlatform.runInFXThread(this::writeImage);
+        JFXPlatform.runInFXThread(this::writeFrame);
     }
 
     /**
      * Write content to image.
      */
-    private void writeImage() {
+    protected void writeFrame() {
+
         while (!imageState.compareAndSet(WAITING_STATE, RUNNING_STATE)) {
             if (imageState.get() == DISPOSED_STATE) return;
         }
@@ -154,8 +144,8 @@ public class TransferImage {
             }
 
             final WritablePixelFormat<ByteBuffer> pixelFormat = PixelFormat.getByteBgraInstance();
-            final PixelWriter pixelWriter = writableImage.getPixelWriter();
             pixelWriter.setPixels(0, 0, width, height, pixelFormat, imageByteBuffer, width * 4);
+
         } finally {
             if (!imageState.compareAndSet(RUNNING_STATE, WAITING_STATE)) {
                 throw new RuntimeException("unknown problem with the image state");
@@ -163,17 +153,19 @@ public class TransferImage {
         }
     }
 
-    /**
-     * Dispose this transfer.
-     */
+    @Override
     public void dispose() {
         while (!frameState.compareAndSet(WAITING_STATE, DISPOSING_STATE)) ;
         while (!imageState.compareAndSet(WAITING_STATE, DISPOSING_STATE)) ;
+        disposeImpl();
+        frameState.compareAndSet(DISPOSING_STATE, DISPOSED_STATE);
+        imageState.compareAndSet(DISPOSING_STATE, DISPOSED_STATE);
+    }
+
+    protected void disposeImpl() {
         frameBuffer.dispose();
         BufferUtils.destroyDirectBuffer(frameByteBuffer);
         BufferUtils.destroyDirectBuffer(byteBuffer);
         BufferUtils.destroyDirectBuffer(imageByteBuffer);
-        frameState.compareAndSet(DISPOSING_STATE, DISPOSED_STATE);
-        imageState.compareAndSet(DISPOSING_STATE, DISPOSED_STATE);
     }
 }
