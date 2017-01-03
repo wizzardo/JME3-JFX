@@ -33,7 +33,8 @@ public class CanvasFrameTransferSceneProcessor extends AbstractFrameTransferScen
     }
 
     @Override
-    protected void bindDestination(@NotNull final JmeToJFXApplication application, @NotNull final Canvas destination, @NotNull final Node inputNode) {
+    protected void bindDestination(@NotNull final JmeToJFXApplication application, @NotNull final Canvas destination,
+                                   @NotNull final Node inputNode) {
         super.bindDestination(application, destination, inputNode);
         destination.setScaleY(-1.0);
     }

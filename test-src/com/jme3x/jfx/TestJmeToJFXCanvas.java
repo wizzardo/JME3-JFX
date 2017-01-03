@@ -48,7 +48,7 @@ public class TestJmeToJFXCanvas extends Application {
         stage.show();
         stage.setOnCloseRequest(event -> System.exit(0));
 
-        final JmeToJFXApplication application = makeJmeApplication(stage, 1);
+        final JmeToJFXApplication application = makeJmeApplication(stage, 40);
 
         JmeToJFXIntegrator.startAndBind(application, canvas, Thread::new);
     }

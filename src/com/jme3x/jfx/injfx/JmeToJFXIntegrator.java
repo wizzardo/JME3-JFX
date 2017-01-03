@@ -22,12 +22,13 @@ import javafx.scene.image.ImageView;
  */
 public class JmeToJFXIntegrator {
 
-    public static void prepareSettings(final AppSettings settings, final int frameRate) {
+    public static void prepareSettings(@NotNull final AppSettings settings, final int frameRate) {
         settings.setFullscreen(false);
         settings.setFrameRate(max(1, min(100, frameRate)));
         settings.setCustomRenderer(JmeOffscreenSurfaceContext.class);
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor startAndBind(@NotNull final JmeToJFXApplication application,
                                                            @NotNull final ImageView imageView, @NotNull final Function<Runnable, Thread> factory) {
         factory.apply(application::start).start();
@@ -36,6 +37,7 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor startAndBind(@NotNull final JmeToJFXApplication application,
                                                            @NotNull final Canvas canvas, @NotNull final Function<Runnable, Thread> factory) {
         factory.apply(application::start).start();
@@ -44,18 +46,21 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application, @NotNull final ImageView imageView) {
         final ImageViewFrameTransferSceneProcessor processor = new ImageViewFrameTransferSceneProcessor();
         processor.bind(imageView, application);
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application, @NotNull final Canvas canvas) {
         final CanvasFrameTransferSceneProcessor processor = new CanvasFrameTransferSceneProcessor();
         processor.bind(canvas, application);
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application,
                                                    @NotNull final ImageView imageView, @NotNull final ViewPort viewPort) {
         final ImageViewFrameTransferSceneProcessor processor = new ImageViewFrameTransferSceneProcessor();
@@ -63,6 +68,7 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application,
                                                    @NotNull final Canvas canvas, @NotNull final ViewPort viewPort) {
         final CanvasFrameTransferSceneProcessor processor = new CanvasFrameTransferSceneProcessor();
@@ -70,6 +76,7 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application,
                                                    @NotNull final ImageView imageView, @NotNull final Node inputNode) {
         final ImageViewFrameTransferSceneProcessor processor = new ImageViewFrameTransferSceneProcessor();
@@ -77,6 +84,7 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application,
                                                    @NotNull final Canvas canvas, @NotNull final Node inputNode) {
         final CanvasFrameTransferSceneProcessor processor = new CanvasFrameTransferSceneProcessor();
@@ -84,6 +92,7 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application,
                                                    @NotNull final ImageView imageView,
                                                    @NotNull final Node inputNode,
@@ -93,6 +102,7 @@ public class JmeToJFXIntegrator {
         return processor;
     }
 
+    @NotNull
     public static FrameTransferSceneProcessor bind(@NotNull final JmeToJFXApplication application,
                                                    @NotNull final Canvas canvas,
                                                    @NotNull final Node inputNode,

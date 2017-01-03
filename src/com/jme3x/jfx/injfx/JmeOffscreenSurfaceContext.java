@@ -11,6 +11,9 @@ import com.jme3.system.SystemListener;
 import com.jme3.system.Timer;
 import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
+import com.sun.istack.internal.NotNull;
+
+import javax.annotation.Nullable;
 
 /**
  * The implementation of the {@link JmeContext} for integrating to JavaFX.
@@ -19,9 +22,21 @@ import com.jme3x.jfx.injfx.input.JFXMouseInput;
  */
 public class JmeOffscreenSurfaceContext implements JmeContext {
 
+    /**
+     * The settings.
+     */
     protected final AppSettings settings;
 
+    /**
+     * The key input.
+     */
+    @NotNull
     protected final JFXKeyInput keyInput;
+
+    /**
+     * The mouse input.
+     */
+    @NotNull
     protected final JFXMouseInput mouseInput;
 
     /**
@@ -76,75 +91,92 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
         this.width = width;
     }
 
+    /**
+     * @return new settings.
+     */
+    @NotNull
     protected AppSettings createSettings() {
         final AppSettings settings = new AppSettings(true);
         settings.setRenderer(AppSettings.LWJGL_OPENGL3);
         return settings;
     }
 
+    /**
+     * @return new context/
+     */
+    @NotNull
     protected JmeContext createBackgroundContext() {
         return JmeSystem.newContext(settings, Type.OffscreenSurface);
     }
 
+    @NotNull
     @Override
     public Type getType() {
         return Type.OffscreenSurface;
     }
 
     @Override
-    public void setSettings(final AppSettings settings) {
+    public void setSettings(@NotNull final AppSettings settings) {
         this.settings.copyFrom(settings);
         this.settings.setRenderer(AppSettings.LWJGL_OPENGL3);
         this.backgroundContext.setSettings(settings);
     }
 
     @Override
-    public void setSystemListener(final SystemListener listener) {
+    public void setSystemListener(@NotNull final SystemListener listener) {
         backgroundContext.setSystemListener(listener);
     }
 
+    @NotNull
     @Override
     public AppSettings getSettings() {
         return settings;
     }
 
+    @NotNull
     @Override
     public Renderer getRenderer() {
         return backgroundContext.getRenderer();
     }
 
+    @Nullable
     @Override
     public Context getOpenCLContext() {
         return null;
     }
 
+    @NotNull
     @Override
     public JFXMouseInput getMouseInput() {
         return mouseInput;
     }
 
+    @NotNull
     @Override
     public JFXKeyInput getKeyInput() {
         return keyInput;
     }
 
+    @Nullable
     @Override
     public JoyInput getJoyInput() {
         return null;
     }
 
+    @Nullable
     @Override
     public TouchInput getTouchInput() {
         return null;
     }
 
+    @NotNull
     @Override
     public Timer getTimer() {
         return backgroundContext.getTimer();
     }
 
     @Override
-    public void setTitle(final String title) {
+    public void setTitle(@NotNull final String title) {
     }
 
     @Override
@@ -174,7 +206,7 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
     }
 
     @Override
-    public void destroy(boolean waitFor) {
+    public void destroy(final boolean waitFor) {
         if (backgroundContext == null) throw new IllegalStateException("Not created");
         // destroy wrapped context
         backgroundContext.destroy(waitFor);

@@ -4,6 +4,7 @@ import com.jme3.input.Input;
 import com.jme3.input.RawInputListener;
 import com.jme3x.jfx.injfx.ApplicationThreadExecutor;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
+import com.sun.istack.internal.NotNull;
 
 import java.util.Objects;
 
@@ -19,21 +20,36 @@ public class JFXInput implements Input {
 
     protected static final ApplicationThreadExecutor EXECUTOR = ApplicationThreadExecutor.getInstance();
 
+    /**
+     * The context.
+     */
     protected final JmeOffscreenSurfaceContext context;
 
+    /**
+     * The raw listener.
+     */
     protected RawInputListener listener;
 
+    /**
+     * The input node.
+     */
     protected Node node;
 
+    /**
+     * The scene.
+     */
     protected Scene scene;
 
+    /**
+     * Initializes is it.
+     */
     protected boolean initialized;
 
-    public JFXInput(final JmeOffscreenSurfaceContext context) {
+    public JFXInput(@NotNull final JmeOffscreenSurfaceContext context) {
         this.context = context;
     }
 
-    public void bind(final Node node) {
+    public void bind(@NotNull final Node node) {
         this.node = node;
         this.scene = node.getScene();
         Objects.requireNonNull(this.node, "ImageView can' be null");
@@ -53,7 +69,6 @@ public class JFXInput implements Input {
     }
 
     protected void initializeImpl() {
-
     }
 
     @Override
@@ -76,7 +91,7 @@ public class JFXInput implements Input {
     }
 
     @Override
-    public void setInputListener(final RawInputListener listener) {
+    public void setInputListener(@NotNull final RawInputListener listener) {
         this.listener = listener;
     }
 

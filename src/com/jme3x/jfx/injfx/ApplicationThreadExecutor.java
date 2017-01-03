@@ -1,5 +1,7 @@
 package com.jme3x.jfx.injfx;
 
+import com.sun.istack.internal.NotNull;
+
 import rlib.util.ArrayUtils;
 import rlib.util.array.Array;
 import rlib.util.array.ArrayFactory;
@@ -14,6 +16,7 @@ public class ApplicationThreadExecutor {
 
     private static final ApplicationThreadExecutor INSTANCE = new ApplicationThreadExecutor();
 
+    @NotNull
     public static ApplicationThreadExecutor getInstance() {
         return INSTANCE;
     }
@@ -21,11 +24,13 @@ public class ApplicationThreadExecutor {
     /**
      * The list of waiting tasks.
      */
+    @NotNull
     private final ConcurrentArray<Runnable> waitTasks;
 
     /**
      * THe list of tasks to execute.
      */
+    @NotNull
     private final Array<Runnable> execute;
 
     public ApplicationThreadExecutor() {
@@ -38,7 +43,7 @@ public class ApplicationThreadExecutor {
      *
      * @param task the new task.
      */
-    public void addToExecute(final Runnable task) {
+    public void addToExecute(@NotNull final Runnable task) {
         ArrayUtils.runInWriteLock(waitTasks, task, Array::add);
     }
 

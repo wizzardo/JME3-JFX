@@ -3,9 +3,10 @@ package com.jme3x.jfx.util.os;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 
+import com.sun.istack.internal.NotNull;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,10 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.annotation.Nullable;
+
 /**
  * Name resolver OS distribution.
  *
- * @author Ronn
+ * @author JavaSaBr
  */
 public class OperatingSystemResolver {
 
@@ -34,10 +37,10 @@ public class OperatingSystemResolver {
     private static final String VERSION = System.getProperty("os.version");
     private static final String ARCH = System.getProperty("os.arch");
 
-    private static final Map<Double, String> MAC_OS_VERSION_MAPPING = new HashMap<Double, String>();
-    private static final Map<Integer, String> DARWIN_VERSION_MAPPING = new HashMap<Integer, String>();
+    private static final Map<Double, String> MAC_OS_VERSION_MAPPING = new HashMap<>();
+    private static final Map<Integer, String> DARWIN_VERSION_MAPPING = new HashMap<>();
 
-    private static final List<String> LINUX_VERSION_NAMES = new ArrayList<String>();
+    private static final List<String> LINUX_VERSION_NAMES = new ArrayList<>();
 
     static {
         MAC_OS_VERSION_MAPPING.put(10.0, "Puma");
@@ -66,18 +69,13 @@ public class OperatingSystemResolver {
         LINUX_VERSION_NAMES.addAll(Arrays.asList("Linux", "SunOS"));
     }
 
-    private String findFile(final File dir, final String postfix) {
-
-        final File[] files = dir.listFiles((FilenameFilter) (directory, filename) -> filename.endsWith(postfix));
-
-        if (files.length > 0) {
-            return files[0].getAbsolutePath();
-        }
-
+    private String findFile(@NotNull final File dir, @NotNull final String postfix) {
+        final File[] files = dir.listFiles((directory, filename) -> filename.endsWith(postfix));
+        if (files.length > 0) return files[0].getAbsolutePath();
         return null;
     }
 
-    protected void resolve(final OperatingSystem system) {
+    protected void resolve(@NotNull final OperatingSystem system) {
 
         system.setName(NAME);
         system.setArch(ARCH);
@@ -103,28 +101,20 @@ public class OperatingSystemResolver {
         }
     }
 
-    private void resolveDarwinOs(final OperatingSystem system) {
-
+    private void resolveDarwinOs(@NotNull final OperatingSystem system) {
         final String[] versions = VERSION.split("\\.");
-
         system.setDistribution("OS X " + DARWIN_VERSION_MAPPING.get(parseInt(versions[0])) + " (" + VERSION + ")");
     }
 
-    private void resolveLinuxOs(final OperatingSystem system) {
+    private void resolveLinuxOs(@NotNull final OperatingSystem system) {
 
         // The most likely is to have a LSB compliant distro
         resolveNameFromLsbRelease(system);
-
-        if (system.getDistribution() != null) {
-            return;
-        }
+        if (system.getDistribution() != null) return;
 
         // Generic Linux platform name
         resolveNameFromFile(system, FILE_ETC_SYSTEM_RELEASE);
-
-        if (system.getDistribution() != null) {
-            return;
-        }
+        if (system.getDistribution() != null) return;
 
         final File dir = new File(FILE_ETC);
 
@@ -166,7 +156,7 @@ public class OperatingSystemResolver {
         }
     }
 
-    private void resolveMacOs(final OperatingSystem system) {
+    private void resolveMacOs(@NotNull final OperatingSystem system) {
 
         final String[] versions = VERSION.split("\\.");
 
@@ -179,17 +169,11 @@ public class OperatingSystemResolver {
         }
     }
 
-    private void resolveNameFromFile(final OperatingSystem system, final String filename) {
-
-        if (filename == null) {
-            return;
-        }
+    private void resolveNameFromFile(@NotNull final OperatingSystem system, @Nullable final String filename) {
+        if (filename == null) return;
 
         final File file = new File(filename);
-
-        if (!file.exists()) {
-            return;
-        }
+        if (!file.exists()) return;
 
         String lastLine = null;
 
@@ -220,13 +204,10 @@ public class OperatingSystemResolver {
         }
     }
 
-    private void resolveNameFromLsbRelease(final OperatingSystem system) {
+    private void resolveNameFromLsbRelease(@NotNull final OperatingSystem system) {
 
         final File file = new File(FILE_ETC_LSB_RELEASE);
-
-        if (!file.exists()) {
-            return;
-        }
+        if (!file.exists()) return;
 
         String description = null;
         String codename = null;

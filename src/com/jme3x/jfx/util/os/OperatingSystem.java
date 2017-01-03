@@ -1,7 +1,7 @@
 package com.jme3x.jfx.util.os;
 
 /**
- * @author Ronn
+ * @author JavaSaBr
  */
 public class OperatingSystem {
 

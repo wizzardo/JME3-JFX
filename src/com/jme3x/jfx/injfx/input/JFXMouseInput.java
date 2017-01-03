@@ -7,6 +7,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
+import com.sun.istack.internal.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,7 @@ import rlib.util.linkedlist.LinkedList;
  */
 public class JFXMouseInput extends JFXInput implements MouseInput {
 
+    @NotNull
     private static final Map<MouseButton, Integer> MOUSE_BUTTON_TO_JME = new HashMap<>();
 
     static {
@@ -39,26 +41,36 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
      */
     private static final int WHEEL_SCALE = 10;
 
+    @NotNull
     private final EventHandler<MouseEvent> processMotion = this::processMotion;
+
+    @NotNull
     private final EventHandler<MouseEvent> processPressed = this::processPressed;
+
+    @NotNull
     private final EventHandler<MouseEvent> processReleased = this::processReleased;
+
+    @NotNull
     private final EventHandler<ScrollEvent> processScroll = this::processScroll;
 
+    @NotNull
     private final LinkedList<MouseMotionEvent> mouseMotionEvents;
+
+    @NotNull
     private final LinkedList<MouseButtonEvent> mouseButtonEvents;
 
     private int mouseX;
     private int mouseY;
     private int mouseWheel;
 
-    public JFXMouseInput(final JmeOffscreenSurfaceContext context) {
+    public JFXMouseInput(@NotNull final JmeOffscreenSurfaceContext context) {
         super(context);
         mouseMotionEvents = newLinkedList(MouseMotionEvent.class);
         mouseButtonEvents = newLinkedList(MouseButtonEvent.class);
     }
 
     @Override
-    public void bind(final Node node) {
+    public void bind(@NotNull final Node node) {
         super.bind(node);
         node.addEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
         node.addEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
@@ -92,28 +104,28 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     /**
      * Handle the scroll event.
      */
-    private void processScroll(final ScrollEvent mouseEvent) {
+    private void processScroll(@NotNull final ScrollEvent mouseEvent) {
         onWheelScroll(mouseEvent.getDeltaX() * WHEEL_SCALE, mouseEvent.getDeltaY() * WHEEL_SCALE);
     }
 
     /**
      * Handle the mouse released event.
      */
-    private void processReleased(final MouseEvent mouseEvent) {
+    private void processReleased(@NotNull final MouseEvent mouseEvent) {
         onMouseButton(mouseEvent.getButton(), false);
     }
 
     /**
      * Handle the mouse pressed event.
      */
-    private void processPressed(final MouseEvent mouseEvent) {
+    private void processPressed(@NotNull final MouseEvent mouseEvent) {
         onMouseButton(mouseEvent.getButton(), true);
     }
 
     /**
      * Handle the mouse motion event.
      */
-    private void processMotion(final MouseEvent mouseEvent) {
+    private void processMotion(@NotNull final MouseEvent mouseEvent) {
         onCursorPos(mouseEvent.getSceneX(), mouseEvent.getSceneY());
     }
 
@@ -151,7 +163,7 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
         EXECUTOR.addToExecute(() -> mouseMotionEvents.add(mouseMotionEvent));
     }
 
-    private void onMouseButton(final MouseButton button, final boolean pressed) {
+    private void onMouseButton(@NotNull final MouseButton button, final boolean pressed) {
 
         final MouseButtonEvent mouseButtonEvent = new MouseButtonEvent(convertButton(button), pressed, mouseX, mouseY);
         mouseButtonEvent.setTime(getInputTimeNanos());
@@ -159,7 +171,7 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
         EXECUTOR.addToExecute(() -> mouseButtonEvents.add(mouseButtonEvent));
     }
 
-    private int convertButton(final MouseButton button) {
+    private int convertButton(@NotNull final MouseButton button) {
         final Integer result = MOUSE_BUTTON_TO_JME.get(button);
         return result == null ? 0 : result;
     }
@@ -174,6 +186,6 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     }
 
     @Override
-    public void setNativeCursor(final JmeCursor cursor) {
+    public void setNativeCursor(@NotNull final JmeCursor cursor) {
     }
 }

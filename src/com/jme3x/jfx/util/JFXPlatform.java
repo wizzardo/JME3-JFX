@@ -1,5 +1,7 @@
 package com.jme3x.jfx.util;
 
+import com.sun.istack.internal.NotNull;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -23,6 +25,7 @@ public class JFXPlatform {
     /**
      * The example of getting a method handle.
      */
+    @NotNull
     private static final MethodHandle STARTUP_HANDLE;
 
     static {
@@ -45,7 +48,7 @@ public class JFXPlatform {
     /**
      * Execute the task in JavaFX thread.
      */
-    public static void runInFXThread(final Runnable task) {
+    public static void runInFXThread(@NotNull final Runnable task) {
         if (Platform.isFxApplicationThread()) {
             task.run();
         } else {

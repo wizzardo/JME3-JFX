@@ -5,6 +5,7 @@ import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
 import com.jme3.input.KeyInput;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
+import com.sun.istack.internal.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,7 @@ import rlib.util.linkedlist.LinkedList;
  */
 public class JFXKeyInput extends JFXInput implements KeyInput {
 
+    @NotNull
     private static final Map<KeyCode, Integer> KEY_CODE_TO_JME = new HashMap<>();
 
     static {
@@ -136,9 +138,13 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
         KEY_CODE_TO_JME.put(KeyCode.META, KEY_RCONTROL);
     }
 
+    @NotNull
     private final EventHandler<KeyEvent> processKeyPressed = this::processKeyPressed;
+
+    @NotNull
     private final EventHandler<KeyEvent> processKeyReleased = this::processKeyReleased;
 
+    @NotNull
     private final LinkedList<KeyInputEvent> keyInputEvents;
 
     public JFXKeyInput(final JmeOffscreenSurfaceContext context) {
@@ -147,7 +153,7 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
     }
 
     @Override
-    public void bind(final Node node) {
+    public void bind(@NotNull final Node node) {
         super.bind(node);
         node.addEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
         node.addEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
@@ -162,15 +168,15 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
         super.unbind();
     }
 
-    private void processKeyReleased(final KeyEvent keyEvent) {
+    private void processKeyReleased(@NotNull final KeyEvent keyEvent) {
         onKeyEvent(keyEvent, false);
     }
 
-    private void processKeyPressed(final KeyEvent keyEvent) {
+    private void processKeyPressed(@NotNull final KeyEvent keyEvent) {
         onKeyEvent(keyEvent, true);
     }
 
-    private void onKeyEvent(final KeyEvent keyEvent, final boolean pressed) {
+    private void onKeyEvent(@NotNull final KeyEvent keyEvent, final boolean pressed) {
 
         final int code = convertKeyCode(keyEvent.getCode());
         final String character = keyEvent.getText();
@@ -189,7 +195,7 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
         }
     }
 
-    private int convertKeyCode(final KeyCode keyCode) {
+    private int convertKeyCode(@NotNull final KeyCode keyCode) {
         final Integer code = KEY_CODE_TO_JME.get(keyCode);
         return code == null ? KEY_UNKNOWN : code;
     }
