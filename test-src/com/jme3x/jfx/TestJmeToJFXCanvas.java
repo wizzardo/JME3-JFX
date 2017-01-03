@@ -48,14 +48,14 @@ public class TestJmeToJFXCanvas extends Application {
         stage.show();
         stage.setOnCloseRequest(event -> System.exit(0));
 
-        final JmeToJFXApplication application = makeJmeApplication(stage, 80);
+        final JmeToJFXApplication application = makeJmeApplication(stage, 1);
 
         JmeToJFXIntegrator.startAndBind(application, canvas, Thread::new);
     }
 
     private static JmeToJFXApplication makeJmeApplication(Stage stage, int framerate) {
         final AppSettings settings = new AppSettings(true);
-        JmeToJFXIntegrator.prepareSettings(settings, 60);
+        JmeToJFXIntegrator.prepareSettings(settings, framerate);
 
         JmeToJFXApplication app = new JmeToJFXApplication() {
 

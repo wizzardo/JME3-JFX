@@ -22,9 +22,9 @@ import javafx.scene.image.ImageView;
  */
 public class JmeToJFXIntegrator {
 
-    public static void prepareSettings(final AppSettings settings, final int framerate) {
+    public static void prepareSettings(final AppSettings settings, final int frameRate) {
         settings.setFullscreen(false);
-        settings.setFrameRate(max(1, min(100, framerate + 20)));
+        settings.setFrameRate(max(1, min(100, frameRate)));
         settings.setCustomRenderer(JmeOffscreenSurfaceContext.class);
     }
 
