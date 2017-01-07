@@ -115,6 +115,11 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
         reshapeNeeded.set(true);
     }
 
+    @Override
+    public void reshape() {
+        reshapeNeeded.set(true);
+    }
+
     /**
      * @return is preserve ratio.
      */
@@ -313,12 +318,12 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
 
         if (isMain()) {
             renderManager.notifyReshape(width, height);
-            cam.setFrustumPerspective(45, (float) cam.getWidth() / cam.getHeight(), 1f, 10000);
+            cam.setFrustumPerspective(getCameraAngle(), (float) cam.getWidth() / cam.getHeight(), 1f, 10000);
             return;
         }
 
         cam.resize(width, height, true);
-        cam.setFrustumPerspective(45, (float) cam.getWidth() / cam.getHeight(), 1f, 10000);
+        cam.setFrustumPerspective(getCameraAngle(), (float) cam.getWidth() / cam.getHeight(), 1f, 10000);
 
         final List<SceneProcessor> processors = viewPort.getProcessors();
         final Optional<SceneProcessor> any = processors.stream()
@@ -330,6 +335,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
             final FrameBuffer frameBuffer = new FrameBuffer(width, height, 1);
             frameBuffer.setDepthBuffer(Image.Format.Depth);
             frameBuffer.setColorBuffer(Image.Format.BGRA8);
+            frameBuffer.setSrgb(true);
 
             viewPort.setOutputFrameBuffer(frameBuffer);
         }
@@ -341,6 +347,14 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
                 sceneProcessor.reshape(viewPort, width, height);
             }
         }
+    }
+
+    /**
+     * @return the camera angle.
+     */
+    protected int getCameraAngle() {
+        final String angle = System.getProperty("jfx.frame.transfer.camera.angle", "45");
+        return Integer.parseInt(angle);
     }
 
     @Override

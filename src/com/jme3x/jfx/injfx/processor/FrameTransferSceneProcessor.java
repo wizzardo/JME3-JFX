@@ -23,4 +23,9 @@ public interface FrameTransferSceneProcessor extends SceneProcessor {
      * @param enabled true if this processor is enabled.
      */
     void setEnabled(final boolean enabled);
+
+    /**
+     * Reshape a screen.
+     */
+    void reshape();
 }

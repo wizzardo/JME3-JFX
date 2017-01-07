@@ -65,6 +65,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
             this.frameBuffer = new FrameBuffer(width, height, 1);
             this.frameBuffer.setDepthBuffer(Image.Format.Depth);
             this.frameBuffer.setColorBuffer(Image.Format.BGRA8);
+            this.frameBuffer.setSrgb(true);
         }
 
         frameByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
