@@ -301,7 +301,7 @@ public class JmeFxContainer {
         final Point decorationSize = JFXUtils.getWindowDecorationSize();
 
         this.waitCount = new AtomicInteger();
-        this.imageLock = LockFactory.newPrimitiveAtomicARSWLock();
+        this.imageLock = LockFactory.newAtomicARSWLock();
         this.paintListeners = new PaintListener[0];
         this.windowOffsetX = (int) decorationSize.getX();
         this.windowOffsetY = (int) decorationSize.getY();
