@@ -15,6 +15,7 @@ import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -383,7 +384,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
     }
 
     @Override
-    public void postFrame(@NotNull final FrameBuffer out) {
+    public void postFrame(@Nullable final FrameBuffer out) {
         if (!isEnabled()) return;
 
         if (frameTransfer != null) {
