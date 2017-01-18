@@ -2,7 +2,8 @@ package com.jme3x.jfx.injfx.transfer;
 
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The class for transferring content from a jME frame buffer to somewhere.

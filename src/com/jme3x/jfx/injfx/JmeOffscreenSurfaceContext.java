@@ -11,7 +11,8 @@ import com.jme3.system.SystemListener;
 import com.jme3.system.Timer;
 import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 

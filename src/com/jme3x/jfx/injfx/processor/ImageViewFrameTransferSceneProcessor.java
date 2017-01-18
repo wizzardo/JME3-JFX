@@ -5,7 +5,8 @@ import com.jme3.texture.FrameBuffer;
 import com.jme3x.jfx.injfx.JmeToJFXApplication;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.injfx.transfer.impl.ImageFrameTransfer;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
@@ -53,6 +54,7 @@ public class ImageViewFrameTransferSceneProcessor extends AbstractFrameTransferS
         super.unbindDestination();
     }
 
+    @NotNull
     @Override
     protected FrameTransfer createFrameTransfer(final int width, final int height, @NotNull final FrameBuffer frameBuffer) {
         return new ImageFrameTransfer(destination, isMain() ? null : frameBuffer, width, height);

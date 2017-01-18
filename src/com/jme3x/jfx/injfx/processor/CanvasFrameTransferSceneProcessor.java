@@ -5,7 +5,8 @@ import com.jme3.texture.FrameBuffer;
 import com.jme3x.jfx.injfx.JmeToJFXApplication;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.injfx.transfer.impl.CanvasFrameTransfer;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -53,6 +54,7 @@ public class CanvasFrameTransferSceneProcessor extends AbstractFrameTransferScen
         super.unbindListeners();
     }
 
+    @NotNull
     @Override
     protected FrameTransfer createFrameTransfer(final int width, final int height, @NotNull final FrameBuffer frameBuffer) {
         return new CanvasFrameTransfer(destination, isMain() ? null : frameBuffer, width, height);

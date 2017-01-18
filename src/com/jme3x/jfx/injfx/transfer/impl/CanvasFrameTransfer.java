@@ -1,7 +1,9 @@
 package com.jme3x.jfx.injfx.transfer.impl;
 
 import com.jme3.texture.FrameBuffer;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.PixelWriter;
@@ -13,11 +15,11 @@ import javafx.scene.image.PixelWriter;
  */
 public class CanvasFrameTransfer extends AbstractFrameTransfer<Canvas> {
 
-    public CanvasFrameTransfer(@NotNull final Canvas canvas, @NotNull int width, int height) {
+    public CanvasFrameTransfer(@NotNull final Canvas canvas, int width, int height) {
         this(canvas, null, width, height);
     }
 
-    public CanvasFrameTransfer(@NotNull final Canvas canvas, @NotNull final FrameBuffer frameBuffer,
+    public CanvasFrameTransfer(@NotNull final Canvas canvas, @Nullable final FrameBuffer frameBuffer,
                                final int width, final int height) {
         super(canvas, frameBuffer, width, height);
     }

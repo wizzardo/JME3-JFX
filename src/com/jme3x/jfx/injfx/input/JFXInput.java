@@ -4,7 +4,8 @@ import com.jme3.input.Input;
 import com.jme3.input.RawInputListener;
 import com.jme3x.jfx.injfx.ApplicationThreadExecutor;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 

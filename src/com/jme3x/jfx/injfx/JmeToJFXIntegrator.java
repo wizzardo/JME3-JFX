@@ -8,7 +8,8 @@ import com.jme3.system.AppSettings;
 import com.jme3x.jfx.injfx.processor.CanvasFrameTransferSceneProcessor;
 import com.jme3x.jfx.injfx.processor.FrameTransferSceneProcessor;
 import com.jme3x.jfx.injfx.processor.ImageViewFrameTransferSceneProcessor;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 

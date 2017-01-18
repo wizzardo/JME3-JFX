@@ -5,7 +5,8 @@ import static rlib.util.linkedlist.LinkedListFactory.newLinkedList;
 import com.jme3.input.KeyInput;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;

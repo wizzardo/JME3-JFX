@@ -13,7 +13,8 @@ import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;

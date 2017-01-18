@@ -7,7 +7,9 @@ import com.jme3.texture.Image;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +54,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         this(destination, null, width, height);
     }
 
-    public AbstractFrameTransfer(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer, final int width, final int height) {
+    public AbstractFrameTransfer(@NotNull final T destination, @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
         this.frameState = new AtomicInteger(WAITING_STATE);
         this.imageState = new AtomicInteger(WAITING_STATE);
         this.width = frameBuffer != null ? frameBuffer.getWidth() : width;
@@ -70,7 +72,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         frameByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
         byteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
         imageByteBuffer = new byte[getWidth() * getHeight() * 4];
-        pixelWriter = getPixelWriter(destination, frameBuffer, width, height);
+        pixelWriter = getPixelWriter(destination, this.frameBuffer, width, height);
     }
 
     @Override

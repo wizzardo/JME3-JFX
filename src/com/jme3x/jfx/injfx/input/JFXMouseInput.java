@@ -7,7 +7,8 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-import com.sun.istack.internal.NotNull;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;

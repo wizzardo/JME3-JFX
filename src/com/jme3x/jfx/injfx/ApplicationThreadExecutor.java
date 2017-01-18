@@ -1,6 +1,6 @@
 package com.jme3x.jfx.injfx;
 
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import rlib.util.ArrayUtils;
 import rlib.util.array.Array;
