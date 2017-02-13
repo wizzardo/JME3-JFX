@@ -1,6 +1,7 @@
 package com.jme3x.jfx.injfx.processor;
 
 import com.jme3.post.SceneProcessor;
+import com.jme3.profile.AppProfiler;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -404,5 +405,9 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
             frameTransfer.dispose();
             frameTransfer = null;
         }
+    }
+
+    @Override
+    public void setProfiler(final AppProfiler profiler) {
     }
 }
