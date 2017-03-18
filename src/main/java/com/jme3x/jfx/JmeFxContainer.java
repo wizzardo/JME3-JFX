@@ -1,12 +1,13 @@
 package com.jme3x.jfx;
 
+import static java.util.Objects.requireNonNull;
+
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.input.InputManager;
-import com.jme3.input.RawInputListener;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.JmeContext;
@@ -17,7 +18,6 @@ import com.jme3.texture.image.ColorSpace;
 import com.jme3.ui.Picture;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
-import com.jme3x.jfx.listener.PaintListener;
 import com.jme3x.jfx.util.JFXUtils;
 import com.sun.glass.ui.Pixels;
 import com.sun.javafx.application.PlatformImpl;
@@ -27,14 +27,11 @@ import com.sun.javafx.embed.EmbeddedStageInterface;
 import com.sun.javafx.embed.HostInterface;
 import com.sun.javafx.stage.EmbeddedWindow;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -50,38 +47,51 @@ import rlib.logging.LoggerManager;
 /**
  * Need to pass -Dprism.dirtyopts=false on startup
  *
- * @author abies / Artur Biesiadowski
+ * @author abies / Artur Biesiadowski / JavaSaBr
  */
+@SuppressWarnings("WeakerAccess")
 public class JmeFxContainer {
 
+    @NotNull
     private static final Logger LOGGER = LoggerManager.getLogger(JmeFxContainer.class);
 
+    private static final int MIN_RESIZE_INTERVAL = 300;
+
     /**
-     * Актитвировал ли дебаг.
+     * The flag of showing debug.
      */
     private static boolean debug;
 
     /**
-     * @param debug актитвировал ли дебаг.
+     * @param debug true if need to activate debug.
      */
     public static void setDebug(boolean debug) {
         JmeFxContainer.debug = debug;
     }
 
     /**
-     * @return актитвировал ли дебаг.
+     * @return true is debug is enabled.
      */
     public static boolean isDebug() {
         return debug;
     }
 
-    public static JmeFxContainer install(final Application app, final Node guiNode, final CursorDisplayProvider cursorDisplayProvider) {
+    /**
+     * Build the JavaFX container to the application.
+     *
+     * @param app                   the application.
+     * @param guiNode               the GUI node.
+     * @param cursorDisplayProvider the cursor provider.
+     * @return the javaFX container.
+     */
+    @NotNull
+    public static JmeFxContainer install(@NotNull final Application app, @NotNull final Node guiNode,
+                                         @NotNull final CursorDisplayProvider cursorDisplayProvider) {
 
         final JmeFxContainer container = new JmeFxContainer(app.getAssetManager(), app, cursorDisplayProvider);
-        guiNode.attachChild(container.getJmeNode());
-
         final JmeFXInputListener inputListener = new JmeFXInputListener(container);
 
+        guiNode.attachChild(container.getJmeNode());
         container.setInputListener(inputListener);
 
         final InputManager inputManager = app.getInputManager();
@@ -128,8 +138,9 @@ public class JmeFxContainer {
     }
 
     /**
-     * Игровая стадия FX UI.
+     * The state to attach/detach javaFX UI.
      */
+    @NotNull
     private final AppState fxAppState = new AbstractAppState() {
 
         @Override
@@ -139,172 +150,183 @@ public class JmeFxContainer {
         }
     };
 
+    @NotNull
     protected volatile CompletableFuture<Format> nativeFormat = new CompletableFuture<>();
 
     /**
-     * Кол-во незаписанных в JME кадров.
+     * The count of frames which need to write to JME.
      */
+    @NotNull
     protected final AtomicInteger waitCount;
 
     /**
-     * Блокировщик доступа к данным изображений.
+     * The lock to control transfer frames from javaFX to JME.
      */
+    @NotNull
     protected final AsyncReadSyncWriteLock imageLock;
 
     /**
-     * Изображение для отрисовки UI.
+     * The image to show javaFX UI.
      */
+    @NotNull
     protected final Picture picture;
 
     /**
-     * Текстура на которой отрисовано UI.
+     * The texture to show javaFX UI.
      */
+    @NotNull
     protected final Texture2D texture;
 
     /**
-     * Набор слушателей отрисовки.
+     * The JME render context.
      */
-    protected volatile PaintListener[] paintListeners;
+    @NotNull
+    private final JmeContext jmeContext;
 
     /**
-     * Текущая стадия UI.
+     * The current embedded stage interface.
      */
+    @Nullable
     protected volatile EmbeddedStageInterface stagePeer;
 
     /**
-     * Текущая сцена UI.
+     * The current embedded scene interface.
      */
+    @Nullable
     protected volatile EmbeddedSceneInterface scenePeer;
 
     /**
-     * Встроенное окно JavaFX UI.
+     * The embedded window.
      */
-    protected volatile EmbeddedWindow stage;
+    @Nullable
+    protected volatile EmbeddedWindow embeddedWindow;
+
+    /**
+     * The host interface.
+     */
+    @Nullable
     protected volatile HostInterface hostContainer;
 
     /**
-     * Слушатель ввода пользователя.
+     * The user input listener.
      */
+    @Nullable
     protected volatile JmeFXInputListener inputListener;
 
     /**
-     * Текущая сцена UI.
+     * The current scene.
      */
+    @Nullable
     protected volatile Scene scene;
 
     /**
-     * Приложение JME.
+     * The jME application.
      */
+    @Nullable
     protected volatile Application application;
 
     /**
-     * Рутовый узел текущей сцены.
+     * The root UI node.
      */
+    @Nullable
     protected volatile Group rootNode;
 
     /**
-     * Отрисованное изображение UI.
+     * The image to contains javaFX UI.
      */
+    @Nullable
     protected volatile Image jmeImage;
 
     /**
-     * Данные кадра отрисованного в jME.
+     * The data of javaFX frame on the jME side.
      */
+    @Nullable
     protected volatile ByteBuffer jmeData;
 
     /**
-     * Данные кадра отрисованного в JavaFX.
+     * The data of javaFX frame on the javaFX side.
      */
+    @Nullable
     protected volatile ByteBuffer fxData;
 
     /**
-     * Временные данные кадра отрисованного в JavaFX.
+     * The temp data to transfer frames between javaFX and jME.
      */
+    @Nullable
     protected volatile ByteBuffer tempData;
 
     /**
-     * Провайдер по отображению нужных курсоров.
+     * The int presentation of the {@link #tempData}.
      */
+    @Nullable
+    protected volatile IntBuffer tempIntData;
+
+    /**
+     * The current cursor provider.
+     */
+    @Nullable
     protected volatile CursorDisplayProvider cursorDisplayProvider;
 
     /**
-     * Функция реординга данных.
+     * The function to reorder pixels.
      */
+    @Nullable
     protected volatile Function<ByteBuffer, Void> reorderData;
 
     /**
-     * Время последнего изменения размера.
+     * The time of last resized window.
      */
     protected volatile long lastResized;
 
     /**
-     * Ширина картики для отрисовки UI.
+     * The picture width.
      */
     protected volatile int pictureWidth;
 
     /**
-     * Высота картики для отрисовки UI.
+     * The picture height.
      */
     protected volatile int pictureHeight;
 
     /**
-     * Предыдущее положение экрана по X.
+     * The old X position.
      */
-    protected volatile int oldX = -1;
+    protected volatile int oldX;
 
     /**
-     * Предыдущее положение экрана по Y.
+     * The old Y position.
      */
-    protected volatile int oldY = -1;
+    protected volatile int oldY;
 
     /**
-     * Indent the window position to account for window decoration by Ronn
-     */
-    private volatile int windowOffsetX;
-    private volatile int windowOffsetY;
-
-    /**
-     * Есть ли сейчас фокус на FX UI.
+     * The flag of having focus.
      */
     protected volatile boolean focus;
 
     /**
-     * Поддержка полноэкранного режима.
+     * The flag of supporting full screen.
      */
     protected volatile boolean fullScreenSupport;
 
     /**
-     * Отображается ли курсор.
+     * The flag of visibility cursor.
      */
     protected volatile boolean visibleCursor;
 
     /**
-     * Доступен ли сейчас JavaFX.
+     * The flag of enabling javaFX.
      */
     protected volatile boolean enabled;
 
-    /**
-     * Набор состояний клавиш.
-     */
-    private final BitSet keyStateSet = new BitSet(0xFF);
-
-    /**
-     * Контекст JME.
-     */
-    private final JmeContext jmeContext;
-
-    protected JmeFxContainer(final AssetManager assetManager, final Application application, final CursorDisplayProvider cursorDisplayProvider) {
+    protected JmeFxContainer(@NotNull final AssetManager assetManager, @NotNull final Application application,
+                             @NotNull final CursorDisplayProvider cursorDisplayProvider) {
         this.initFx();
 
+        this.oldY = -1;
+        this.oldX = -1;
         this.jmeContext = application.getContext();
-
-        final Point decorationSize = JFXUtils.getWindowDecorationSize();
-
         this.waitCount = new AtomicInteger();
         this.imageLock = LockFactory.newAtomicARSWLock();
-        this.paintListeners = new PaintListener[0];
-        this.windowOffsetX = (int) decorationSize.getX();
-        this.windowOffsetY = (int) decorationSize.getY();
         this.cursorDisplayProvider = cursorDisplayProvider;
         this.application = application;
         this.visibleCursor = true;
@@ -316,348 +338,308 @@ public class JmeFxContainer {
         this.picture = new JavaFXPicture(this);
         this.picture.move(0, 0, -1);
         this.picture.setPosition(0, 0);
+        this.texture = new Texture2D(new Image());
+        this.picture.setTexture(assetManager, texture, true);
 
         handleResize();
-
-        this.texture = new Texture2D(jmeImage);
-        this.picture.setTexture(assetManager, texture, true);
     }
 
     /**
-     * @param lastResized время последнего изменения размера.
+     * @param lastResized the time of last resized window.
      */
     private void setLastResized(final long lastResized) {
         this.lastResized = lastResized;
     }
 
     /**
-     * @return время последнего изменения размера.
+     * @return the time of last resized window.
      */
     private long getLastResized() {
         return lastResized;
     }
 
     /**
-     * @return приложение JME.
+     * @return the jME application.
      */
-    public Application getApplication() {
+    @Nullable
+    Application getApplication() {
         return application;
     }
 
     /**
-     * @return контекст JME.
+     * @return The jme render context.
      */
-    public JmeContext getJmeContext() {
+    @NotNull
+    JmeContext getJmeContext() {
         return jmeContext;
     }
 
     /**
-     * Добавление нового слушателя.
+     * @return the current cursor provider.
      */
-    public void addPaintListener(final PaintListener paintListener) {
-
-        final List<PaintListener> temp = new ArrayList<>();
-        Collections.addAll(temp, getPaintListeners());
-        temp.add(paintListener);
-
-        setPaintListeners(temp.toArray(new PaintListener[temp.size()]));
-    }
-
-    /**
-     * Создание задачи по записи FX UI на JME.
-     */
-    protected void addWriteTask() {
-        application.enqueue(this::writeToJME);
-    }
-
-    /**
-     * @return провайдер по отображению нужных курсоров.
-     */
-    public CursorDisplayProvider getCursorDisplayProvider() {
+    @Nullable
+    CursorDisplayProvider getCursorDisplayProvider() {
         return cursorDisplayProvider;
     }
 
     /**
-     * @return данные кадра отрисованного в JavaFX.
+     * @return the data of javaFX frame on the javaFX side.
      */
-    public ByteBuffer getFxData() {
+    @Nullable
+    private ByteBuffer getFxData() {
         return fxData;
     }
 
     /**
-     * @return блокировщик доступа к данным изображений.
+     * @return the lock to control transfer frames from javaFX to JME.
      */
+    @NotNull
     private AsyncReadSyncWriteLock getImageLock() {
         return imageLock;
     }
 
     /**
-     * @return слушатель ввода пользователя.
+     * @return the user input listener.
      */
-    public JmeFXInputListener getInputListener() {
+    @Nullable
+    JmeFXInputListener getInputListener() {
         return inputListener;
     }
 
     /**
-     * @param inputListener слушатель ввода пользователя.
+     * @param inputListener the user input listener.
      */
-    public void setInputListener(final JmeFXInputListener inputListener) {
+    private void setInputListener(@Nullable final JmeFXInputListener inputListener) {
         this.inputListener = inputListener;
     }
 
     /**
-     * @return данные кадра отрисованного в jME.
+     * @return the data of javaFX frame on the jME side.
      */
-    public ByteBuffer getJmeData() {
+    @Nullable
+    private ByteBuffer getJmeData() {
         return jmeData;
     }
 
     /**
-     * @return отрисованное изображение UI.
+     * @return the image to contains javaFX UI.
      */
-    public Image getJmeImage() {
+    @Nullable
+    private Image getJmeImage() {
         return jmeImage;
     }
 
     /**
-     * @return изображение для отрисовки UI.
+     * @return the image to show javaFX UI.
      */
-    public Picture getJmeNode() {
+    @NotNull
+    private Picture getJmeNode() {
         return picture;
     }
 
     /**
-     * @return набор состояний клавиш.
+     * @return the old X position.
      */
-    public BitSet getKeyStateSet() {
-        return keyStateSet;
-    }
-
-    /**
-     * @return предыдущее положение экрана по X.
-     */
-    public int getOldX() {
+    int getOldX() {
         return oldX;
     }
 
     /**
-     * @param oldX предыдущее положение экрана по X.
+     * @param oldX the old X position.
      */
-    public void setOldX(final int oldX) {
+    void setOldX(final int oldX) {
         this.oldX = oldX;
     }
 
     /**
-     * @return предыдущее положение экрана по Y.
+     * @return the old Y position.
      */
-    public int getOldY() {
+    int getOldY() {
         return oldY;
     }
 
     /**
-     * @param oldY предыдущее положение экрана по Y.
+     * @param oldY the old Y position.
      */
-    public void setOldY(final int oldY) {
+    void setOldY(final int oldY) {
         this.oldY = oldY;
     }
 
     /**
-     * @return набор слушателей отрисовки.
+     * @return the image to show javaFX UI.
      */
-    private PaintListener[] getPaintListeners() {
-        return paintListeners;
-    }
-
-    /**
-     * @param paintListeners набор слушателей отрисовки.
-     */
-    private void setPaintListeners(final PaintListener[] paintListeners) {
-        this.paintListeners = paintListeners;
-    }
-
-    /**
-     * @return изображение для отрисовки UI.
-     */
-    public Picture getPicture() {
+    @NotNull
+    private Picture getPicture() {
         return picture;
     }
 
     /**
-     * @return высота картики для отрисовки UI.
+     * @return the picture height.
      */
-    public int getPictureHeight() {
+    int getPictureHeight() {
         return pictureHeight;
     }
 
     /**
-     * @param pictureHeight высота картики для отрисовки UI.
+     * @param pictureHeight the picture height.
      */
-    public void setPictureHeight(final int pictureHeight) {
+    private void setPictureHeight(final int pictureHeight) {
         this.pictureHeight = pictureHeight;
     }
 
     /**
-     * @return ширина картики для отрисовки UI.
+     * @return the picture width.
      */
-    public int getPictureWidth() {
+    int getPictureWidth() {
         return pictureWidth;
     }
 
     /**
-     * @param pictureWidth ширина картики для отрисовки UI.
+     * @param pictureWidth the picture width.
      */
-    public void setPictureWidth(final int pictureWidth) {
+    private void setPictureWidth(final int pictureWidth) {
         this.pictureWidth = pictureWidth;
     }
 
     /**
-     * @return функция реординга данных.
+     * @return the function to reorder pixels.
      */
-    public Function<ByteBuffer, Void> getReorderData() {
+    @Nullable
+    private Function<ByteBuffer, Void> getReorderData() {
         return reorderData;
     }
 
     /**
-     * @return рутовый узел текущей сцены.
+     * @return the root UI node.
      */
-    public Group getRootNode() {
+    @Nullable
+    Group getRootNode() {
         return rootNode;
     }
 
     /**
-     * @return текущая сцена UI.
+     * @return the current scene.
      */
-    public Scene getScene() {
+    @Nullable
+    Scene getScene() {
         return scene;
     }
 
     /**
-     * @return текущая сцена UI.
+     * @return the current embedded scene interface.
      */
-    public EmbeddedSceneInterface getScenePeer() {
+    @Nullable
+    EmbeddedSceneInterface getScenePeer() {
         return scenePeer;
     }
 
     /**
-     * @param scenePeer текущая сцена UI.
+     * @param scenePeer the current embedded scene interface.
      */
-    public void setScenePeer(final EmbeddedSceneInterface scenePeer) {
+    void setScenePeer(@Nullable final EmbeddedSceneInterface scenePeer) {
         this.scenePeer = scenePeer;
     }
 
     /**
-     * @return встроенное окно JavaFX UI.
+     * @return the embedded window.
      */
-    public EmbeddedWindow getStage() {
-        return stage;
+    @Nullable
+    public EmbeddedWindow getEmbeddedWindow() {
+        return embeddedWindow;
     }
 
     /**
-     * @return текущая стадия UI.
+     * @param embeddedWindow the embedded window.
      */
-    public EmbeddedStageInterface getStagePeer() {
+    public void setEmbeddedWindow(@Nullable final EmbeddedWindow embeddedWindow) {
+        this.embeddedWindow = embeddedWindow;
+    }
+
+    /**
+     * @return the current embedded stage interface.
+     */
+    @Nullable
+    EmbeddedStageInterface getStagePeer() {
         return stagePeer;
     }
 
     /**
-     * @param stagePeer текущая стадия UI.
+     * @param stagePeer the current embedded stage interface.
      */
-    public void setStagePeer(final EmbeddedStageInterface stagePeer) {
+    void setStagePeer(@Nullable final EmbeddedStageInterface stagePeer) {
         this.stagePeer = stagePeer;
     }
 
     /**
-     * @return временные данные кадра отрисованного в JavaFX.
+     * @return the temp data to transfer frames between javaFX and jME.
      */
-    public ByteBuffer getTempData() {
+    @Nullable
+    private ByteBuffer getTempData() {
         return tempData;
     }
 
     /**
-     * @return текстура на которой отрисовано UI.
+     * @return the int presentation of the tempData.
      */
-    public Texture2D getTexture() {
+    @Nullable
+    private IntBuffer getTempIntData() {
+        return tempIntData;
+    }
+
+    /**
+     * @return the texture to show javaFX UI.
+     */
+    @NotNull
+    private Texture2D getTexture() {
         return texture;
     }
 
     /**
-     * @return кол-во незаписанных в JME кадров.
+     * @return the count of frames which need to write to JME.
      */
-    public AtomicInteger getWaitCount() {
+    @NotNull
+    private AtomicInteger getWaitCount() {
         return waitCount;
     }
 
     /**
-     * Indent the window position to account for window decoration.
-     */
-    public int getWindowOffsetX() {
-        return windowOffsetX;
-    }
-
-    /**
-     * Indent the window position to account for window decoration.
-     */
-    public void setWindowOffsetX(final int windowOffsetX) {
-        this.windowOffsetX = windowOffsetX;
-    }
-
-    /**
-     * Indent the window position to account for window decoration.
-     */
-    public int getWindowOffsetY() {
-        return windowOffsetY;
-    }
-
-    /**
-     * Indent the window position to account for window decoration.
-     */
-    public void setWindowOffsetY(final int windowOffsetY) {
-        this.windowOffsetY = windowOffsetY;
-    }
-
-    /**
-     * @return предыдущее положение экрана по X.
+     * @return the old X position.
      */
     public int getWindowX() {
         return oldX;
     }
 
     /**
-     * @return предыдущее положение экрана по Y.
+     * @return the old Y position.
      */
     public int getWindowY() {
         return oldY;
     }
 
     /**
-     * Получение фокуса сценой FX UI.
+     * Get focus.
      */
     public void grabFocus() {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
-
-        if(isFocus() || stagePeer == null) {
-            return;
-        }
+        if (isFocus() || stagePeer == null) return;
 
         stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
+
         setFocus(true);
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("got focus.");
         }
     }
 
     /**
-     * Инициализация или обновление размеров изображения.
+     * Handle resize.
      */
-    public void handleResize() {
+    void handleResize() {
 
         final long time = System.currentTimeMillis();
-
-        if(time - getLastResized() < 300) {
-            return;
-        }
+        if (time - getLastResized() < MIN_RESIZE_INTERVAL) return;
 
         final JmeContext jmeContext = getJmeContext();
 
@@ -673,8 +655,9 @@ public class JmeFxContainer {
 
             final Picture picture = getPicture();
 
-            if(isDebug()) {
-                LOGGER.debug("handle resize from [" + getPictureWidth() + "x" + getPictureHeight() + "] to [" + pictureWidth + "x" + pictureHeight + "]");
+            if (isDebug()) {
+                LOGGER.debug("handle resize from [" + getPictureWidth() + "x" + getPictureHeight() + "] to " +
+                        "[" + pictureWidth + "x" + pictureHeight + "]");
             }
 
             picture.setWidth(pictureWidth);
@@ -698,14 +681,12 @@ public class JmeFxContainer {
 
             fxData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
             tempData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
+            tempIntData = tempData.asIntBuffer();
             jmeData = BufferUtils.createByteBuffer(pictureWidth * pictureHeight * 4);
             jmeImage = new Image(nativeFormat.get(), pictureWidth, pictureHeight, jmeData, ColorSpace.sRGB);
 
             final Texture2D texture = getTexture();
-
-            if (texture != null) {
-                texture.setImage(jmeImage);
-            }
+            texture.setImage(jmeImage);
 
             setPictureHeight(pictureHeight);
             setPictureWidth(pictureWidth);
@@ -713,7 +694,7 @@ public class JmeFxContainer {
             final EmbeddedStageInterface stagePeer = getStagePeer();
             final EmbeddedSceneInterface scenePeer = getScenePeer();
 
-            if (stagePeer != null) {
+            if (stagePeer != null && scenePeer != null) {
                 Platform.runLater(() -> {
                     stagePeer.setSize(pictureWidth, pictureHeight);
                     scenePeer.setSize(pictureWidth, pictureHeight);
@@ -737,7 +718,7 @@ public class JmeFxContainer {
             switch (Pixels.getNativeFormat()) {
                 case Pixels.Format.BYTE_ARGB:
                     try {
-                        JmeFxContainer.this.nativeFormat.complete(Format.valueOf("ARGB8"));
+                        nativeFormat.complete(Format.valueOf("ARGB8"));
                         reorderData = null;
                     } catch (final Exception exc1) {
                         JmeFxContainer.this.nativeFormat.complete(Format.ABGR8);
@@ -746,7 +727,7 @@ public class JmeFxContainer {
                     break;
                 case Pixels.Format.BYTE_BGRA_PRE:
                     try {
-                        JmeFxContainer.this.nativeFormat.complete(Format.valueOf("BGRA8"));
+                        nativeFormat.complete(Format.valueOf("BGRA8"));
                         reorderData = null;
                     } catch (final Exception exc2) {
                         JmeFxContainer.this.nativeFormat.complete(Format.ABGR8);
@@ -755,7 +736,7 @@ public class JmeFxContainer {
                     break;
                 default:
                     try {
-                        JmeFxContainer.this.nativeFormat.complete(Format.valueOf("ARGB8"));
+                        nativeFormat.complete(Format.valueOf("ARGB8"));
                         reorderData = null;
                     } catch (final Exception exc3) {
                         JmeFxContainer.this.nativeFormat.complete(Format.ABGR8);
@@ -766,20 +747,16 @@ public class JmeFxContainer {
         });
     }
 
-    /**
-     * Есть ли по этим координатом элемент JavaFX на сцене.
-     */
-    public boolean isCovered(final int x, final int y) {
+    boolean isCovered(final int x, final int y) {
 
+        final Image jmeImage = getJmeImage();
         final int pictureWidth = getPictureWidth();
 
-        if (x < 0 || x >= pictureWidth) {
+        if (jmeImage == null || x < 0 || x >= pictureWidth) {
             return false;
         } else if (y < 0 || y >= getPictureHeight()) {
             return false;
         }
-
-        final Image jmeImage = getJmeImage();
 
         final ByteBuffer data = jmeImage.getData(0);
         data.limit(data.capacity());
@@ -788,7 +765,7 @@ public class JmeFxContainer {
 
         data.limit(0);
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("is covered " + x + ", " + y + " = " + (alpha != 0));
         }
 
@@ -796,102 +773,86 @@ public class JmeFxContainer {
     }
 
     /**
-     * @return есть ли сейчас фокус на FX UI.
+     * @return true if the windows has focus.
      */
     public boolean isFocus() {
         return focus;
     }
 
     /**
-     * @param focus есть ли сейчас фокус на FX UI.
+     * @param focus true if the windows has focus.
      */
-    public void setFocus(final boolean focus) {
+    private void setFocus(final boolean focus) {
         this.focus = focus;
     }
 
     /**
-     * @return поддержка полноэкранного режима.
+     * @return true if this container is supported fullscreen.
      */
     public boolean isFullScreenSupport() {
         return fullScreenSupport;
     }
 
     /**
-     * @return нужна ли отрисовка.
+     * @return true if need to write javaFx frame.
      */
     public boolean isNeedWriteToJME() {
         return waitCount.get() > 0;
     }
 
     /**
-     * @return отображается ли курсор.
+     * @return true if the cursor is visible.
      */
     public boolean isVisibleCursor() {
         return visibleCursor;
     }
 
     /**
-     * @param visibleCursor отображается ли курсор.
+     * @param visibleCursor true if the cursor is visible.
      */
     public void setVisibleCursor(final boolean visibleCursor) {
         this.visibleCursor = visibleCursor;
     }
 
     /**
-     * Уберание фокуса из сцены.
+     * Lose focus.
      */
     public void loseFocus() {
 
         final EmbeddedStageInterface stagePeer = getStagePeer();
-
-        if(!isFocus() || stagePeer == null) {
-            return;
-        }
+        if (!isFocus() || stagePeer == null) return;
 
         stagePeer.setFocused(false, AbstractEvents.FOCUSEVENT_DEACTIVATED);
 
         setFocus(false);
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("lost focus.");
         }
     }
 
     /**
-     * Отрисока контейнера.
+     * Draw new frame of JavaFX to byte buffer.
      */
-    public void paintComponent() {
+    void drawNewFrame() {
 
         long time = 0;
 
-        if(isDebug()) {
+        if (isDebug()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started paint FX scene...");
         }
 
         final EmbeddedSceneInterface scenePeer = getScenePeer();
+        if (scenePeer == null) return;
 
-        if (scenePeer == null) {
-            return;
-        }
-
-        final PaintListener[] paintListeners = getPaintListeners();
-
-        if (paintListeners.length > 0) {
-            for (final PaintListener paintListener : paintListeners) {
-                paintListener.prePaint();
-            }
-        }
-
-        final ByteBuffer tempData = getTempData();
+        final ByteBuffer tempData = requireNonNull(getTempData());
         tempData.clear();
-
-        final IntBuffer intBuffer = tempData.asIntBuffer();
 
         final int pictureWidth = getPictureWidth();
         final int pictureHeight = getPictureHeight();
 
-        if (!scenePeer.getPixels(intBuffer, pictureWidth, pictureHeight)) {
+        if (!scenePeer.getPixels(requireNonNull(getTempIntData()), pictureWidth, pictureHeight)) {
             return;
         }
 
@@ -902,7 +863,7 @@ public class JmeFxContainer {
         imageLock.syncLock();
         try {
 
-            final ByteBuffer fxData = getFxData();
+            final ByteBuffer fxData = requireNonNull(getFxData());
             fxData.clear();
             fxData.put(tempData);
             fxData.flip();
@@ -915,103 +876,65 @@ public class JmeFxContainer {
             }
 
         } catch (final Exception exc) {
-            exc.printStackTrace();
+            LOGGER.warning(exc.getMessage(), exc);
         } finally {
             imageLock.syncUnlock();
-        }
-
-        if (paintListeners.length > 0) {
-            for (final PaintListener paintListener : paintListeners) {
-                paintListener.postPaint();
-            }
         }
 
         final AtomicInteger waitCount = getWaitCount();
         waitCount.incrementAndGet();
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
         }
     }
 
     /**
-     * Удаление слушателя отрисовки.
+     * Set a new scene to this container.
+     *
+     * @param newScene the new scene or null.
+     * @param rootNode the new root of the scene or root.
      */
-    public void removePaintListener(final PaintListener paintListener) {
-
-        final List<PaintListener> temp = new ArrayList<>();
-        Collections.addAll(temp, getPaintListeners());
-        temp.remove(paintListener);
-
-        setPaintListeners(temp.toArray(new PaintListener[temp.size()]));
-    }
-
-    int retrieveKeyState() {
-
-        int embedModifiers = 0;
-
-        if (keyStateSet.get(KeyEvent.VK_SHIFT)) {
-            embedModifiers |= AbstractEvents.MODIFIER_SHIFT;
-        }
-
-        if (keyStateSet.get(KeyEvent.VK_CONTROL)) {
-            embedModifiers |= AbstractEvents.MODIFIER_CONTROL;
-        }
-
-        if (keyStateSet.get(KeyEvent.VK_ALT)) {
-            embedModifiers |= AbstractEvents.MODIFIER_ALT;
-        }
-
-        if (keyStateSet.get(KeyEvent.VK_META)) {
-            embedModifiers |= AbstractEvents.MODIFIER_META;
-        }
-
-        return embedModifiers;
+    public void setScene(@Nullable final Scene newScene, @NotNull final Group rootNode) {
+        this.rootNode = rootNode;
+        FxPlatformExecutor.runOnFxApplication(() -> setSceneImpl(newScene));
     }
 
     /**
-     * call via gui manager!
+     * Set a new scene to javaFX container.
+     *
+     * @param newScene the new scene.
      */
-    public void setEverListeningRawInputListener(final RawInputListener rawInputListenerAdapter) {
-        this.inputListener.setEverListeningRawInputListener(rawInputListenerAdapter);
-    }
+    private void setSceneImpl(@Nullable final Scene newScene) {
 
-    void setFxEnabled(final boolean enabled) {
-    }
-
-    public void setScene(final Scene newScene, final Group highLevelGroup) {
-        this.rootNode = highLevelGroup;
-        FxPlatformExecutor.runOnFxApplication(() -> JmeFxContainer.this.setSceneImpl(newScene));
-    }
-
-    /*
-     * Called on JavaFX application thread.
-     */
-    private void setSceneImpl(final Scene newScene) {
-        if (this.stage != null && newScene == null) {
-            this.stage.hide();
-            this.stage = null;
+        if (embeddedWindow != null && newScene == null) {
+            embeddedWindow.hide();
+            embeddedWindow = null;
         }
 
-        this.application.enqueue(() -> {
-            JmeFxContainer.this.picture.setCullHint(newScene == null ? CullHint.Always : CullHint.Never);
+        final Application application = requireNonNull(getApplication());
+        application.enqueue(() -> {
+            picture.setCullHint(newScene == null ? CullHint.Always : CullHint.Never);
             return null;
         });
 
         this.scene = newScene;
-        if (this.stage == null && newScene != null) {
-            this.stage = new EmbeddedWindow(this.hostContainer);
+
+        if (embeddedWindow == null && newScene != null) {
+            embeddedWindow = new EmbeddedWindow(hostContainer);
         }
-        if (this.stage != null) {
-            this.stage.setScene(newScene);
-            if (!this.stage.isShowing()) {
-                this.stage.show();
-            }
+
+        if (embeddedWindow == null) return;
+
+        embeddedWindow.setScene(newScene);
+
+        if (!embeddedWindow.isShowing()) {
+            embeddedWindow.show();
         }
     }
 
     /**
-     * Запись резульата FX UI на текстуру в JME.
+     * Write javaFX frame to jME texture.
      */
     public Void writeToJME() {
 
@@ -1020,30 +943,30 @@ public class JmeFxContainer {
 
         long time = 0;
 
-        if(isDebug()) {
+        if (isDebug()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started writing FX data to JME...");
         }
 
-        final ByteBuffer jmeData = getJmeData();
+        final ByteBuffer jmeData = requireNonNull(getJmeData());
         jmeData.clear();
 
         final AsyncReadSyncWriteLock imageLock = getImageLock();
         imageLock.syncLock();
         try {
-            jmeData.put(getFxData());
+            jmeData.put(requireNonNull(getFxData()));
         } finally {
             imageLock.syncUnlock();
         }
 
         jmeData.flip();
 
-        final Image jmeImage = getJmeImage();
+        final Image jmeImage = requireNonNull(getJmeImage());
         jmeImage.setUpdateNeeded();
 
         waitCount.subAndGet(currentCount);
 
-        if(isDebug()) {
+        if (isDebug()) {
             LOGGER.debug("finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
         }
 
@@ -1051,14 +974,14 @@ public class JmeFxContainer {
     }
 
     /**
-     * @param enabled доступен ли сейчас JavaFX.
+     * @param enabled the flag of enabling javaFX.
      */
     public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
     /**
-     * @return доступен ли сейчас JavaFX.
+     * @return true if the javaFx is enabled.
      */
     public boolean isEnabled() {
         return enabled;

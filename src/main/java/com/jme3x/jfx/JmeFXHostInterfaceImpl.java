@@ -45,7 +45,7 @@ public class JmeFXHostInterfaceImpl implements HostInterface {
     @Override
     public void repaint() {
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        jmeFxContainer.paintComponent();
+        jmeFxContainer.drawNewFrame();
     }
 
     @Override

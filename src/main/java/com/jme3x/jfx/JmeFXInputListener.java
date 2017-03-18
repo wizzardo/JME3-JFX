@@ -4,6 +4,8 @@
  */
 package com.jme3x.jfx;
 
+import static java.util.Objects.requireNonNull;
+
 import com.jme3.app.Application;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
@@ -18,6 +20,9 @@ import com.jme3.input.event.TouchEvent;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.awt.event.KeyEvent;
 import java.util.BitSet;
 
@@ -27,44 +32,58 @@ import javafx.scene.Scene;
 /**
  * Converts JMEEvents to JFXEvents
  *
- * @author Heist
+ * @author Heist, JavaSaBr
  */
 public class JmeFXInputListener implements RawInputListener {
 
     /**
-     * Контейнер Java FX.
+     * The javaFX container.
      */
+    @NotNull
     private final JmeFxContainer jmeFxContainer;
 
-    private final BitSet keyStateSet = new BitSet(0xFF);
+    /**
+     * The key state set.
+     */
+    @NotNull
+    private final BitSet keyStateSet;
 
     /**
-     * Набор массивов для каждого символа.
+     * The key char array.
      */
-    private final char[][] keyCharArray = new char[Character.MAX_CODE_POINT][];
+    @NotNull
+    private final char[][] keyCharArray;
 
     /**
-     * Таблица символов.
+     * The key char set.
      */
-    private final char[] keyCharSet = new char[Character.MAX_CODE_POINT];
+    @NotNull
+    private final char[] keyCharSet;
 
     /**
-     * Состояние кнопок мыши.
+     * The mouse button states.
      */
-    private final boolean[] mouseButtonState = new boolean[3];
+    @NotNull
+    private final boolean[] mouseButtonState;
 
     /**
-     * Слушатель ввода пользователя.
+     * The raw input listener.
      */
-    private volatile RawInputListener everListeningInputListenerAdapter;
+    @Nullable
+    private volatile RawInputListener rawInputListener;
 
     /**
-     * Обработчик DnD Java FX.
+     * The D&D handler.
      */
+    @Nullable
     private volatile JmeFxDNDHandler jfxdndHandler;
 
-    public JmeFXInputListener(final JmeFxContainer listensOnContainer) {
+    public JmeFXInputListener(@NotNull final JmeFxContainer listensOnContainer) {
         this.jmeFxContainer = listensOnContainer;
+        this.keyStateSet = new BitSet(0xFF);
+        this.keyCharSet = new char[Character.MAX_CODE_POINT];
+        this.mouseButtonState = new boolean[3];
+        this.keyCharArray = new char[Character.MAX_CODE_POINT][];
 
         for (int i = 0, length = keyCharArray.length; i < length; i++) {
             keyCharArray[i] = new char[]{(char) i};
@@ -72,109 +91,94 @@ public class JmeFXInputListener implements RawInputListener {
     }
 
     /**
-     * @return обработчик DnD Java FX.
+     * @return The D&D handler.
      */
-    private JmeFxDNDHandler getJfxdndHandler() {
+    @Nullable
+    private JmeFxDNDHandler getJmeFxDNDHandler() {
         return jfxdndHandler;
     }
 
     @Override
     public void beginInput() {
-
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.beginInput();
-        }
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.beginInput();
     }
 
     @Override
     public void endInput() {
-
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.endInput();
-        }
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.endInput();
     }
 
     /**
-     * @return слушатель ввода пользователя.
+     * @return the raw input listener.
      */
-    private RawInputListener getEverListeningInputListenerAdapter() {
-        return everListeningInputListenerAdapter;
+    @Nullable
+    private RawInputListener getRawInputListener() {
+        return rawInputListener;
     }
 
     /**
-     * @return контейнер Java FX.
+     * @return The javaFX container.
      */
+    @NotNull
     private JmeFxContainer getJmeFxContainer() {
         return jmeFxContainer;
     }
 
     /**
-     * @return набор массивов для каждого символа.
+     * @return the key char array.
      */
+    @NotNull
     private char[][] getKeyCharArray() {
         return keyCharArray;
     }
 
     /**
-     * @return таблица символов.
+     * @return the key char set.
      */
+    @NotNull
     private char[] getKeyCharSet() {
         return keyCharSet;
     }
 
     /**
-     * @return
+     * @return the key state set.
      */
+    @NotNull
     private BitSet getKeyStateSet() {
         return keyStateSet;
     }
 
     /**
-     * @return состояние кнопок мыши.
+     * @return the mouse button states.
      */
+    @NotNull
     private boolean[] getMouseButtonState() {
         return mouseButtonState;
     }
 
     @Override
-    public void onJoyAxisEvent(final JoyAxisEvent event) {
-
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.onJoyAxisEvent(event);
-        }
+    public void onJoyAxisEvent(@NotNull final JoyAxisEvent event) {
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.onJoyAxisEvent(event);
     }
 
     @Override
-    public void onJoyButtonEvent(final JoyButtonEvent event) {
-
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.onJoyButtonEvent(event);
-        }
+    public void onJoyButtonEvent(@NotNull final JoyButtonEvent event) {
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.onJoyButtonEvent(event);
     }
 
     @Override
-    public void onKeyEvent(final KeyInputEvent event) {
+    public void onKeyEvent(@NotNull final KeyInputEvent event) {
 
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.onKeyEvent(event);
-        }
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.onKeyEvent(event);
 
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
         final EmbeddedSceneInterface scenePeer = jmeFxContainer.getScenePeer();
-
-        if (scenePeer == null) {
-            return;
-        }
+        if (scenePeer == null) return;
 
         final BitSet keyStateSet = getKeyStateSet();
 
@@ -235,23 +239,20 @@ public class JmeFXInputListener implements RawInputListener {
     }
 
     @Override
-    public void onMouseButtonEvent(final MouseButtonEvent event) {
+    public void onMouseButtonEvent(@NotNull final MouseButtonEvent event) {
 
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.onMouseButtonEvent(event);
-        }
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.onMouseButtonEvent(event);
 
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        final Application application = jmeFxContainer.getApplication();
+        final Application application = requireNonNull(jmeFxContainer.getApplication());
         final InputManager inputManager = application.getInputManager();
 
         if (jmeFxContainer.getScenePeer() == null) {
             return;
         }
 
-        final Scene scene = jmeFxContainer.getScene();
+        final Scene scene = requireNonNull(jmeFxContainer.getScene());
 
         final int x = event.getX();
         final int y = (int) Math.round(scene.getHeight()) - event.getY();
@@ -278,9 +279,6 @@ public class JmeFXInputListener implements RawInputListener {
 
         mouseButtonState[event.getButtonIndex()] = event.isPressed();
 
-        // seems that generating mouse release without corresponding mouse
-        // pressed is causing problems in Scene.ClickGenerator
-
         final boolean covered = jmeFxContainer.isCovered(x, y);
 
         if (!covered) {
@@ -296,7 +294,6 @@ public class JmeFXInputListener implements RawInputListener {
             type = AbstractEvents.MOUSEEVENT_PRESSED;
         } else if (event.isReleased()) {
             type = AbstractEvents.MOUSEEVENT_RELEASED;
-            // and clicked ??
         } else {
             return;
         }
@@ -309,7 +306,7 @@ public class JmeFXInputListener implements RawInputListener {
     private void onMouseButtonEventImpl(int x, int y, int button, int type) {
 
         final boolean[] mouseButtonState = getMouseButtonState();
-        final JmeFxDNDHandler jfxdndHandler = getJfxdndHandler();
+        final JmeFxDNDHandler jfxdndHandler = getJmeFxDNDHandler();
 
         final boolean primaryBtnDown = mouseButtonState[0];
         final boolean middleBtnDown = mouseButtonState[1];
@@ -320,7 +317,7 @@ public class JmeFXInputListener implements RawInputListener {
         }
 
         final JmeFxContainer fxContainer = getJmeFxContainer();
-        final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
+        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getScenePeer());
 
         final int screenX = fxContainer.getOldX() + x;
         final int screenY = fxContainer.getOldY() + y;
@@ -333,27 +330,25 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
         final boolean popupTrigger = button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON;
 
-        scenePeer.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY, shift, ctrl, alt, meta, 0, popupTrigger);
+        scenePeer.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
+                shift, ctrl, alt, meta, 0, popupTrigger);
     }
 
     @Override
     public void onMouseMotionEvent(final MouseMotionEvent event) {
 
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.onMouseMotionEvent(event);
-        }
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.onMouseMotionEvent(event);
 
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        final Application application = jmeFxContainer.getApplication();
-        final InputManager inputManager = application.getInputManager();
+        final Application application = requireNonNull(jmeFxContainer.getApplication());
+        final InputManager inputManager = requireNonNull(application.getInputManager());
 
         if (jmeFxContainer.getScenePeer() == null) {
             return;
         }
 
-        final Scene scene = jmeFxContainer.getScene();
+        final Scene scene = requireNonNull(jmeFxContainer.getScene());
 
         final int x = event.getX();
         final int y = (int) Math.round(scene.getHeight()) - event.getY();
@@ -398,14 +393,14 @@ public class JmeFXInputListener implements RawInputListener {
     private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int ftype, int fbutton) {
 
         final JmeFxContainer fxContainer = getJmeFxContainer();
-        final Application application = fxContainer.getApplication();
+        final Application application = requireNonNull(fxContainer.getApplication());
         final InputManager inputManager = application.getInputManager();
 
         if (!inputManager.isCursorVisible()) {
             return;
         }
 
-        final JmeFxDNDHandler dndHandler = getJfxdndHandler();
+        final JmeFxDNDHandler dndHandler = getJmeFxDNDHandler();
         final boolean[] mouseButtonState = getMouseButtonState();
 
         final boolean primaryBtnDown = mouseButtonState[0];
@@ -416,7 +411,7 @@ public class JmeFXInputListener implements RawInputListener {
             dndHandler.mouseUpdate(x, y, primaryBtnDown);
         }
 
-        final EmbeddedSceneInterface scenePeer = fxContainer.getScenePeer();
+        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getScenePeer());
 
         final int screenX = fxContainer.getOldX() + x;
         final int screenY = fxContainer.getOldY() + y;
@@ -428,20 +423,17 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean alt = keyStateSet.get(KeyEvent.VK_ALT);
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
 
-        scenePeer.mouseEvent(ftype, fbutton, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY, shift, ctrl, alt, meta, wheelRotation, false);
+        scenePeer.mouseEvent(ftype, fbutton, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
+                shift, ctrl, alt, meta, wheelRotation, false);
     }
 
     @Override
-    public void onTouchEvent(final TouchEvent event) {
-
-        final RawInputListener adapter = getEverListeningInputListenerAdapter();
-
-        if (adapter != null) {
-            adapter.onTouchEvent(event);
-        }
+    public void onTouchEvent(@NotNull final TouchEvent event) {
+        final RawInputListener adapter = getRawInputListener();
+        if (adapter != null) adapter.onTouchEvent(event);
     }
 
-    public int retrieveKeyState() {
+    private int retrieveKeyState() {
 
         int embedModifiers = 0;
 
@@ -466,15 +458,15 @@ public class JmeFXInputListener implements RawInputListener {
         return embedModifiers;
     }
 
-    public void setEverListeningRawInputListener(final RawInputListener rawInputListenerAdapter) {
-        this.everListeningInputListenerAdapter = rawInputListenerAdapter;
+    public void setEverListeningRawInputListener(@NotNull final RawInputListener rawInputListenerAdapter) {
+        this.rawInputListener = rawInputListenerAdapter;
     }
 
     /**
      * set on drag start /nulled on end<br> necessary so that the drag events can be generated
      * appropiatly
      */
-    public void setMouseDNDListener(final JmeFxDNDHandler jfxdndHandler) {
+    void setMouseDNDListener(@Nullable final JmeFxDNDHandler jfxdndHandler) {
         assert this.jfxdndHandler == null || jfxdndHandler == null : "duplicate jfxdndn handler register? ";
         this.jfxdndHandler = jfxdndHandler;
     }

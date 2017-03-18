@@ -5,32 +5,37 @@ import com.jme3.ui.Picture;
 import com.jme3x.jfx.util.JFXUtils;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 
+import org.jetbrains.annotations.NotNull;
+
 import javafx.application.Platform;
 import rlib.logging.Logger;
 import rlib.logging.LoggerManager;
 
 /**
- * Реализация картинки с UI для JME.
+ * The implementation of the {@link Picture} to represent javaFX UI.
  *
- * @author Ronn
+ * @author JavaSaBr
  */
 public class JavaFXPicture extends Picture {
 
+    @NotNull
     private static final Logger LOGGER = LoggerManager.getLogger(JavaFXPicture.class);
 
     /**
-     * Контейнер UI Java FX.
+     * The JavaFX container.
      */
+    @NotNull
     private final JmeFxContainer container;
 
-    public JavaFXPicture(JmeFxContainer container) {
+    public JavaFXPicture(@NotNull final JmeFxContainer container) {
         super("JavaFXContainer", true);
         this.container = container;
     }
 
     /**
-     * @return контейнер UI Java FX.
+     * @return the JavaFX container.
      */
+    @NotNull
     private JmeFxContainer getContainer() {
         return container;
     }
@@ -40,7 +45,6 @@ public class JavaFXPicture extends Picture {
 
         final JmeFxContainer container = getContainer();
         final JmeContext jmeContext = container.getJmeContext();
-
         final EmbeddedStageInterface currentStage = container.getStagePeer();
 
         try {
@@ -59,22 +63,16 @@ public class JavaFXPicture extends Picture {
             final int originalX = JFXUtils.getX(jmeContext);
             final int originalY = JFXUtils.getY(jmeContext);
 
-            final int offsetX = JFXUtils.isFullscreen(jmeContext) ? 0 : container.getWindowOffsetX();
-            final int offsetY = JFXUtils.isFullscreen(jmeContext) ? 0 : container.getWindowOffsetY();
-
-            final int x = originalX + offsetX;
-            final int y = originalY + offsetY;
-
-            if (container.getOldX() != x || container.getOldY() != y) {
+            if (container.getOldX() != originalX || container.getOldY() != originalY) {
 
                 if(JmeFxContainer.isDebug()) {
-                    LOGGER.debug("moved window to [original: " + originalX + ", " + originalY + " offset:" + offsetX + ", " + offsetY +"]");
+                    LOGGER.debug("moved window to [original: " + originalX + ", " + originalY + "]");
                 }
 
-                container.setOldX(x);
-                container.setOldY(y);
+                container.setOldX(originalX);
+                container.setOldY(originalY);
 
-                Platform.runLater(() -> currentStage.setLocation(x, y));
+                Platform.runLater(() -> currentStage.setLocation(originalX, originalY));
             }
 
         } finally {
