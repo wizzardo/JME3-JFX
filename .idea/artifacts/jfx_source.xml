@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="jfx-source">
+    <output-path>$PROJECT_DIR$/build/</output-path>
+    <root id="archive" name="jfx-1.5.1-source.jar">
+      <element id="dir-copy" path="$PROJECT_DIR$/src" />
+    </root>
+  </artifact>
+</component>
