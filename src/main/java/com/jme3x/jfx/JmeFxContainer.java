@@ -521,7 +521,7 @@ public class JmeFxContainer {
      * @return the current scene.
      */
     @Nullable
-    Scene getScene() {
+    public Scene getScene() {
         return scene;
     }
 
