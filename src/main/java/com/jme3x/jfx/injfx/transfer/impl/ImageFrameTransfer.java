@@ -17,6 +17,7 @@ import javafx.scene.image.WritableImage;
  */
 public class ImageFrameTransfer extends AbstractFrameTransfer<ImageView> {
 
+    @Nullable
     private WritableImage writableImage;
 
     /**

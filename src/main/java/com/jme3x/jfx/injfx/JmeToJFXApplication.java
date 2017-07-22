@@ -2,6 +2,7 @@ package com.jme3x.jfx.injfx;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The base implementation of {@link Application} for using in the JavaFX.
@@ -10,6 +11,7 @@ import com.jme3.app.SimpleApplication;
  */
 public class JmeToJFXApplication extends SimpleApplication {
 
+    @NotNull
     private static final ApplicationThreadExecutor EXECUTOR = ApplicationThreadExecutor.getInstance();
 
     /**

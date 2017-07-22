@@ -7,15 +7,13 @@ import com.jme3.texture.Image;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
-
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.PixelWriter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.PixelWriter;
 
 /**
  * The base implementation of a frame transfer.
@@ -45,33 +43,43 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     /**
      * The Frame state.
      */
+    @NotNull
     protected final AtomicInteger frameState;
+
     /**
      * The Image state.
      */
+    @NotNull
     protected final AtomicInteger imageState;
 
     /**
      * The Frame buffer.
      */
+    @NotNull
     protected final FrameBuffer frameBuffer;
 
     /**
      * The Pixel writer.
      */
+    @NotNull
     protected final PixelWriter pixelWriter;
 
     /**
      * The Frame byte buffer.
      */
+    @NotNull
     protected final ByteBuffer frameByteBuffer;
+
     /**
      * The Byte buffer.
      */
+    @NotNull
     protected final ByteBuffer byteBuffer;
+
     /**
      * The Image byte buffer.
      */
+    @NotNull
     protected final byte[] imageByteBuffer;
 
     /**
@@ -103,7 +111,9 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      * @param width       the width
      * @param height      the height
      */
-    public AbstractFrameTransfer(@NotNull final T destination, @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
+    public AbstractFrameTransfer(@NotNull final T destination, @Nullable final FrameBuffer frameBuffer,
+                                 final int width, final int height) {
+
         this.frameState = new AtomicInteger(WAITING_STATE);
         this.imageState = new AtomicInteger(WAITING_STATE);
         this.width = frameBuffer != null ? frameBuffer.getWidth() : width;
@@ -138,7 +148,8 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      * @param height      the height
      * @return the pixel writer
      */
-    protected PixelWriter getPixelWriter(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer, final int width, final int height) {
+    protected PixelWriter getPixelWriter(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer,
+                                         final int width, final int height) {
         throw new UnsupportedOperationException();
     }
 

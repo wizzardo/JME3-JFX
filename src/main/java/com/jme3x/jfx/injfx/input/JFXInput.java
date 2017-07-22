@@ -1,47 +1,50 @@
 package com.jme3x.jfx.injfx.input;
 
+import static com.ss.rlib.util.ObjectUtils.notNull;
 import com.jme3.input.Input;
 import com.jme3.input.RawInputListener;
 import com.jme3x.jfx.injfx.ApplicationThreadExecutor;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
-
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The base implementation of the {@link Input} for using in the ImageView.
  *
- * @author JavaSaBr.
+ * @author JavaSaBr
  */
 public class JFXInput implements Input {
 
     /**
      * The constant EXECUTOR.
      */
+    @NotNull
     protected static final ApplicationThreadExecutor EXECUTOR = ApplicationThreadExecutor.getInstance();
 
     /**
      * The context.
      */
+    @NotNull
     protected final JmeOffscreenSurfaceContext context;
 
     /**
      * The raw listener.
      */
+    @Nullable
     protected RawInputListener listener;
 
     /**
      * The input node.
      */
+    @Nullable
     protected Node node;
 
     /**
      * The scene.
      */
+    @Nullable
     protected Scene scene;
 
     /**
@@ -66,8 +69,8 @@ public class JFXInput implements Input {
     public void bind(@NotNull final Node node) {
         this.node = node;
         this.scene = node.getScene();
-        Objects.requireNonNull(this.node, "ImageView can' be null");
-        Objects.requireNonNull(this.scene, "The scene of the ImageView can' be null");
+        notNull(this.node, "ImageView can' be null");
+        notNull(this.scene, "The scene of the ImageView can' be null");
     }
 
     /**

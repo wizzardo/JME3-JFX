@@ -1,32 +1,33 @@
 package com.jme3x.jfx.injfx.input;
 
 import static com.ss.rlib.util.linkedlist.LinkedListFactory.newLinkedList;
-
 import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.MouseInput;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
-
+import com.ss.rlib.util.linkedlist.LinkedList;
 import javafx.event.EventHandler;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import com.ss.rlib.util.linkedlist.LinkedList;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The implementation of the {@link MouseInput} for using in the {@link ImageView}.
  *
- * @author JavaSaBr.
+ * @author JavaSaBr
  */
 public class JFXMouseInput extends JFXInput implements MouseInput {
+
+    @NotNull
+    public static final String PROP_USE_LOCAL_COORDS = "JFX.mouseInput.useLocalCoords";
 
     @NotNull
     private static final Map<MouseButton, Integer> MOUSE_BUTTON_TO_JME = new HashMap<>();
@@ -64,6 +65,8 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     private int mouseY;
     private int mouseWheel;
 
+    private boolean useLocalCoords;
+
     /**
      * Instantiates a new Jfx mouse input.
      *
@@ -78,11 +81,15 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     @Override
     public void bind(@NotNull final Node node) {
         super.bind(node);
+
         node.addEventHandler(MouseEvent.MOUSE_MOVED, processMotion);
         node.addEventHandler(MouseEvent.MOUSE_PRESSED, processPressed);
         node.addEventHandler(MouseEvent.MOUSE_RELEASED, processReleased);
         node.addEventHandler(MouseEvent.MOUSE_DRAGGED, processMotion);
         node.addEventHandler(ScrollEvent.ANY, processScroll);
+
+        useLocalCoords = node.getProperties()
+                .get(PROP_USE_LOCAL_COORDS) == Boolean.TRUE;
     }
 
     @Override
@@ -132,7 +139,16 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
      * Handle the mouse motion event.
      */
     private void processMotion(@NotNull final MouseEvent mouseEvent) {
-        onCursorPos(mouseEvent.getSceneX(), mouseEvent.getSceneY());
+
+        final double sceneX = mouseEvent.getSceneX();
+        final double sceneY = mouseEvent.getSceneY();
+
+        if (!useLocalCoords) {
+            onCursorPos(sceneX, sceneY);
+        } else {
+            final Point2D point2D = node.sceneToLocal(sceneX, sceneY, true);
+            onCursorPos(point2D.getX(), point2D.getY());
+        }
     }
 
     private void onWheelScroll(final double xOffset, final double yOffset) {

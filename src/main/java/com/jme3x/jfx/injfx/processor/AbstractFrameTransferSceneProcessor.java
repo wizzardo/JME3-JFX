@@ -14,7 +14,10 @@ import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
-
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.scene.Node;
+import javafx.scene.image.ImageView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,46 +25,57 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.scene.Node;
-import javafx.scene.image.ImageView;
-
 /**
  * The base implementation of scene processor for transferring frames.
  *
- * @param <T> the type parameter
- * @author JavaSaBr.
+ * @param <T> the type of JavaFX Node
+ * @author JavaSaBr
  */
 public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implements FrameTransferSceneProcessor {
 
     /**
      * The listeners.
      */
+    @NotNull
     protected final ChangeListener<? super Number> widthListener;
+
     /**
      * The Height listener.
      */
+    @NotNull
     protected final ChangeListener<? super Number> heightListener;
+
     /**
      * The Ration listener.
      */
+    @NotNull
     protected final ChangeListener<? super Boolean> rationListener;
 
+    /**
+     * The flag to decide when we should resize.
+     */
+    @NotNull
     private final AtomicBoolean reshapeNeeded;
 
+    @Nullable
     private RenderManager renderManager;
+
+    @Nullable
     private ViewPort viewPort;
+
+    @Nullable
     private FrameTransfer frameTransfer;
 
     /**
      * THe JME application.
      */
+    @Nullable
     private volatile JmeToJFXApplication application;
 
     /**
      * The {@link ImageView} for showing the content of jME.
      */
+    @Nullable
     protected volatile T destination;
 
     /**
@@ -93,7 +107,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
      *
      * @param newValue the new value of the ratio.
      */
-    protected void notifyChangedRatio(final Boolean newValue) {
+    protected void notifyChangedRatio(@NotNull final Boolean newValue) {
         notifyComponentResized(getDestinationWidth(), getDestinationHeight(), newValue);
     }
 

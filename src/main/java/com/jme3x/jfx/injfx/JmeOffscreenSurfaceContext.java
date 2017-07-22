@@ -20,6 +20,7 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
     /**
      * The settings.
      */
+    @NotNull
     protected final AppSettings settings;
 
     /**
@@ -47,6 +48,7 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
     /**
      * The background context.
      */
+    @Nullable
     protected JmeContext backgroundContext;
 
     /**

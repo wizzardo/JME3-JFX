@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * The implementation of the {@link KeyInput} for using in the {@link ImageView}.
  *
- * @author JavaSaBr.
+ * @author JavaSaBr
  */
 public class JFXKeyInput extends JFXInput implements KeyInput {
 
