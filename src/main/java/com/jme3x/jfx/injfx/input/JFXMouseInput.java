@@ -7,13 +7,16 @@ import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
 import com.ss.rlib.util.linkedlist.LinkedList;
+import javafx.collections.ObservableMap;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Region;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -28,6 +31,9 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
 
     @NotNull
     public static final String PROP_USE_LOCAL_COORDS = "JFX.mouseInput.useLocalCoords";
+
+    @NotNull
+    public static final String PROP_INVERSE_Y_COORD = "JFX.mouseInput.inverseYCoord";
 
     @NotNull
     private static final Map<MouseButton, Integer> MOUSE_BUTTON_TO_JME = new HashMap<>();
@@ -66,6 +72,7 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
     private int mouseWheel;
 
     private boolean useLocalCoords;
+    private boolean inverseYCoord;
 
     /**
      * Instantiates a new Jfx mouse input.
@@ -88,8 +95,10 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
         node.addEventHandler(MouseEvent.MOUSE_DRAGGED, processMotion);
         node.addEventHandler(ScrollEvent.ANY, processScroll);
 
-        useLocalCoords = node.getProperties()
-                .get(PROP_USE_LOCAL_COORDS) == Boolean.TRUE;
+        final ObservableMap<Object, Object> properties = node.getProperties();
+
+        useLocalCoords = properties.get(PROP_USE_LOCAL_COORDS) == Boolean.TRUE;
+        inverseYCoord = properties.get(PROP_INVERSE_Y_COORD) == Boolean.TRUE;
     }
 
     @Override
@@ -155,7 +164,8 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
 
         mouseWheel += yOffset;
 
-        final MouseMotionEvent mouseMotionEvent = new MouseMotionEvent(mouseX, mouseY, 0, 0, mouseWheel, (int) Math.round(yOffset));
+        final MouseMotionEvent mouseMotionEvent = new MouseMotionEvent(mouseX, mouseY, 0, 0, mouseWheel,
+                (int) Math.round(yOffset));
         mouseMotionEvent.setTime(getInputTimeNanos());
 
         EXECUTOR.addToExecute(() -> mouseMotionEvents.add(mouseMotionEvent));
@@ -165,8 +175,21 @@ public class JFXMouseInput extends JFXInput implements MouseInput {
 
         int xDelta;
         int yDelta;
+
         int x = (int) Math.round(xpos);
-        int y = context.getHeight() - (int) Math.round(ypos);
+        int y = 0;
+
+        if(inverseYCoord) {
+            if (node instanceof Region) {
+                y = (int) Math.round(((Region) node).getHeight() - ypos);
+            } else if (node instanceof Canvas) {
+                y = (int) Math.round(((Canvas) node).getHeight() - ypos);
+            } else if (node instanceof ImageView) {
+                y = (int) Math.round(((ImageView) node).getFitHeight() - ypos);
+            }
+        } else {
+            y = (int) Math.round(ypos);
+        }
 
         if (mouseX == 0) mouseX = x;
         if (mouseY == 0) mouseY = y;
