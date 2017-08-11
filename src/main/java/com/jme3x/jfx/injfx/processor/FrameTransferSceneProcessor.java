@@ -1,6 +1,7 @@
 package com.jme3x.jfx.injfx.processor;
 
 import com.jme3.post.SceneProcessor;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The interface for implementing frame transfer processor.
@@ -8,6 +9,11 @@ import com.jme3.post.SceneProcessor;
  * @author JavaSaBr
  */
 public interface FrameTransferSceneProcessor extends SceneProcessor {
+
+    enum TransferMode {
+        ALWAYS,
+        ON_CHANGES
+    }
 
     /**
      * Is main boolean.
@@ -34,4 +40,19 @@ public interface FrameTransferSceneProcessor extends SceneProcessor {
      * Reshape a screen.
      */
     void reshape();
+
+    /**
+     * Set the transfer mode.
+     *
+     * @return the transfer mode.
+     */
+    @NotNull
+    TransferMode getTransferMode();
+
+    /**
+     * Get the transfer mode.
+     *
+     * @param transferMode the transfer mode.
+     */
+    void setTransferMode(@NotNull TransferMode transferMode);
 }

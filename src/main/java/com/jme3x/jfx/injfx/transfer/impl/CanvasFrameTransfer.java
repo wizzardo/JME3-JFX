@@ -1,12 +1,11 @@
 package com.jme3x.jfx.injfx.transfer.impl;
 
 import com.jme3.texture.FrameBuffer;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import com.jme3x.jfx.injfx.processor.FrameTransferSceneProcessor.TransferMode;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.PixelWriter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The class for transferring content from the jME to {@link Canvas}.
@@ -18,25 +17,28 @@ public class CanvasFrameTransfer extends AbstractFrameTransfer<Canvas> {
     /**
      * Instantiates a new Canvas frame transfer.
      *
-     * @param canvas the canvas
-     * @param width  the width
-     * @param height the height
+     * @param canvas       the canvas.
+     * @param transferMode the transfer mode.
+     * @param width        the width.
+     * @param height       the height.
      */
-    public CanvasFrameTransfer(@NotNull final Canvas canvas, int width, int height) {
-        this(canvas, null, width, height);
+    public CanvasFrameTransfer(@NotNull final Canvas canvas, @NotNull final TransferMode transferMode, int width,
+                               int height) {
+        this(canvas, transferMode, null, width, height);
     }
 
     /**
      * Instantiates a new Canvas frame transfer.
      *
-     * @param canvas      the canvas
-     * @param frameBuffer the frame buffer
-     * @param width       the width
-     * @param height      the height
+     * @param canvas       the canvas.
+     * @param transferMode the transfer mode.
+     * @param frameBuffer  the frame buffer.
+     * @param width        the width.
+     * @param height       the height.
      */
-    public CanvasFrameTransfer(@NotNull final Canvas canvas, @Nullable final FrameBuffer frameBuffer,
-                               final int width, final int height) {
-        super(canvas, frameBuffer, width, height);
+    public CanvasFrameTransfer(@NotNull final Canvas canvas, @NotNull final TransferMode transferMode,
+                               @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
+        super(canvas, transferMode, frameBuffer, width, height);
     }
 
     @Override

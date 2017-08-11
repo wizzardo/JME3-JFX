@@ -2,21 +2,18 @@ package com.jme3x.jfx.injfx;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-
 import com.jme3.renderer.ViewPort;
 import com.jme3.system.AppSettings;
 import com.jme3x.jfx.injfx.processor.CanvasFrameTransferSceneProcessor;
 import com.jme3x.jfx.injfx.processor.FrameTransferSceneProcessor;
 import com.jme3x.jfx.injfx.processor.ImageViewFrameTransferSceneProcessor;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Function;
-
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.ImageView;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Function;
 
 /**
  * The type Jme to jfx integrator.
@@ -50,6 +47,7 @@ public class JmeToJFXIntegrator {
                                                            @NotNull final ImageView imageView, @NotNull final Function<Runnable, Thread> factory) {
         factory.apply(application::start).start();
         final ImageViewFrameTransferSceneProcessor processor = new ImageViewFrameTransferSceneProcessor();
+        processor.setTransferMode(FrameTransferSceneProcessor.TransferMode.ON_CHANGES);
         Platform.runLater(() -> application.enqueue(() -> processor.bind(imageView, application)));
         return processor;
     }

@@ -66,6 +66,9 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
     @Nullable
     private FrameTransfer frameTransfer;
 
+    @NotNull
+    private TransferMode transferMode;
+
     /**
      * THe JME application.
      */
@@ -93,6 +96,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
      * Instantiates a new Abstract frame transfer scene processor.
      */
     public AbstractFrameTransferSceneProcessor() {
+        transferMode = TransferMode.ALWAYS;
         askWidth = 1;
         askHeight = 1;
         main = true;
@@ -473,5 +477,16 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
 
     @Override
     public void setProfiler(final AppProfiler profiler) {
+    }
+
+    @NotNull
+    @Override
+    public FrameTransferSceneProcessor.TransferMode getTransferMode() {
+        return transferMode;
+    }
+
+    @Override
+    public void setTransferMode(@NotNull final TransferMode transferMode) {
+        this.transferMode = transferMode;
     }
 }

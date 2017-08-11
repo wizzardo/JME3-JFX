@@ -57,6 +57,6 @@ public class ImageViewFrameTransferSceneProcessor extends AbstractFrameTransferS
     @NotNull
     @Override
     protected FrameTransfer createFrameTransfer(final int width, final int height, @NotNull final FrameBuffer frameBuffer) {
-        return new ImageFrameTransfer(destination, isMain() ? null : frameBuffer, width, height);
+        return new ImageFrameTransfer(destination, getTransferMode(), isMain() ? null : frameBuffer, width, height);
     }
 }

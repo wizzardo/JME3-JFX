@@ -1,14 +1,13 @@
 package com.jme3x.jfx.injfx.transfer.impl;
 
 import com.jme3.texture.FrameBuffer;
+import com.jme3x.jfx.injfx.processor.FrameTransferSceneProcessor.TransferMode;
 import com.jme3x.jfx.util.JFXPlatform;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The class for transferring a frame from jME to {@link ImageView}.
@@ -23,25 +22,28 @@ public class ImageFrameTransfer extends AbstractFrameTransfer<ImageView> {
     /**
      * Instantiates a new Image frame transfer.
      *
-     * @param imageView the image view
-     * @param width     the width
-     * @param height    the height
+     * @param imageView    the image view.
+     * @param transferMode the transfer mode.
+     * @param width        the width.
+     * @param height       the height.
      */
-    public ImageFrameTransfer(@NotNull final ImageView imageView, int width, int height) {
-        this(imageView, null, width, height);
+    public ImageFrameTransfer(@NotNull final ImageView imageView, @NotNull final TransferMode transferMode, int width,
+                              int height) {
+        this(imageView, transferMode, null, width, height);
     }
 
     /**
      * Instantiates a new Image frame transfer.
      *
-     * @param imageView   the image view
-     * @param frameBuffer the frame buffer
-     * @param width       the width
-     * @param height      the height
+     * @param imageView    the image view.
+     * @param transferMode the transfer mode.
+     * @param frameBuffer  the frame buffer.
+     * @param width        the width.
+     * @param height       the height.
      */
-    public ImageFrameTransfer(@NotNull final ImageView imageView, @Nullable final FrameBuffer frameBuffer,
-                              final int width, final int height) {
-        super(imageView, frameBuffer, width, height);
+    public ImageFrameTransfer(@NotNull final ImageView imageView, @NotNull final TransferMode transferMode,
+                              @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
+        super(imageView, transferMode, frameBuffer, width, height);
         JFXPlatform.runInFXThread(() -> imageView.setImage(writableImage));
     }
 

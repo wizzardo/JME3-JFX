@@ -57,6 +57,6 @@ public class CanvasFrameTransferSceneProcessor extends AbstractFrameTransferScen
     @NotNull
     @Override
     protected FrameTransfer createFrameTransfer(final int width, final int height, @NotNull final FrameBuffer frameBuffer) {
-        return new CanvasFrameTransfer(destination, isMain() ? null : frameBuffer, width, height);
+        return new CanvasFrameTransfer(destination, getTransferMode(), isMain() ? null : frameBuffer, width, height);
     }
 }

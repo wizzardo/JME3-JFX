@@ -1,5 +1,6 @@
 package com.jme3x.jfx.injfx.transfer.impl;
 
+import static com.jme3x.jfx.injfx.processor.FrameTransferSceneProcessor.TransferMode;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.texture.FrameBuffer;
@@ -77,6 +78,12 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     protected final ByteBuffer byteBuffer;
 
     /**
+     * The transfer mode.
+     */
+    @NotNull
+    protected final TransferMode transferMode;
+
+    /**
      * The Image byte buffer.
      */
     @NotNull
@@ -95,25 +102,28 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     /**
      * Instantiates a new Abstract frame transfer.
      *
-     * @param destination the destination
-     * @param width       the width
-     * @param height      the height
+     * @param destination  the destination.
+     * @param width        the width.
+     * @param height       the height.
+     * @param transferMode the transfer mode.
      */
-    public AbstractFrameTransfer(@NotNull final T destination, final int width, final int height) {
-        this(destination, null, width, height);
+    public AbstractFrameTransfer(@NotNull final T destination, final int width, final int height,
+                                 @NotNull final TransferMode transferMode) {
+        this(destination, transferMode, null, width, height);
     }
 
     /**
      * Instantiates a new Abstract frame transfer.
      *
-     * @param destination the destination
-     * @param frameBuffer the frame buffer
-     * @param width       the width
-     * @param height      the height
+     * @param destination  the destination.
+     * @param transferMode the transfer mode.
+     * @param frameBuffer  the frame buffer.
+     * @param width        the width.
+     * @param height       the height.
      */
-    public AbstractFrameTransfer(@NotNull final T destination, @Nullable final FrameBuffer frameBuffer,
-                                 final int width, final int height) {
-
+    public AbstractFrameTransfer(@NotNull final T destination, @NotNull final TransferMode transferMode,
+                                 @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
+        this.transferMode = transferMode;
         this.frameState = new AtomicInteger(WAITING_STATE);
         this.imageState = new AtomicInteger(WAITING_STATE);
         this.width = frameBuffer != null ? frameBuffer.getWidth() : width;
@@ -187,6 +197,19 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         }
 
         synchronized (byteBuffer) {
+
+            if (transferMode == TransferMode.ON_CHANGES) {
+
+                byteBuffer.position(0);
+                frameByteBuffer.position(0);
+
+                if (byteBuffer.equals(frameByteBuffer)) {
+                    return;
+                }
+
+                frameByteBuffer.position(0);
+            }
+
             byteBuffer.clear();
             byteBuffer.put(frameByteBuffer);
             byteBuffer.flip();
