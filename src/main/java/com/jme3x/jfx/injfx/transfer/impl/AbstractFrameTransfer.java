@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -71,11 +72,6 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     @NotNull
     protected final ByteBuffer frameByteBuffer;
 
-    /**
-     * The Byte buffer.
-     */
-    @NotNull
-    protected final ByteBuffer byteBuffer;
 
     /**
      * The transfer mode.
@@ -84,10 +80,27 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     protected final TransferMode transferMode;
 
     /**
-     * The Image byte buffer.
+     * The byte buffer.
+     */
+    @NotNull
+    protected final byte[] byteBuffer;
+
+    /**
+     * The image byte buffer.
      */
     @NotNull
     protected final byte[] imageByteBuffer;
+
+    /**
+     * The prev image byte buffer.
+     */
+    @NotNull
+    protected final byte[] prevImageByteBuffer;
+
+    /**
+     * How many frames need to write else.
+     */
+    protected int frameCount;
 
     /**
      * The width.
@@ -128,6 +141,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         this.imageState = new AtomicInteger(WAITING_STATE);
         this.width = frameBuffer != null ? frameBuffer.getWidth() : width;
         this.height = frameBuffer != null ? frameBuffer.getHeight() : height;
+        this.frameCount = 0;
 
         if (frameBuffer != null) {
             this.frameBuffer = frameBuffer;
@@ -139,7 +153,8 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         }
 
         frameByteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
-        byteBuffer = BufferUtils.createByteBuffer(getWidth() * getHeight() * 4);
+        byteBuffer = new byte[getWidth() * getHeight() * 4];
+        prevImageByteBuffer = new byte[getWidth() * getHeight() * 4];
         imageByteBuffer = new byte[getWidth() * getHeight() * 4];
         pixelWriter = getPixelWriter(destination, this.frameBuffer, width, height);
     }
@@ -188,7 +203,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
             frameByteBuffer.clear();
 
             final Renderer renderer = renderManager.getRenderer();
-            renderer.readFrameBufferWithFormat(frameBuffer, frameByteBuffer, Image.Format.RGBA8);
+            renderer.readFrameBufferWithFormat(frameBuffer, frameByteBuffer, Image.Format.BGRA8);
 
         } finally {
             if (!frameState.compareAndSet(RUNNING_STATE, WAITING_STATE)) {
@@ -197,22 +212,22 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         }
 
         synchronized (byteBuffer) {
+            frameByteBuffer.get(byteBuffer);
 
             if (transferMode == TransferMode.ON_CHANGES) {
 
-                byteBuffer.position(0);
-                frameByteBuffer.position(0);
+                final byte[] prevBuffer = getPrevImageByteBuffer();
 
-                if (byteBuffer.equals(frameByteBuffer)) {
-                    return;
+                if (Arrays.equals(prevBuffer, byteBuffer)) {
+                    if (frameCount == 0) return;
+                } else {
+                    frameCount = 2;
+                    System.arraycopy(byteBuffer, 0, prevBuffer, 0, byteBuffer.length);
                 }
 
                 frameByteBuffer.position(0);
+                frameCount--;
             }
-
-            byteBuffer.clear();
-            byteBuffer.put(frameByteBuffer);
-            byteBuffer.flip();
         }
 
         JFXPlatform.runInFXThread(this::writeFrame);
@@ -232,21 +247,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
             final byte[] imageByteBuffer = getImageByteBuffer();
 
             synchronized (byteBuffer) {
-                if (byteBuffer.position() == byteBuffer.limit()) return;
-                byteBuffer.get(imageByteBuffer);
-            }
-
-            for (int i = 0, length = width * height * 4; i < length; i += 4) {
-
-                byte r = imageByteBuffer[i + 0];
-                byte g = imageByteBuffer[i + 1];
-                byte b = imageByteBuffer[i + 2];
-                byte a = imageByteBuffer[i + 3];
-
-                imageByteBuffer[i + 0] = b;
-                imageByteBuffer[i + 1] = g;
-                imageByteBuffer[i + 2] = r;
-                imageByteBuffer[i + 3] = a;
+                System.arraycopy(byteBuffer, 0, imageByteBuffer, 0, byteBuffer.length);
             }
 
             final PixelFormat<ByteBuffer> pixelFormat = PixelFormat.getByteBgraInstance();
@@ -260,12 +261,23 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     }
 
     /**
-     * Get image byte buffer byte [ ].
+     * Get the image byte buffer.
      *
      * @return the image byte buffer.
      */
+    @NotNull
     protected byte[] getImageByteBuffer() {
         return imageByteBuffer;
+    }
+
+    /**
+     * Get the prev image byte buffer.
+     *
+     * @return the prev image byte buffer.
+     */
+    @NotNull
+    protected byte[] getPrevImageByteBuffer() {
+        return prevImageByteBuffer;
     }
 
     @Override
@@ -283,6 +295,5 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     protected void disposeImpl() {
         frameBuffer.dispose();
         BufferUtils.destroyDirectBuffer(frameByteBuffer);
-        BufferUtils.destroyDirectBuffer(byteBuffer);
     }
 }

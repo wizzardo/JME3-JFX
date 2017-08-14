@@ -28,10 +28,12 @@ public class JmeToJFXIntegrator {
      * @param settings  the settings
      * @param frameRate the frame rate
      */
-    public static void prepareSettings(@NotNull final AppSettings settings, final int frameRate) {
+    @NotNull
+    public static AppSettings prepareSettings(@NotNull final AppSettings settings, final int frameRate) {
         settings.setFullscreen(false);
         settings.setFrameRate(max(1, min(100, frameRate)));
         settings.setCustomRenderer(JmeOffscreenSurfaceContext.class);
+        return settings;
     }
 
     /**
@@ -49,6 +51,26 @@ public class JmeToJFXIntegrator {
         final ImageViewFrameTransferSceneProcessor processor = new ImageViewFrameTransferSceneProcessor();
         processor.setTransferMode(FrameTransferSceneProcessor.TransferMode.ON_CHANGES);
         Platform.runLater(() -> application.enqueue(() -> processor.bind(imageView, application)));
+        return processor;
+    }
+
+    /**
+     * Start and bind frame transfer scene processor.
+     *
+     * @param application the application
+     * @param imageView   the image view
+     * @param factory     the factory
+     * @return the frame transfer scene processor
+     */
+    @NotNull
+    public static FrameTransferSceneProcessor startAndBindMainViewPort(@NotNull final JmeToJFXApplication application,
+                                                                       @NotNull final ImageView imageView,
+                                                                       @NotNull final Function<Runnable, Thread> factory) {
+        factory.apply(application::start).start();
+        final ImageViewFrameTransferSceneProcessor processor = new ImageViewFrameTransferSceneProcessor();
+        processor.setTransferMode(FrameTransferSceneProcessor.TransferMode.ON_CHANGES);
+        application.enqueue(() -> processor.bind(imageView, application, application.getViewPort()));
+
         return processor;
     }
 

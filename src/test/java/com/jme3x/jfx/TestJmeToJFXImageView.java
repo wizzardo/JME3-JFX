@@ -12,10 +12,8 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
-import com.jme3.system.NativeLibraryLoader;
 import com.jme3x.jfx.injfx.JmeToJFXApplication;
 import com.jme3x.jfx.injfx.JmeToJFXIntegrator;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -24,7 +22,9 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
- * Created by ronn on 03.12.16.
+ * The test to show how to integrate jME to ImageView.
+ *
+ * @author JavaSaBr
  */
 public class TestJmeToJFXImageView extends Application {
 
@@ -49,13 +49,12 @@ public class TestJmeToJFXImageView extends Application {
         stage.setOnCloseRequest(event -> System.exit(0));
 
         final JmeToJFXApplication application = makeJmeApplication(stage, 80);
-
-        JmeToJFXIntegrator.startAndBind(application, imageView, Thread::new);
+        JmeToJFXIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
     }
 
     private static JmeToJFXApplication makeJmeApplication(Stage stage, int framerate) {
-        final AppSettings settings = new AppSettings(true);
-        JmeToJFXIntegrator.prepareSettings(settings, 60);
+
+        final AppSettings settings = JmeToJFXIntegrator.prepareSettings(new AppSettings(true), 60);
 
         JmeToJFXApplication app = new JmeToJFXApplication() {
 
@@ -63,23 +62,8 @@ public class TestJmeToJFXImageView extends Application {
             Boolean isRunning = true;
 
             @Override
-            public void start() {
-
-                if ("LWJGL".equals(settings.getAudioRenderer())) {
-                    NativeLibraryLoader.loadNativeLibrary("openal-lwjgl3", true);
-                }
-
-                NativeLibraryLoader.loadNativeLibrary("lwjgl3", true);
-                NativeLibraryLoader.loadNativeLibrary("glfw-lwjgl3", true);
-                NativeLibraryLoader.loadNativeLibrary("jemalloc-lwjgl3", true);
-                NativeLibraryLoader.loadNativeLibrary("jinput", true);
-                NativeLibraryLoader.loadNativeLibrary("jinput-dx8", true);
-
-                super.start();
-            }
-
-            @Override
             public void simpleInitApp() {
+                super.simpleInitApp();
                 Box b = new Box(1, 1, 1);
                 player = new Geometry("Player", b);
                 Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
