@@ -36,6 +36,9 @@ public class TestJmeToJFXImageView extends Application {
     public void start(final Stage stage) throws Exception {
 
         final ImageView imageView = new ImageView();
+        imageView.setFocusTraversable(true);
+        imageView.setOnMouseClicked(event -> imageView.requestFocus());
+
         final Button button = new Button("BUTTON");
         final StackPane stackPane = new StackPane(imageView, button);
         final Scene scene = new Scene(stackPane, 600, 600);

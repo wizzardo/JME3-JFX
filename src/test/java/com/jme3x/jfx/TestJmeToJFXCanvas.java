@@ -36,6 +36,9 @@ public class TestJmeToJFXCanvas extends Application {
     public void start(final Stage stage) throws Exception {
 
         final Canvas canvas = new Canvas();
+        canvas.setFocusTraversable(true);
+        canvas.setOnMouseClicked(event -> canvas.requestFocus());
+
         final Button button = new Button("BUTTON");
         final StackPane stackPane = new StackPane(canvas, button);
         final Scene scene = new Scene(stackPane, 600, 600);
