@@ -6,6 +6,46 @@ JFX Gui bridge for JME with usefull utilities for common usecases
 License is the New BSD License (same as JME3) 
 http://opensource.org/licenses/BSD-3-Clause
 
+## How to add this library to your project
+
+#### Gradle
+
+
+```
+#!groovy
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+dependencies {
+    compile 'com.github.JavaSaBr:JME3-JFX:branch_1.3.2-SNAPSHOT'
+}
+```
+
+    
+#### Maven
+
+```
+#!xml
+
+
+<repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependency>
+        <groupId>com.github.JavaSaBr</groupId>
+        <artifactId>JME3-JFX</artifactId>
+        <version>branch_1.3.2-SNAPSHOT</version>
+    </dependency>
+```
+
 How to use:
 * 1. You need to create FXContainer inside the method simpleInitApp() of SimpleApplication.
 

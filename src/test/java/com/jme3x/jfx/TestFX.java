@@ -3,14 +3,13 @@ package com.jme3x.jfx;
 import com.jme3.app.SimpleApplication;
 import com.jme3.system.AppSettings;
 import com.jme3x.jfx.cursor.proton.ProtonCursorProvider;
-
+import com.ss.rlib.logging.LoggerLevel;
+import com.ss.rlib.logging.LoggerManager;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import rlib.logging.LoggerLevel;
-import rlib.logging.LoggerManager;
 
 public class TestFX extends SimpleApplication {
 

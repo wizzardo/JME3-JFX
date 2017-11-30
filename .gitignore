@@ -35,10 +35,8 @@ version.properties
 !*.xml
 !MANIFEST.MF
 !*.fnt
-!*.png
 !*.glsllib
 !*.cfg
-!*.properties
 !*.xsd
 !*.jnlp
 !*.store
@@ -55,8 +53,6 @@ cache.html
 */.gitignore
 */dist/*
 */build/*
-*/*.cache.html
-*/generated/*
 classes/
 /war/
 
@@ -85,3 +81,6 @@ data.db.properties
 data.db.script
 networkProfile.xml
 .gwt-log
+/out/
+/build/
+/.idea/

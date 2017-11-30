@@ -6,14 +6,13 @@ import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.InputManager;
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
+import com.ss.rlib.logging.Logger;
+import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.cursor.CursorType;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-
-import rlib.logging.Logger;
-import rlib.logging.LoggerManager;
 
 /**
  * http://www.rw-designer.com/cursor-set/proton by juanello <br> A cursorProvider that simulates the

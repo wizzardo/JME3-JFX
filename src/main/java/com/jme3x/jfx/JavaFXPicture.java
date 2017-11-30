@@ -3,13 +3,11 @@ package com.jme3x.jfx;
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
 import com.jme3x.jfx.util.JFXUtils;
+import com.ss.rlib.logging.Logger;
+import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.embed.EmbeddedStageInterface;
-
-import org.jetbrains.annotations.NotNull;
-
 import javafx.application.Platform;
-import rlib.logging.Logger;
-import rlib.logging.LoggerManager;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The implementation of the {@link Picture} to represent javaFX UI.

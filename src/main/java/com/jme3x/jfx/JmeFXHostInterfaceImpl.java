@@ -5,20 +5,21 @@
 package com.jme3x.jfx;
 
 import com.jme3x.jfx.cursor.CursorDisplayProvider;
+import com.ss.rlib.logging.Logger;
+import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 import com.sun.javafx.embed.HostInterface;
-
-import rlib.logging.Logger;
-import rlib.logging.LoggerManager;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Fakes a top level window
  */
 public class JmeFXHostInterfaceImpl implements HostInterface {
 
+    @NotNull
     private static final Logger LOGGER = LoggerManager.getLogger(JmeFXHostInterfaceImpl.class);
 
     /**
