@@ -46,8 +46,7 @@ public interface FrameTransferSceneProcessor extends SceneProcessor {
      *
      * @return the transfer mode.
      */
-    @NotNull
-    TransferMode getTransferMode();
+    @NotNull TransferMode getTransferMode();
 
     /**
      * Get the transfer mode.

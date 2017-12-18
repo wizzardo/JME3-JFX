@@ -23,9 +23,6 @@ public class JmeToJFXApplication extends SimpleApplication {
     @Nullable
     protected FilterPostProcessor postProcessor;
 
-    /**
-     * Instantiates a new Jme to jfx application.
-     */
     public JmeToJFXApplication() {
     }
 
@@ -47,8 +44,7 @@ public class JmeToJFXApplication extends SimpleApplication {
      *
      * @return the post filter processor.
      */
-    @NotNull
-    protected FilterPostProcessor getPostProcessor() {
+    protected @NotNull FilterPostProcessor getPostProcessor() {
         return notNull(postProcessor);
     }
 }

@@ -12,28 +12,29 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
-import com.jme3.system.NativeLibraryLoader;
 import com.jme3x.jfx.injfx.JmeToJFXApplication;
 import com.jme3x.jfx.injfx.JmeToJFXIntegrator;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by ronn on 03.12.16.
+ * The test to show how to integrate jME to Canvas.
+ *
+ * @author JavaSaBr
  */
 public class TestJmeToJFXCanvas extends Application {
 
-    public static void main(final String[] args) {
+    public static void main(@NotNull final String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(final Stage stage) throws Exception {
+    public void start(@NotNull final Stage stage) {
 
         final Canvas canvas = new Canvas();
         canvas.setFocusTraversable(true);
@@ -51,35 +52,20 @@ public class TestJmeToJFXCanvas extends Application {
         stage.show();
         stage.setOnCloseRequest(event -> System.exit(0));
 
-        final JmeToJFXApplication application = makeJmeApplication(stage, 40);
+        // creates jME application
+        final JmeToJFXApplication application = makeJmeApplication();
 
-        JmeToJFXIntegrator.startAndBind(application, canvas, Thread::new);
+        // integrate jME application with Canvas
+        JmeToJFXIntegrator.startAndBindMainViewPort(application, canvas, Thread::new);
     }
 
-    private static JmeToJFXApplication makeJmeApplication(Stage stage, int framerate) {
-        final AppSettings settings = new AppSettings(true);
-        JmeToJFXIntegrator.prepareSettings(settings, framerate);
+    private static @NotNull JmeToJFXApplication makeJmeApplication() {
 
-        JmeToJFXApplication app = new JmeToJFXApplication() {
+        final AppSettings settings = JmeToJFXIntegrator.prepareSettings(new AppSettings(true), 60);
+        final JmeToJFXApplication application = new JmeToJFXApplication() {
 
             protected Geometry player;
             Boolean isRunning = true;
-
-            @Override
-            public void start() {
-
-                if ("LWJGL".equals(settings.getAudioRenderer())) {
-                    NativeLibraryLoader.loadNativeLibrary("openal-lwjgl3", true);
-                }
-
-                NativeLibraryLoader.loadNativeLibrary("lwjgl3", true);
-                NativeLibraryLoader.loadNativeLibrary("glfw-lwjgl3", true);
-                NativeLibraryLoader.loadNativeLibrary("jemalloc-lwjgl3", true);
-                NativeLibraryLoader.loadNativeLibrary("jinput", true);
-                NativeLibraryLoader.loadNativeLibrary("jinput-dx8", true);
-
-                super.start();
-            }
 
             @Override
             public void simpleInitApp() {
@@ -106,11 +92,9 @@ public class TestJmeToJFXCanvas extends Application {
             }
 
             /** Use this listener for KeyDown/KeyUp events */
-            private ActionListener actionListener = new ActionListener() {
-                public void onAction(String name, boolean keyPressed, float tpf) {
-                    if (name.equals("Pause") && !keyPressed) {
-                        isRunning = !isRunning;
-                    }
+            private ActionListener actionListener = (name, keyPressed, tpf) -> {
+                if (name.equals("Pause") && !keyPressed) {
+                    isRunning = !isRunning;
                 }
             };
 
@@ -133,8 +117,10 @@ public class TestJmeToJFXCanvas extends Application {
                 }
             };
         };
-        app.setSettings(settings);
-        app.setShowSettings(false);
-        return app;
+
+        application.setSettings(settings);
+        application.setShowSettings(false);
+
+        return application;
     }
 }

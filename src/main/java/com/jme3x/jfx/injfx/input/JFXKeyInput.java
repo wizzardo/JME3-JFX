@@ -2,6 +2,7 @@ package com.jme3x.jfx.injfx.input;
 
 import static com.ss.rlib.util.linkedlist.LinkedListFactory.newLinkedList;
 import com.jme3.input.KeyInput;
+import com.jme3.input.RawInputListener;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
 import com.ss.rlib.util.linkedlist.LinkedList;
@@ -145,14 +146,9 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
     @NotNull
     private final LinkedList<KeyInputEvent> keyInputEvents;
 
-    /**
-     * Instantiates a new Jfx key input.
-     *
-     * @param context the context
-     */
-    public JFXKeyInput(final JmeOffscreenSurfaceContext context) {
+    public JFXKeyInput(@NotNull final JmeOffscreenSurfaceContext context) {
         super(context);
-        keyInputEvents = newLinkedList(KeyInputEvent.class);
+        this.keyInputEvents = newLinkedList(KeyInputEvent.class);
     }
 
     @Override
@@ -164,10 +160,13 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
 
     @Override
     public void unbind() {
-        if (node != null) {
+
+        if (hasNode()) {
+            final Node node = getNode();
             node.removeEventHandler(KeyEvent.KEY_PRESSED, processKeyPressed);
             node.removeEventHandler(KeyEvent.KEY_RELEASED, processKeyReleased);
         }
+
         super.unbind();
     }
 
@@ -193,6 +192,7 @@ public class JFXKeyInput extends JFXInput implements KeyInput {
 
     @Override
     protected void updateImpl() {
+        final RawInputListener listener = getListener();
         while (!keyInputEvents.isEmpty()) {
             listener.onKeyEvent(keyInputEvents.poll());
         }
