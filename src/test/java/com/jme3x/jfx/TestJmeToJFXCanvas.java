@@ -69,6 +69,7 @@ public class TestJmeToJFXCanvas extends Application {
 
             @Override
             public void simpleInitApp() {
+                super.simpleInitApp();
                 Box b = new Box(1, 1, 1);
                 player = new Geometry("Player", b);
                 Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");

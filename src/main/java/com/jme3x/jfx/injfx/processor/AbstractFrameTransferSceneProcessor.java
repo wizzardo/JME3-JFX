@@ -347,7 +347,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
         }
 
         setApplication(application);
-        setEnabled(enabled);
+        setEnabled(true);
 
         this.main = main;
         this.viewPort = viewPort;
