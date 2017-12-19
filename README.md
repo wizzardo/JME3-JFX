@@ -40,7 +40,7 @@ dependencies {
     </dependency>
 ```
 
-#### How to integrate jME application to JavaFX ImageView.
+#### How to integrate jME application to JavaFX ImageView:
 
 ```java
 
