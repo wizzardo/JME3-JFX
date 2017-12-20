@@ -1,11 +1,11 @@
 package com.jme3x.jfx.injme.util;
 
+import static com.jme3.util.BufferUtils.createIntBuffer;
+import static java.lang.ThreadLocal.withInitial;
 import com.jme3.app.Application;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 import com.jme3.system.lwjgl.LwjglWindow;
-import com.jme3.util.BufferUtils;
-
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -18,21 +18,11 @@ import java.nio.IntBuffer;
  */
 public class JFXUtils {
 
-    private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = new ThreadLocal<IntBuffer>() {
+    @NotNull
+    private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = withInitial(() -> createIntBuffer(1));
 
-        @Override
-        protected IntBuffer initialValue() {
-            return BufferUtils.createIntBuffer(1);
-        }
-    };
-
-    private static final ThreadLocal<IntBuffer> LOCAL_SECOND_INT_BUFFER = new ThreadLocal<IntBuffer>() {
-
-        @Override
-        protected IntBuffer initialValue() {
-            return BufferUtils.createIntBuffer(1);
-        }
-    };
+    @NotNull
+    private static final ThreadLocal<IntBuffer> LOCAL_SECOND_INT_BUFFER = withInitial(() -> createIntBuffer(1));
 
     public static int getX(@NotNull final JmeContext context) {
 

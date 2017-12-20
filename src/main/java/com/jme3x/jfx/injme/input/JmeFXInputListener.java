@@ -171,7 +171,7 @@ public class JmeFXInputListener implements RawInputListener {
         if (adapter != null) adapter.onKeyEvent(event);
 
         final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        final EmbeddedSceneInterface scenePeer = jmeFxContainer.getScenePeer();
+        final EmbeddedSceneInterface scenePeer = jmeFxContainer.getSceneInterface();
         if (scenePeer == null) return;
 
         final BitSet keyStateSet = getKeyStateSet();
@@ -242,7 +242,7 @@ public class JmeFXInputListener implements RawInputListener {
         final Application application = requireNonNull(jmeFxContainer.getApplication());
         final InputManager inputManager = application.getInputManager();
 
-        if (jmeFxContainer.getScenePeer() == null) {
+        if (jmeFxContainer.getSceneInterface() == null) {
             return;
         }
 
@@ -311,10 +311,10 @@ public class JmeFXInputListener implements RawInputListener {
         }
 
         final JmeFxContainer fxContainer = getJmeFxContainer();
-        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getScenePeer());
+        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getSceneInterface());
 
-        final int screenX = fxContainer.getOldX() + x;
-        final int screenY = fxContainer.getOldY() + y;
+        final int screenX = fxContainer.getPositionX() + x;
+        final int screenY = fxContainer.getPositionY() + y;
 
         final BitSet keyStateSet = getKeyStateSet();
 
@@ -338,7 +338,7 @@ public class JmeFXInputListener implements RawInputListener {
         final Application application = requireNonNull(jmeFxContainer.getApplication());
         final InputManager inputManager = requireNonNull(application.getInputManager());
 
-        if (jmeFxContainer.getScenePeer() == null) {
+        if (jmeFxContainer.getSceneInterface() == null) {
             return;
         }
 
@@ -405,10 +405,10 @@ public class JmeFXInputListener implements RawInputListener {
             dndHandler.mouseUpdate(x, y, primaryBtnDown);
         }
 
-        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getScenePeer());
+        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getSceneInterface());
 
-        final int screenX = fxContainer.getOldX() + x;
-        final int screenY = fxContainer.getOldY() + y;
+        final int screenX = fxContainer.getPositionX() + x;
+        final int screenY = fxContainer.getPositionY() + y;
 
         final BitSet keyStateSet = getKeyStateSet();
 

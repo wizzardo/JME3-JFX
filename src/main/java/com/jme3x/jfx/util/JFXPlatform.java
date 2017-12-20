@@ -13,7 +13,7 @@ public class JFXPlatform {
     /**
      * Execute the task in JavaFX thread.
      *
-     * @param task the task
+     * @param task the task.
      */
     public static void runInFXThread(@NotNull final Runnable task) {
         if (Platform.isFxApplicationThread()) {

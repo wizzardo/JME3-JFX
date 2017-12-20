@@ -1,5 +1,6 @@
 package com.jme3x.jfx.injme;
 
+import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
 import static java.util.Objects.requireNonNull;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
@@ -19,7 +20,6 @@ import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.injme.cursor.CursorDisplayProvider;
 import com.jme3x.jfx.injme.input.JmeFXInputListener;
 import com.jme3x.jfx.injme.util.JFXUtils;
-import com.jme3x.jfx.util.JFXPlatform;
 import com.ss.rlib.concurrent.atomic.AtomicInteger;
 import com.ss.rlib.concurrent.lock.AsyncReadSyncWriteLock;
 import com.ss.rlib.concurrent.lock.LockFactory;
@@ -27,6 +27,7 @@ import com.ss.rlib.logging.Logger;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.glass.ui.Pixels;
 import com.sun.javafx.application.PlatformImpl;
+import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
 import com.sun.javafx.embed.EmbeddedStageInterface;
@@ -55,22 +56,22 @@ public class JmeFxContainer {
     private static final int MIN_RESIZE_INTERVAL = 300;
 
     /**
-     * The flag to show debug.
+     * The flag to show debug information.
      */
-    private static boolean debug;
+    private static boolean debugEnabled;
 
     /**
-     * @param debug true if need to activate debug.
+     * @param debugEnabled true if need to activate debug.
      */
-    public static void setDebug(boolean debug) {
-        JmeFxContainer.debug = debug;
+    public static void setDebugEnabled(final boolean debugEnabled) {
+        JmeFxContainer.debugEnabled = debugEnabled;
     }
 
     /**
-     * @return true is debug is enabled.
+     * @return true id debug is enabled.
      */
-    public static boolean isDebug() {
-        return debug;
+    public static boolean isDebugEnabled() {
+        return debugEnabled;
     }
 
     /**
@@ -277,22 +278,22 @@ public class JmeFxContainer {
     /**
      * The picture width.
      */
-    protected volatile int pictureWidth;
+    protected volatile int sceneWidth;
 
     /**
      * The picture height.
      */
-    protected volatile int pictureHeight;
+    protected volatile int sceneHeight;
 
     /**
      * The old X position.
      */
-    protected volatile int oldX;
+    protected volatile int positionX;
 
     /**
      * The old Y position.
      */
-    protected volatile int oldY;
+    protected volatile int positionY;
 
     /**
      * The flag of having focus.
@@ -318,8 +319,8 @@ public class JmeFxContainer {
                              @NotNull final CursorDisplayProvider cursorDisplayProvider) {
         this.initFx();
 
-        this.oldY = -1;
-        this.oldX = -1;
+        this.positionY = -1;
+        this.positionX = -1;
         this.jmeContext = application.getContext();
         this.waitCount = new AtomicInteger();
         this.imageLock = LockFactory.newAtomicARSWLock();
@@ -330,14 +331,23 @@ public class JmeFxContainer {
         final AppStateManager stateManager = application.getStateManager();
         stateManager.attach(fxAppState);
 
-        this.hostContainer = new JmeFXHostInterfaceImpl(this);
-        this.picture = new JavaFXPicture(this);
+        this.hostContainer = new JmeFxHostInterface(this);
+        this.picture = new JavaFxPicture(this);
         this.picture.move(0, 0, -1);
         this.picture.setPosition(0, 0);
         this.texture = new Texture2D(new Image());
         this.picture.setTexture(assetManager, texture, true);
 
         handleResize();
+    }
+
+    public void requestPrefferedSize(final int width, final int height) {
+
+
+    }
+
+    public boolean requestFocus() {
+        return true;
     }
 
     /**
@@ -436,29 +446,29 @@ public class JmeFxContainer {
     /**
      * @return the old X position.
      */
-    public int getOldX() {
-        return oldX;
+    public int getPositionX() {
+        return positionX;
     }
 
     /**
-     * @param oldX the old X position.
+     * @param positionX the old X position.
      */
-    void setOldX(final int oldX) {
-        this.oldX = oldX;
+    void setPositionX(final int positionX) {
+        this.positionX = positionX;
     }
 
     /**
      * @return the old Y position.
      */
-    public int getOldY() {
-        return oldY;
+    public int getPositionY() {
+        return positionY;
     }
 
     /**
-     * @param oldY the old Y position.
+     * @param positionY the old Y position.
      */
-    void setOldY(final int oldY) {
-        this.oldY = oldY;
+    void setPositionY(final int positionY) {
+        this.positionY = positionY;
     }
 
     /**
@@ -472,29 +482,33 @@ public class JmeFxContainer {
     /**
      * @return the picture height.
      */
-    int getPictureHeight() {
-        return pictureHeight;
+    int getSceneHeight() {
+        return sceneHeight;
     }
 
     /**
-     * @param pictureHeight the picture height.
+     * @param sceneHeight the picture height.
      */
-    private void setPictureHeight(final int pictureHeight) {
-        this.pictureHeight = pictureHeight;
+    private void setSceneHeight(final int sceneHeight) {
+        this.sceneHeight = sceneHeight;
     }
 
     /**
      * @return the picture width.
      */
-    int getPictureWidth() {
-        return pictureWidth;
+    int getSceneWidth() {
+        return sceneWidth;
+    }
+
+    public float getPixelScaleFactor() {
+        return 1.0F;
     }
 
     /**
-     * @param pictureWidth the picture width.
+     * @param sceneWidth the picture width.
      */
-    private void setPictureWidth(final int pictureWidth) {
-        this.pictureWidth = pictureWidth;
+    private void setSceneWidth(final int sceneWidth) {
+        this.sceneWidth = sceneWidth;
     }
 
     /**
@@ -525,14 +539,14 @@ public class JmeFxContainer {
      * @return the current embedded scene interface.
      */
     @Nullable
-    public EmbeddedSceneInterface getScenePeer() {
+    public EmbeddedSceneInterface getSceneInterface() {
         return scenePeer;
     }
 
     /**
      * @param scenePeer the current embedded scene interface.
      */
-    void setScenePeer(@Nullable final EmbeddedSceneInterface scenePeer) {
+    void setSceneInterface(@Nullable final EmbeddedSceneInterface scenePeer) {
         this.scenePeer = scenePeer;
     }
 
@@ -555,14 +569,14 @@ public class JmeFxContainer {
      * @return the current embedded stage interface.
      */
     @Nullable
-    EmbeddedStageInterface getStagePeer() {
+    EmbeddedStageInterface getStageInterface() {
         return stagePeer;
     }
 
     /**
      * @param stagePeer the current embedded stage interface.
      */
-    void setStagePeer(@Nullable final EmbeddedStageInterface stagePeer) {
+    void setStageInterface(@Nullable final EmbeddedStageInterface stagePeer) {
         this.stagePeer = stagePeer;
     }
 
@@ -602,14 +616,14 @@ public class JmeFxContainer {
      * @return the old X position.
      */
     public int getWindowX() {
-        return oldX;
+        return positionX;
     }
 
     /**
      * @return the old Y position.
      */
     public int getWindowY() {
-        return oldY;
+        return positionY;
     }
 
     /**
@@ -617,14 +631,14 @@ public class JmeFxContainer {
      */
     public void grabFocus() {
 
-        final EmbeddedStageInterface stagePeer = getStagePeer();
+        final EmbeddedStageInterface stagePeer = getStageInterface();
         if (isFocus() || stagePeer == null) return;
 
         stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
 
         setFocus(true);
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             LOGGER.debug("got focus.");
         }
     }
@@ -651,8 +665,8 @@ public class JmeFxContainer {
 
             final Picture picture = getPicture();
 
-            if (isDebug()) {
-                LOGGER.debug("handle resize from [" + getPictureWidth() + "x" + getPictureHeight() + "] to " +
+            if (isDebugEnabled()) {
+                LOGGER.debug("handle resize from [" + getSceneWidth() + "x" + getSceneHeight() + "] to " +
                         "[" + pictureWidth + "x" + pictureHeight + "]");
             }
 
@@ -684,11 +698,11 @@ public class JmeFxContainer {
             final Texture2D texture = getTexture();
             texture.setImage(jmeImage);
 
-            setPictureHeight(pictureHeight);
-            setPictureWidth(pictureWidth);
+            setSceneHeight(pictureHeight);
+            setSceneWidth(pictureWidth);
 
-            final EmbeddedStageInterface stagePeer = getStagePeer();
-            final EmbeddedSceneInterface scenePeer = getScenePeer();
+            final EmbeddedStageInterface stagePeer = getStageInterface();
+            final EmbeddedSceneInterface scenePeer = getSceneInterface();
 
             if (stagePeer != null && scenePeer != null) {
                 Platform.runLater(() -> {
@@ -705,6 +719,24 @@ public class JmeFxContainer {
         }
 
         setLastResized(time);
+    }
+
+    /**
+     * Moves the container to the new position.
+     *
+     * @param positionX the new X position.
+     * @param positionY the new Y position.
+     */
+    public void move(final int positionX, final int positionY) {
+        setPositionX(positionX);
+        setPositionY(positionY);
+
+        final EmbeddedStageInterface stageInterface = getStageInterface();
+        if (stageInterface == null) {
+            return;
+        }
+
+        runInFXThread(() -> stageInterface.setLocation(getPositionX(), getPositionY()));
     }
 
     private void initFx() {
@@ -746,11 +778,11 @@ public class JmeFxContainer {
     public boolean isCovered(final int x, final int y) {
 
         final Image jmeImage = getJmeImage();
-        final int pictureWidth = getPictureWidth();
+        final int pictureWidth = getSceneWidth();
 
         if (jmeImage == null || x < 0 || x >= pictureWidth) {
             return false;
-        } else if (y < 0 || y >= getPictureHeight()) {
+        } else if (y < 0 || y >= getSceneHeight()) {
             return false;
         }
 
@@ -761,7 +793,7 @@ public class JmeFxContainer {
 
         data.limit(0);
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             LOGGER.debug("is covered " + x + ", " + y + " = " + (alpha != 0));
         }
 
@@ -815,14 +847,14 @@ public class JmeFxContainer {
      */
     public void loseFocus() {
 
-        final EmbeddedStageInterface stagePeer = getStagePeer();
+        final EmbeddedStageInterface stagePeer = getStageInterface();
         if (!isFocus() || stagePeer == null) return;
 
         stagePeer.setFocused(false, AbstractEvents.FOCUSEVENT_DEACTIVATED);
 
         setFocus(false);
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             LOGGER.debug("lost focus.");
         }
     }
@@ -830,23 +862,23 @@ public class JmeFxContainer {
     /**
      * Draw new frame of JavaFX to byte buffer.
      */
-    void drawNewFrame() {
+    void requestRedraw() {
 
         long time = 0;
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started paint FX scene...");
         }
 
-        final EmbeddedSceneInterface scenePeer = getScenePeer();
+        final EmbeddedSceneInterface scenePeer = getSceneInterface();
         if (scenePeer == null) return;
 
         final ByteBuffer tempData = requireNonNull(getTempData());
         tempData.clear();
 
-        final int pictureWidth = getPictureWidth();
-        final int pictureHeight = getPictureHeight();
+        final int pictureWidth = getSceneWidth();
+        final int pictureHeight = getSceneHeight();
 
         if (!scenePeer.getPixels(requireNonNull(getTempIntData()), pictureWidth, pictureHeight)) {
             return;
@@ -880,7 +912,7 @@ public class JmeFxContainer {
         final AtomicInteger waitCount = getWaitCount();
         waitCount.incrementAndGet();
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
         }
     }
@@ -893,7 +925,7 @@ public class JmeFxContainer {
      */
     public void setScene(@Nullable final Scene newScene, @NotNull final Group rootNode) {
         this.rootNode = rootNode;
-        JFXPlatform.runInFXThread(() -> setSceneImpl(newScene));
+        runInFXThread(() -> setSceneImpl(newScene));
     }
 
     /**
@@ -929,6 +961,10 @@ public class JmeFxContainer {
         }
     }
 
+    public void requestShowingCursor(final @NotNull CursorFrame cursorFrame) {
+
+    }
+
     /**
      * Write javaFX frame to jME texture.
      */
@@ -939,7 +975,7 @@ public class JmeFxContainer {
 
         long time = 0;
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             time = System.currentTimeMillis();
             LOGGER.debug("started writing FX data to JME...");
         }
@@ -962,7 +998,7 @@ public class JmeFxContainer {
 
         waitCount.subAndGet(currentCount);
 
-        if (isDebug()) {
+        if (isDebugEnabled()) {
             LOGGER.debug("finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
         }
 
@@ -972,7 +1008,7 @@ public class JmeFxContainer {
     /**
      * @param enabled the flag of enabling javaFX.
      */
-    public void setEnabled(final boolean enabled) {
+    public void requestEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
