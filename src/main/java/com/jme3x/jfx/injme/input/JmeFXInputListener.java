@@ -4,6 +4,8 @@
  */
 package com.jme3x.jfx.injme.input;
 
+import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
+import static com.ss.rlib.util.ObjectUtils.notNull;
 import static java.util.Objects.requireNonNull;
 import com.jme3.app.Application;
 import com.jme3.input.InputManager;
@@ -24,7 +26,7 @@ import java.awt.event.KeyEvent;
 import java.util.BitSet;
 
 /**
- * Converts JMEEvents to JFXEvents
+ * Converts Jme Events to JavaFx Events
  *
  * @author Heist, JavaSaBr
  */
@@ -70,7 +72,7 @@ public class JmeFXInputListener implements RawInputListener {
      * The D&D handler.
      */
     @Nullable
-    private volatile JmeFxDNDHandler jfxdndHandler;
+    private volatile JmeFxDNDHandler dndHandler;
 
     public JmeFXInputListener(@NotNull final JmeFxContainer listensOnContainer) {
         this.jmeFxContainer = listensOnContainer;
@@ -85,11 +87,12 @@ public class JmeFXInputListener implements RawInputListener {
     }
 
     /**
-     * @return The D&D handler.
+     * Gets the D&D handler.
+     *
+     * @return the D&D handler.
      */
-    @Nullable
-    private JmeFxDNDHandler getJmeFxDNDHandler() {
-        return jfxdndHandler;
+    private @Nullable JmeFxDNDHandler getDNDHandler() {
+        return dndHandler;
     }
 
     @Override
@@ -105,50 +108,56 @@ public class JmeFXInputListener implements RawInputListener {
     }
 
     /**
+     * Gets the raw input listener.
+     *
      * @return the raw input listener.
      */
-    @Nullable
-    private RawInputListener getRawInputListener() {
+    private @Nullable RawInputListener getRawInputListener() {
         return rawInputListener;
     }
 
     /**
-     * @return The javaFX container.
+     * Gets the javaFX container.
+     *
+     * @return the javaFX container.
      */
-    @NotNull
-    private JmeFxContainer getJmeFxContainer() {
+    private @NotNull JmeFxContainer getJmeFxContainer() {
         return jmeFxContainer;
     }
 
     /**
+     * Gets the key char array.
+     *
      * @return the key char array.
      */
-    @NotNull
-    private char[][] getKeyCharArray() {
+    private @NotNull char[][] getKeyCharArray() {
         return keyCharArray;
     }
 
     /**
+     * Gets the key char set.
+     *
      * @return the key char set.
      */
-    @NotNull
-    private char[] getKeyCharSet() {
+    private @NotNull char[] getKeyCharSet() {
         return keyCharSet;
     }
 
     /**
+     * Gets the key state set.
+     *
      * @return the key state set.
      */
-    @NotNull
-    private BitSet getKeyStateSet() {
+    private @NotNull BitSet getKeyStateSet() {
         return keyStateSet;
     }
 
     /**
+     * Gets the mouse button states.
+     *
      * @return the mouse button states.
      */
-    @NotNull
-    private boolean[] getMouseButtonState() {
+    private @NotNull boolean[] getMouseButtonState() {
         return mouseButtonState;
     }
 
@@ -170,9 +179,9 @@ public class JmeFXInputListener implements RawInputListener {
         final RawInputListener adapter = getRawInputListener();
         if (adapter != null) adapter.onKeyEvent(event);
 
-        final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        final EmbeddedSceneInterface scenePeer = jmeFxContainer.getSceneInterface();
-        if (scenePeer == null) return;
+        final JmeFxContainer container = getJmeFxContainer();
+        final EmbeddedSceneInterface sceneInterface = container.getSceneInterface();
+        if (sceneInterface == null) return;
 
         final BitSet keyStateSet = getKeyStateSet();
 
@@ -198,7 +207,7 @@ public class JmeFXInputListener implements RawInputListener {
             }
         }
 
-        if (jmeFxContainer.isFocus()) {
+        if (container.isFocused()) {
             event.setConsumed();
         }
 
@@ -206,8 +215,8 @@ public class JmeFXInputListener implements RawInputListener {
 
             final char x = keyCharSet[fxKeyCode];
 
-            if (jmeFxContainer.isFocus()) {
-                scenePeer.keyEvent(AbstractEvents.KEYEVENT_TYPED, fxKeyCode, keyCharArray[x], keyState);
+            if (container.isFocused()) {
+                sceneInterface.keyEvent(AbstractEvents.KEYEVENT_TYPED, fxKeyCode, keyCharArray[x], keyState);
             }
 
         } else if (event.isPressed()) {
@@ -215,9 +224,9 @@ public class JmeFXInputListener implements RawInputListener {
             keyCharSet[fxKeyCode] = keyChar;
             keyStateSet.set(fxKeyCode);
 
-            if (jmeFxContainer.isFocus()) {
-                scenePeer.keyEvent(AbstractEvents.KEYEVENT_PRESSED, fxKeyCode, keyCharArray[keyChar], keyState);
-                scenePeer.keyEvent(AbstractEvents.KEYEVENT_TYPED, fxKeyCode, keyCharArray[keyChar], keyState);
+            if (container.isFocused()) {
+                sceneInterface.keyEvent(AbstractEvents.KEYEVENT_PRESSED, fxKeyCode, keyCharArray[keyChar], keyState);
+                sceneInterface.keyEvent(AbstractEvents.KEYEVENT_TYPED, fxKeyCode, keyCharArray[keyChar], keyState);
             }
 
         } else {
@@ -226,8 +235,8 @@ public class JmeFXInputListener implements RawInputListener {
 
             keyStateSet.clear(fxKeyCode);
 
-            if (jmeFxContainer.isFocus()) {
-                scenePeer.keyEvent(AbstractEvents.KEYEVENT_RELEASED, fxKeyCode, keyCharArray[x], keyState);
+            if (container.isFocused()) {
+                sceneInterface.keyEvent(AbstractEvents.KEYEVENT_RELEASED, fxKeyCode, keyCharArray[x], keyState);
             }
         }
     }
@@ -238,15 +247,15 @@ public class JmeFXInputListener implements RawInputListener {
         final RawInputListener adapter = getRawInputListener();
         if (adapter != null) adapter.onMouseButtonEvent(event);
 
-        final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        final Application application = requireNonNull(jmeFxContainer.getApplication());
+        final JmeFxContainer container = getJmeFxContainer();
+        final Application application = requireNonNull(container.getApplication());
         final InputManager inputManager = application.getInputManager();
 
-        if (jmeFxContainer.getSceneInterface() == null) {
+        if (container.getSceneInterface() == null) {
             return;
         }
 
-        final Scene scene = requireNonNull(jmeFxContainer.getScene());
+        final Scene scene = notNull(container.getScene());
 
         final int x = event.getX();
         final int y = (int) Math.round(scene.getHeight()) - event.getY();
@@ -273,13 +282,13 @@ public class JmeFXInputListener implements RawInputListener {
 
         mouseButtonState[event.getButtonIndex()] = event.isPressed();
 
-        final boolean covered = jmeFxContainer.isCovered(x, y);
+        final boolean covered = container.isCovered(x, y);
 
         if (!covered) {
-            jmeFxContainer.loseFocus();
+            container.loseFocus();
         } else if (inputManager.isCursorVisible()) {
             event.setConsumed();
-            jmeFxContainer.grabFocus();
+            container.grabFocus();
         }
 
         int type;
@@ -297,24 +306,24 @@ public class JmeFXInputListener implements RawInputListener {
         }
     }
 
-    private void onMouseButtonEventImpl(int x, int y, int button, int type) {
+    private void onMouseButtonEventImpl(final int x, final int y, final int button, final int type) {
 
         final boolean[] mouseButtonState = getMouseButtonState();
-        final JmeFxDNDHandler jfxdndHandler = getJmeFxDNDHandler();
+        final JmeFxDNDHandler dndHandler = getDNDHandler();
 
         final boolean primaryBtnDown = mouseButtonState[0];
         final boolean middleBtnDown = mouseButtonState[1];
         final boolean secondaryBtnDown = mouseButtonState[2];
 
-        if (jfxdndHandler != null) {
-            jfxdndHandler.mouseUpdate(x, y, primaryBtnDown);
+        if (dndHandler != null) {
+            dndHandler.mouseUpdate(x, y, primaryBtnDown);
         }
 
-        final JmeFxContainer fxContainer = getJmeFxContainer();
-        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getSceneInterface());
+        final JmeFxContainer container = getJmeFxContainer();
+        final EmbeddedSceneInterface sceneInterface = requireNonNull(container.getSceneInterface());
 
-        final int screenX = fxContainer.getPositionX() + x;
-        final int screenY = fxContainer.getPositionY() + y;
+        final int screenX = container.getPositionX() + x;
+        final int screenY = container.getPositionY() + y;
 
         final BitSet keyStateSet = getKeyStateSet();
 
@@ -324,37 +333,37 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
         final boolean popupTrigger = button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON;
 
-        scenePeer.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
+        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
                 shift, ctrl, alt, meta, 0, popupTrigger);
     }
 
     @Override
-    public void onMouseMotionEvent(final MouseMotionEvent event) {
+    public void onMouseMotionEvent(@NotNull final MouseMotionEvent event) {
 
         final RawInputListener adapter = getRawInputListener();
         if (adapter != null) adapter.onMouseMotionEvent(event);
 
-        final JmeFxContainer jmeFxContainer = getJmeFxContainer();
-        final Application application = requireNonNull(jmeFxContainer.getApplication());
-        final InputManager inputManager = requireNonNull(application.getInputManager());
+        final JmeFxContainer container = getJmeFxContainer();
+        final Application application = notNull(container.getApplication(), "Application is null.");
+        final InputManager inputManager = notNull(application.getInputManager(), "Input manager is null.");
 
-        if (jmeFxContainer.getSceneInterface() == null) {
+        if (container.getSceneInterface() == null) {
             return;
         }
 
-        final Scene scene = requireNonNull(jmeFxContainer.getScene());
+        final Scene scene = notNull(container.getScene());
 
         final int x = event.getX();
         final int y = (int) Math.round(scene.getHeight()) - event.getY();
 
-        final boolean covered = jmeFxContainer.isCovered(x, y);
+        final boolean covered = container.isCovered(x, y);
 
         if (covered) {
             event.setConsumed();
         }
 
         final boolean[] mouseButtonState = getMouseButtonState();
-        // not sure if should be grabbing focus on mouse motion event
+        // not sure if should be grabbing focused on mouse motion event
         // grabFocus();
 
         int type = AbstractEvents.MOUSEEVENT_MOVED;
@@ -376,25 +385,25 @@ public class JmeFXInputListener implements RawInputListener {
             button = AbstractEvents.MOUSEEVENT_MIDDLE_BUTTON;
         }
 
-        final int ftype = type;
-        final int fbutton = button;
+        final int finalType = type;
+        final int finalButton = button;
 
         if (inputManager.isCursorVisible()) {
-            Platform.runLater(() -> onMouseMotionEventImpl(x, y, wheelRotation, ftype, fbutton));
+            runInFXThread(() -> onMouseMotionEventImpl(x, y, wheelRotation, finalType, finalButton));
         }
     }
 
-    private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int ftype, int fbutton) {
+    private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int type, int button) {
 
-        final JmeFxContainer fxContainer = getJmeFxContainer();
-        final Application application = requireNonNull(fxContainer.getApplication());
+        final JmeFxContainer container = getJmeFxContainer();
+        final Application application = notNull(container.getApplication());
         final InputManager inputManager = application.getInputManager();
 
         if (!inputManager.isCursorVisible()) {
             return;
         }
 
-        final JmeFxDNDHandler dndHandler = getJmeFxDNDHandler();
+        final JmeFxDNDHandler dndHandler = getDNDHandler();
         final boolean[] mouseButtonState = getMouseButtonState();
 
         final boolean primaryBtnDown = mouseButtonState[0];
@@ -405,10 +414,10 @@ public class JmeFXInputListener implements RawInputListener {
             dndHandler.mouseUpdate(x, y, primaryBtnDown);
         }
 
-        final EmbeddedSceneInterface scenePeer = requireNonNull(fxContainer.getSceneInterface());
+        final EmbeddedSceneInterface sceneInterface = notNull(container.getSceneInterface());
 
-        final int screenX = fxContainer.getPositionX() + x;
-        final int screenY = fxContainer.getPositionY() + y;
+        final int screenX = container.getPositionX() + x;
+        final int screenY = container.getPositionY() + y;
 
         final BitSet keyStateSet = getKeyStateSet();
 
@@ -417,7 +426,7 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean alt = keyStateSet.get(KeyEvent.VK_ALT);
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
 
-        scenePeer.mouseEvent(ftype, fbutton, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
+        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
                 shift, ctrl, alt, meta, wheelRotation, false);
     }
 
@@ -460,8 +469,8 @@ public class JmeFXInputListener implements RawInputListener {
      * set on drag start /nulled on end<br> necessary so that the drag events can be generated
      * appropiatly
      */
-    public void setMouseDNDListener(@Nullable final JmeFxDNDHandler jfxdndHandler) {
-        assert this.jfxdndHandler == null || jfxdndHandler == null : "duplicate jfxdndn handler register? ";
-        this.jfxdndHandler = jfxdndHandler;
+    public void setMouseDNDListener(@Nullable final JmeFxDNDHandler dndHandler) {
+        assert this.dndHandler == null || dndHandler == null : "duplicate dnd handler register? ";
+        this.dndHandler = dndHandler;
     }
 }

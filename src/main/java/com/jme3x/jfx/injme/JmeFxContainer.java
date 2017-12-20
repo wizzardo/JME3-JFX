@@ -19,7 +19,7 @@ import com.jme3.ui.Picture;
 import com.jme3.util.BufferUtils;
 import com.jme3x.jfx.injme.cursor.CursorDisplayProvider;
 import com.jme3x.jfx.injme.input.JmeFXInputListener;
-import com.jme3x.jfx.injme.util.JFXUtils;
+import com.jme3x.jfx.injme.util.JmeContextUtils;
 import com.ss.rlib.concurrent.atomic.AtomicInteger;
 import com.ss.rlib.concurrent.lock.AsyncReadSyncWriteLock;
 import com.ss.rlib.concurrent.lock.LockFactory;
@@ -296,9 +296,9 @@ public class JmeFxContainer {
     protected volatile int positionY;
 
     /**
-     * The flag of having focus.
+     * The flag of having focused.
      */
-    protected volatile boolean focus;
+    protected volatile boolean focused;
 
     /**
      * The flag of supporting full screen.
@@ -627,19 +627,19 @@ public class JmeFxContainer {
     }
 
     /**
-     * Get focus.
+     * Get focused.
      */
     public void grabFocus() {
 
         final EmbeddedStageInterface stagePeer = getStageInterface();
-        if (isFocus() || stagePeer == null) return;
+        if (isFocused() || stagePeer == null) return;
 
         stagePeer.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
 
-        setFocus(true);
+        setFocused(true);
 
         if (isDebugEnabled()) {
-            LOGGER.debug("got focus.");
+            LOGGER.debug("got focused.");
         }
     }
 
@@ -653,8 +653,8 @@ public class JmeFxContainer {
 
         final JmeContext jmeContext = getJmeContext();
 
-        final int displayWidth = JFXUtils.getWidth(jmeContext);
-        final int displayHeight = JFXUtils.getHeight(jmeContext);
+        final int displayWidth = JmeContextUtils.getWidth(jmeContext);
+        final int displayHeight = JmeContextUtils.getHeight(jmeContext);
 
         final AsyncReadSyncWriteLock lock = getImageLock();
         lock.syncLock();
@@ -801,17 +801,17 @@ public class JmeFxContainer {
     }
 
     /**
-     * @return true if the windows has focus.
+     * @return true if the windows has focused.
      */
-    public boolean isFocus() {
-        return focus;
+    public boolean isFocused() {
+        return focused;
     }
 
     /**
-     * @param focus true if the windows has focus.
+     * @param focused true if the windows has focused.
      */
-    private void setFocus(final boolean focus) {
-        this.focus = focus;
+    private void setFocused(final boolean focused) {
+        this.focused = focused;
     }
 
     /**
@@ -843,19 +843,19 @@ public class JmeFxContainer {
     }
 
     /**
-     * Lose focus.
+     * Lose focused.
      */
     public void loseFocus() {
 
         final EmbeddedStageInterface stagePeer = getStageInterface();
-        if (!isFocus() || stagePeer == null) return;
+        if (!isFocused() || stagePeer == null) return;
 
         stagePeer.setFocused(false, AbstractEvents.FOCUSEVENT_DEACTIVATED);
 
-        setFocus(false);
+        setFocused(false);
 
         if (isDebugEnabled()) {
-            LOGGER.debug("lost focus.");
+            LOGGER.debug("lost focused.");
         }
     }
 

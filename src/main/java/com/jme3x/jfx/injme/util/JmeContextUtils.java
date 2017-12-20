@@ -12,11 +12,11 @@ import org.lwjgl.glfw.GLFW;
 import java.nio.IntBuffer;
 
 /**
- * The utility class.
+ * The utility class to work with jME contexts.
  *
  * @author JavaSaBr
  */
-public class JFXUtils {
+public class JmeContextUtils {
 
     @NotNull
     private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = withInitial(() -> createIntBuffer(1));

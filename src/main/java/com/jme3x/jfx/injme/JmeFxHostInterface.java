@@ -46,7 +46,7 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public boolean grabFocus() {
-        if (isDebugEnabled()) LOGGER.debug(this, "Grab focus");
+        if (isDebugEnabled()) LOGGER.debug(this, "Grab focused");
         return true;
     }
 
@@ -58,7 +58,7 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public boolean requestFocus() {
-        if (isDebugEnabled()) LOGGER.debug(this, "Request focus");
+        if (isDebugEnabled()) LOGGER.debug(this, "Request focused");
         return getContainer().requestFocus();
     }
 
@@ -165,7 +165,7 @@ public class JmeFxHostInterface implements HostInterface {
     @Override
     public void ungrabFocus() {
         if (isDebugEnabled()) {
-            LOGGER.debug(this, "Ungrab focus");
+            LOGGER.debug(this, "Ungrab focused");
         }
     }
 }

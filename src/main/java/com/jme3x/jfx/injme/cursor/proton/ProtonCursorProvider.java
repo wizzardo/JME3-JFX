@@ -5,12 +5,14 @@ import com.jme3.asset.AssetManager;
 import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.InputManager;
-import com.jme3x.jfx.cursor.CursorDisplayProvider;
+import com.jme3x.jfx.injme.cursor.CursorDisplayProvider;
 import com.ss.rlib.logging.Logger;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.cursor.CursorType;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,106 +24,116 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ProtonCursorProvider implements CursorDisplayProvider {
 
+    @NotNull
     private static final Logger LOGGER = LoggerManager.getLogger(ProtonCursorProvider.class);
 
-    private ConcurrentHashMap<CursorType, JmeCursor> cache = new ConcurrentHashMap<CursorType, JmeCursor>();
+    @NotNull
+    private Map<CursorType, JmeCursor> cache = new ConcurrentHashMap<>();
 
+    @NotNull
     private AssetManager assetManager;
-    private InputManager inputManager;
-    private Application app;
 
-    public ProtonCursorProvider(final Application app, final AssetManager assetManager, final InputManager inputManager) {
+    @NotNull
+    private InputManager inputManager;
+
+    @NotNull
+    private Application application;
+
+    public ProtonCursorProvider(@NotNull final Application application, @NotNull final AssetManager assetManager,
+                                @NotNull final InputManager inputManager) {
         this.assetManager = assetManager;
         this.inputManager = inputManager;
-        this.app = app;
+        this.application = application;
         assetManager.registerLocator("", ClasspathLocator.class);
     }
 
     @Override
-    public void setup(final CursorType ctyp) {
-        JmeCursor loaded = null;
-        switch (ctyp) {
+    public void prepare(@NotNull final CursorType cursorType) {
+
+        JmeCursor jmeCursor = null;
+
+        switch (cursorType) {
             case CLOSED_HAND:
                 break;
             case CROSSHAIR:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_cross.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_cross.cur");
                 break;
             case DEFAULT:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_arrow.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_arrow.cur");
                 break;
             case DISAPPEAR:
                 break;
             case E_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ew.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ew.cur");
                 break;
             case HAND:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_link.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_link.cur");
                 break;
             case H_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ew.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ew.cur");
                 break;
             case IMAGE:
                 break;
             case MOVE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_move.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_move.cur");
                 break;
             case NE_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nesw.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nesw.cur");
                 break;
             case NONE:
                 break;
             case NW_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nwse.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nwse.cur");
                 break;
             case N_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ns.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ns.cur");
                 break;
             case OPEN_HAND:
                 break;
             case SE_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nwse.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nwse.cur");
                 break;
             case SW_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nesw.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_nesw.cur");
                 break;
             case S_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ns.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ns.cur");
                 break;
             case TEXT:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_text.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_text.cur");
                 break;
             case V_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ns.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ns.cur");
                 break;
             case WAIT:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_busy.ani");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_busy.ani");
                 break;
             case W_RESIZE:
-                loaded = (JmeCursor) this.assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ew.cur");
+                jmeCursor = (JmeCursor) assetManager.loadAsset("com/jme3x/jfx/cursor/proton/aero_ew.cur");
                 break;
         }
-        if (loaded != null) {
-            this.cache.put(ctyp, loaded);
+
+        if (jmeCursor != null) {
+            cache.putIfAbsent(cursorType, jmeCursor);
         }
     }
 
     @Override
-    public void showCursor(final CursorFrame cursorFrame) {
+    public void show(@NotNull final CursorFrame cursorFrame) {
+
         CursorType cursorType = cursorFrame.getCursorType();
-        if (this.cache.get(cursorType) == null) {
-            LOGGER.debug("Unkown Cursor! " + cursorType);
+
+        if (cache.get(cursorType) == null) {
+            LOGGER.debug(cursorType, type -> "Unknown Cursor! " + type);
             cursorType = CursorType.DEFAULT;
         }
 
         final JmeCursor toDisplay = this.cache.get(cursorType);
 
         if (toDisplay != null) {
-            this.app.enqueue(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    ProtonCursorProvider.this.inputManager.setMouseCursor(toDisplay);
-                    return null;
-                }
+            application.enqueue((Callable<Void>) () -> {
+                inputManager.setMouseCursor(toDisplay);
+                return null;
             });
         }
     }

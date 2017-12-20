@@ -2,7 +2,7 @@ package com.jme3x.jfx.injme;
 
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
-import com.jme3x.jfx.injme.util.JFXUtils;
+import com.jme3x.jfx.injme.util.JmeContextUtils;
 import com.ss.rlib.logging.Logger;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.embed.EmbeddedStageInterface;
@@ -50,15 +50,15 @@ public class JavaFxPicture extends Picture {
                 return;
             }
 
-            final int windowWidth = JFXUtils.getWidth(jmeContext);
-            final int windowHeight = JFXUtils.getHeight(jmeContext);
+            final int windowWidth = JmeContextUtils.getWidth(jmeContext);
+            final int windowHeight = JmeContextUtils.getHeight(jmeContext);
 
             if (windowWidth != container.getSceneWidth() || windowHeight != container.getSceneHeight()) {
                 container.handleResize();
             }
 
-            final int currentX = JFXUtils.getX(jmeContext);
-            final int currentY = JFXUtils.getY(jmeContext);
+            final int currentX = JmeContextUtils.getX(jmeContext);
+            final int currentY = JmeContextUtils.getY(jmeContext);
 
             if (container.getPositionX() != currentX || container.getPositionY() != currentY) {
 

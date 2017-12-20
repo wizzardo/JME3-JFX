@@ -2,13 +2,26 @@ package com.jme3x.jfx.injme.cursor;
 
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.cursor.CursorType;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * The provider to implement the process of showing different types of cursors.
+ *
+ * @author JavaSaBr
+ */
 public interface CursorDisplayProvider {
 
     /**
-     * called by the GuiManager during startup, should be used to create the necessary cursors
+     * This method will be called on initializing javaFX container to prepare an image for the cursor type.
+     *
+     * @param cursorType the cursor type.
      */
-    void setup(CursorType normal);
+    void prepare(@NotNull CursorType cursorType);
 
-    void showCursor(CursorFrame cursorFrame);
+    /**
+     * Shows an image for the cursor frame.
+     *
+     * @param cursorFrame the cursor frame.
+     */
+    void show(@NotNull CursorFrame cursorFrame);
 }
