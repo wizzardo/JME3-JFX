@@ -2,6 +2,7 @@ package com.jme3x.jfx.injme;
 
 import static javafx.scene.image.PixelFormat.getByteBgraInstance;
 import com.jme3x.jfx.injme.input.JmeFXInputListener;
+import com.jme3x.jfx.util.JFXPlatform;
 import com.ss.rlib.logging.Logger;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.embed.EmbeddedSceneDSInterface;
@@ -30,7 +31,7 @@ import java.nio.ByteBuffer;
 public class JmeFxDNDHandler implements HostDragStartListener {
 
     @NotNull
-    private static final Logger LOGGER = LoggerManager.getLogger(JmeFxDNDHandler.class);
+    private static final Logger LOGGER = LoggerManager.getLogger(JFXPlatform.class);
 
     /**
      * The JavaFX container.
@@ -99,9 +100,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
                 final ByteBuffer offsetBuffer = (ByteBuffer) offset;
                 offsetBuffer.position(0);
 
-                if (JmeFxContainer.isDebugEnabled()) {
-                    LOGGER.debug(offsetBuffer, buff -> "Img offset " + buff.getInt() + ", " + buff.getInt());
-                }
+                LOGGER.debug(this, offsetBuffer, buff -> "Img offset " + buff.getInt() + ", " + buff.getInt());
             }
 
         } catch (final Exception e) {
@@ -146,15 +145,11 @@ public class JmeFxDNDHandler implements HostDragStartListener {
 
             assert transferMode == TransferMode.COPY : "Only Copy is supported currently";
 
-            if (JmeFxContainer.isDebugEnabled()) {
-                LOGGER.debug(dragSource, transferMode, (source, mode) -> "Drag started of " + source + " in mode " + mode);
-            }
+            LOGGER.debug(this, dragSource, transferMode, (source, mode) -> "Drag started of " + source + " in mode " + mode);
 
             final Clipboard clipboard = Clipboard.getSystemClipboard();
 
-            if (JmeFxContainer.isDebugEnabled()) {
-                LOGGER.debug(clipboard, clip -> "Clipboard : " + clip);
-            }
+            LOGGER.debug(this, clipboard, clip -> "Clipboard : " + clip);
 
             this.dragSource = dragSource;
             this.dropTarget = sceneInterface.createDropTarget();
@@ -254,9 +249,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
                     dragImage.setVisible(false);
                 }
 
-                if (JmeFxContainer.isDebugEnabled()) {
-                    LOGGER.debug("Drag released!");
-                }
+                LOGGER.debug(this, "Drag released!");
 
                 if (transferMode != null) {
                     // causes exceptions when done without a target
@@ -266,9 +259,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
                     dragSource.dragDropEnd(acceptedMode);
                 } else {
 
-                    if (JmeFxContainer.isDebugEnabled()) {
-                        LOGGER.debug("invalid drag target");
-                    }
+                    LOGGER.debug(this, "invalid drag target");
 
                     // seems to be necessary if no dragdrop attempt is being made
                     dropTarget.handleDragLeave();

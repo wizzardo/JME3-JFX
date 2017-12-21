@@ -4,8 +4,9 @@
  */
 package com.jme3x.jfx.injme;
 
-import static com.jme3x.jfx.injme.JmeFxContainer.isDebugEnabled;
+import com.jme3x.jfx.util.JFXPlatform;
 import com.ss.rlib.logging.Logger;
+import com.ss.rlib.logging.LoggerLevel;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.embed.AbstractEvents;
@@ -23,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 public class JmeFxHostInterface implements HostInterface {
 
     @NotNull
-    private static final Logger LOGGER = LoggerManager.getLogger(JmeFxHostInterface.class);
+    private static final Logger LOGGER = LoggerManager.getLogger(JFXPlatform.class);
 
     /**
      * The JavaFX container.
@@ -46,37 +47,35 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public boolean grabFocus() {
-        if (isDebugEnabled()) LOGGER.debug(this, "Grab focused");
+        LOGGER.debug(this, "Called grabFocus()");
         return true;
     }
 
     @Override
     public void repaint() {
-        if (isDebugEnabled()) LOGGER.debug(this, "Repaint");
+        LOGGER.debug(this, "Called repaint()");
         getContainer().requestRedraw();
     }
 
     @Override
     public boolean requestFocus() {
-        if (isDebugEnabled()) LOGGER.debug(this, "Request focused");
+        LOGGER.debug(this, "Called requestFocus()");
         return getContainer().requestFocus();
     }
 
     @Override
     public void setCursor(@NotNull final CursorFrame cursorFrame) {
-        if (isDebugEnabled()) LOGGER.debug(cursorFrame, frame -> "Request showing cursor " + frame);
+        LOGGER.debug(this, cursorFrame, frame -> "Called setCursor(" + frame + ")");
         getContainer().requestShowingCursor(cursorFrame);
     }
 
     @Override
     public void setEmbeddedScene(@Nullable final EmbeddedSceneInterface sceneInterface) {
 
-        if (isDebugEnabled()) {
-            if (sceneInterface == null) {
-                LOGGER.debug(this, "Remove the scene interface.");
-            } else {
-                LOGGER.debug(sceneInterface, scene -> "Sets the scene interface " + scene);
-            }
+        if (sceneInterface == null) {
+            LOGGER.debug(this, "Called setEmbeddedScene(null)");
+        } else {
+            LOGGER.debug(this, sceneInterface, scene -> "Called setEmbeddedScene(" + scene + ")");
         }
 
         final JmeFxContainer container = getContainer();
@@ -106,12 +105,10 @@ public class JmeFxHostInterface implements HostInterface {
     @Override
     public void setEmbeddedStage(@Nullable final EmbeddedStageInterface stageInterface) {
 
-        if (isDebugEnabled()) {
-            if (stageInterface == null) {
-                LOGGER.debug(this, "Remove the stage interface.");
-            } else {
-                LOGGER.debug(stageInterface, stage -> "Sets the stage interface " + stage);
-            }
+        if (stageInterface == null) {
+            LOGGER.debug(this, "Called setEmbeddedStage(null)");
+        } else {
+            LOGGER.debug(this, stageInterface, stage -> "Called setEmbeddedStage(" + stage + ")");
         }
 
         final JmeFxContainer container = getContainer();
@@ -138,34 +135,28 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public void setEnabled(final boolean enabled) {
-        if (isDebugEnabled()) LOGGER.debug(enabled, val -> "Request enabled " + val);
+        LOGGER.debug(this, enabled, val -> "Called setEnabled(" + val + ")");
         getContainer().requestEnabled(enabled);
     }
 
     @Override
     public void setPreferredSize(final int width, final int height) {
 
-        if (isDebugEnabled()) {
-            LOGGER.debug(width, height, (val1, val2) -> "Request preferred size " + val1 + "x" + val2);
+        if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
+            LOGGER.debug(this, "Called setPreferredSize(" + width + ", " + height + ")");
         }
 
-        getContainer().requestPrefferedSize(width, height);
+        getContainer().requestPreferredSize(width, height);
     }
 
     @Override
     public boolean traverseFocusOut(final boolean forward) {
-
-        if (isDebugEnabled()) {
-            LOGGER.debug(forward, val -> "Called traverseFocusOut(" + val + ")");
-        }
-
+        LOGGER.debug(this, forward, val -> "Called traverseFocusOut(" + val + ")");
         return true;
     }
 
     @Override
     public void ungrabFocus() {
-        if (isDebugEnabled()) {
-            LOGGER.debug(this, "Ungrab focused");
-        }
+        LOGGER.debug(this, "Called ungrabFocus()");
     }
 }

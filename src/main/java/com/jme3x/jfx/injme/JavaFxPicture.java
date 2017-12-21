@@ -1,9 +1,11 @@
 package com.jme3x.jfx.injme;
 
+import static com.jme3x.jfx.injme.util.JmeContextUtils.*;
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
-import com.jme3x.jfx.injme.util.JmeContextUtils;
+import com.jme3x.jfx.util.JFXPlatform;
 import com.ss.rlib.logging.Logger;
+import com.ss.rlib.logging.LoggerLevel;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 public class JavaFxPicture extends Picture {
 
     @NotNull
-    private static final Logger LOGGER = LoggerManager.getLogger(JavaFxPicture.class);
+    private static final Logger LOGGER = LoggerManager.getLogger(JFXPlatform.class);
 
     /**
      * The JavaFX container.
@@ -50,20 +52,20 @@ public class JavaFxPicture extends Picture {
                 return;
             }
 
-            final int windowWidth = JmeContextUtils.getWidth(jmeContext);
-            final int windowHeight = JmeContextUtils.getHeight(jmeContext);
+            final int windowWidth = getWidth(jmeContext);
+            final int windowHeight = getHeight(jmeContext);
 
             if (windowWidth != container.getSceneWidth() || windowHeight != container.getSceneHeight()) {
-                container.handleResize();
+                container.fitSceneToWindowSize();
             }
 
-            final int currentX = JmeContextUtils.getX(jmeContext);
-            final int currentY = JmeContextUtils.getY(jmeContext);
+            final int currentX = getX(jmeContext);
+            final int currentY = getY(jmeContext);
 
             if (container.getPositionX() != currentX || container.getPositionY() != currentY) {
 
-                if (JmeFxContainer.isDebugEnabled()) {
-                    LOGGER.debug("moved window to [original: " + currentX + ", " + currentY + "]");
+                if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
+                    LOGGER.debug(this, "moved window to [original: " + currentX + ", " + currentY + "]");
                 }
 
                 container.move(currentX, currentY);

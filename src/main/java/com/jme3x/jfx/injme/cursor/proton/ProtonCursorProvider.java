@@ -6,6 +6,7 @@ import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.InputManager;
 import com.jme3x.jfx.injme.cursor.CursorDisplayProvider;
+import com.jme3x.jfx.util.JFXPlatform;
 import com.ss.rlib.logging.Logger;
 import com.ss.rlib.logging.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
@@ -25,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProtonCursorProvider implements CursorDisplayProvider {
 
     @NotNull
-    private static final Logger LOGGER = LoggerManager.getLogger(ProtonCursorProvider.class);
+    private static final Logger LOGGER = LoggerManager.getLogger(JFXPlatform.class);
 
     @NotNull
     private Map<CursorType, JmeCursor> cache = new ConcurrentHashMap<>();
@@ -124,11 +125,11 @@ public class ProtonCursorProvider implements CursorDisplayProvider {
         CursorType cursorType = cursorFrame.getCursorType();
 
         if (cache.get(cursorType) == null) {
-            LOGGER.debug(cursorType, type -> "Unknown Cursor! " + type);
+            LOGGER.debug(this, cursorType, type -> "Unknown Cursor! " + type);
             cursorType = CursorType.DEFAULT;
         }
 
-        final JmeCursor toDisplay = this.cache.get(cursorType);
+        final JmeCursor toDisplay = cache.get(cursorType);
 
         if (toDisplay != null) {
             application.enqueue((Callable<Void>) () -> {
