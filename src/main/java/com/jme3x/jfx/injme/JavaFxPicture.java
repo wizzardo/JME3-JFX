@@ -1,6 +1,6 @@
 package com.jme3x.jfx.injme;
 
-import static com.jme3x.jfx.injme.util.JmeContextUtils.*;
+import static com.jme3x.jfx.injme.util.JmeWindowUtils.*;
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
 import com.jme3x.jfx.util.JFXPlatform;

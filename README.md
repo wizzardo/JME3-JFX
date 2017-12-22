@@ -52,7 +52,41 @@ dependencies {
     JmeToJFXIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
 ```
 
+#### How to integrate javaFX UI to jME application:
+
+```java
+
+    public class MyApplication extends SimpleApplication {
+    
+        private JmeFxContainer container;
+        
+        @Override
+        public void simpleInitApp() {
+            container = JmeFxContainer.install(this, getGuiNode());
+    
+            final Button button = new Button("BUTTON");
+            final Group rootNode = new Group(button);
+            final Scene scene = new Scene(rootNode, 600, 600);
+            scene.setFill(Color.TRANSPARENT);
+
+            container.setScene(scene, rootNode);
+            
+            getInputManager().setCursorVisible(true);
+        }
+    
+        @Override
+        public void simpleUpdate(final float tpf) {
+            super.simpleUpdate(tpf);
+            // we decide here that we need to do transferring the last frame from javaFX to jME
+            if (container.isNeedWriteToJME()) {
+                container.writeToJME();
+            }
+        }
+    }
+```
+
 Also, you can look at some examples in the tests package:
 
 * [jME Application is inside jFX Canvas](https://github.com/JavaSaBr/JME3-JFX/blob/master/src/test/java/com/jme3x/jfx/TestJmeToJFXCanvas.java)
 * [jME Application is inside jFX ImageView](https://github.com/JavaSaBr/JME3-JFX/blob/master/src/test/java/com/jme3x/jfx/TestJmeToJFXImageView.java)
+* [JavaFX Scene is inside jME Application](https://github.com/JavaSaBr/JME3-JFX/blob/master/src/test/java/com/jme3x/jfx/TestJavaFxInJme.java)

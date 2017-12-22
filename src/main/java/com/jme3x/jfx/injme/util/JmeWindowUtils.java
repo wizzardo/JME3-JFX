@@ -16,7 +16,7 @@ import java.nio.IntBuffer;
  *
  * @author JavaSaBr
  */
-public class JmeContextUtils {
+public class JmeWindowUtils {
 
     @NotNull
     private static final ThreadLocal<IntBuffer> LOCAL_FIRST_INT_BUFFER = withInitial(() -> createIntBuffer(1));

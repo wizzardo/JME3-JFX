@@ -15,9 +15,9 @@ import com.jme3.input.awt.AwtKeyInput;
 import com.jme3.input.event.*;
 import com.jme3x.jfx.injme.JmeFxContainer;
 import com.jme3x.jfx.injme.JmeFxDNDHandler;
+import com.jme3x.jfx.util.JFXPlatform;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -302,7 +302,7 @@ public class JmeFXInputListener implements RawInputListener {
         }
 
         if (inputManager.isCursorVisible() || event.isReleased()) {
-            Platform.runLater(() -> onMouseButtonEventImpl(x, y, button, type));
+            JFXPlatform.runInFXThread(() -> onMouseButtonEventImpl(x, y, button, type));
         }
     }
 

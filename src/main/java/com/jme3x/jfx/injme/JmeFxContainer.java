@@ -1,7 +1,7 @@
 package com.jme3x.jfx.injme;
 
-import static com.jme3x.jfx.injme.util.JmeContextUtils.getHeight;
-import static com.jme3x.jfx.injme.util.JmeContextUtils.getWidth;
+import static com.jme3x.jfx.injme.util.JmeWindowUtils.getHeight;
+import static com.jme3x.jfx.injme.util.JmeWindowUtils.getWidth;
 import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
 import static com.ss.rlib.util.ObjectUtils.notNull;
 import com.jme3.app.Application;
