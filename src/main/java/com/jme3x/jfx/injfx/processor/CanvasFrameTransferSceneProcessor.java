@@ -5,11 +5,9 @@ import com.jme3.texture.FrameBuffer;
 import com.jme3x.jfx.injfx.JmeToJFXApplication;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.injfx.transfer.impl.CanvasFrameTransfer;
-
-import org.jetbrains.annotations.NotNull;
-
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The implementation of the {@link SceneProcessor} for transferring content between jME and Canvas.
@@ -20,12 +18,12 @@ public class CanvasFrameTransferSceneProcessor extends AbstractFrameTransferScen
 
     @Override
     protected int getDestinationWidth() {
-        return (int) destination.getWidth();
+        return (int) getDestination().getWidth();
     }
 
     @Override
     protected int getDestinationHeight() {
-        return (int) destination.getHeight();
+        return (int) getDestination().getHeight();
     }
 
     @Override
@@ -42,6 +40,7 @@ public class CanvasFrameTransferSceneProcessor extends AbstractFrameTransferScen
 
     @Override
     protected void bindListeners() {
+        final Canvas destination = getDestination();
         destination.widthProperty().addListener(widthListener);
         destination.heightProperty().addListener(heightListener);
         super.bindListeners();
@@ -49,14 +48,14 @@ public class CanvasFrameTransferSceneProcessor extends AbstractFrameTransferScen
 
     @Override
     protected void unbindListeners() {
+        final Canvas destination = getDestination();
         destination.widthProperty().removeListener(widthListener);
         destination.heightProperty().removeListener(heightListener);
         super.unbindListeners();
     }
 
-    @NotNull
     @Override
-    protected FrameTransfer createFrameTransfer(final int width, final int height, @NotNull final FrameBuffer frameBuffer) {
-        return new CanvasFrameTransfer(destination, getTransferMode(), isMain() ? null : frameBuffer, width, height);
+    protected @NotNull FrameTransfer createFrameTransfer(@NotNull final FrameBuffer frameBuffer, final int width, final int height) {
+        return new CanvasFrameTransfer(getDestination(), getTransferMode(), isMain() ? null : frameBuffer, width, height);
     }
 }

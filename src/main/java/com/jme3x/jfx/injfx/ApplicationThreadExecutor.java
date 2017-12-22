@@ -1,11 +1,10 @@
 package com.jme3x.jfx.injfx;
 
-import org.jetbrains.annotations.NotNull;
-
 import com.ss.rlib.util.ArrayUtils;
 import com.ss.rlib.util.array.Array;
 import com.ss.rlib.util.array.ArrayFactory;
 import com.ss.rlib.util.array.ConcurrentArray;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The executor for executing tasks in application thread.
@@ -14,15 +13,10 @@ import com.ss.rlib.util.array.ConcurrentArray;
  */
 public class ApplicationThreadExecutor {
 
+    @NotNull
     private static final ApplicationThreadExecutor INSTANCE = new ApplicationThreadExecutor();
 
-    /**
-     * Gets instance.
-     *
-     * @return the instance
-     */
-    @NotNull
-    public static ApplicationThreadExecutor getInstance() {
+    public static @NotNull ApplicationThreadExecutor getInstance() {
         return INSTANCE;
     }
 
@@ -33,15 +27,12 @@ public class ApplicationThreadExecutor {
     private final ConcurrentArray<Runnable> waitTasks;
 
     /**
-     * THe list of tasks to execute.
+     * The list of tasks to execute.
      */
     @NotNull
     private final Array<Runnable> execute;
 
-    /**
-     * Instantiates a new Application thread executor.
-     */
-    public ApplicationThreadExecutor() {
+    private ApplicationThreadExecutor() {
         this.waitTasks = ArrayFactory.newConcurrentAtomicARSWLockArray(Runnable.class);
         this.execute = ArrayFactory.newArray(Runnable.class);
     }

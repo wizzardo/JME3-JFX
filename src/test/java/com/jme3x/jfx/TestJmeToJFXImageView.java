@@ -20,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The test to show how to integrate jME to ImageView.
@@ -28,12 +29,12 @@ import javafx.stage.Stage;
  */
 public class TestJmeToJFXImageView extends Application {
 
-    public static void main(final String[] args) {
+    public static void main(@NotNull final String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(final Stage stage) throws Exception {
+    public void start(@NotNull final Stage stage) {
 
         final ImageView imageView = new ImageView();
         imageView.setFocusTraversable(true);
@@ -51,15 +52,17 @@ public class TestJmeToJFXImageView extends Application {
         stage.show();
         stage.setOnCloseRequest(event -> System.exit(0));
 
-        final JmeToJFXApplication application = makeJmeApplication(stage, 80);
+        // creates jME application
+        final JmeToJFXApplication application = makeJmeApplication();
+
+        // integrate jME application with ImageView
         JmeToJFXIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
     }
 
-    private static JmeToJFXApplication makeJmeApplication(Stage stage, int framerate) {
+    private static @NotNull JmeToJFXApplication makeJmeApplication() {
 
         final AppSettings settings = JmeToJFXIntegrator.prepareSettings(new AppSettings(true), 60);
-
-        JmeToJFXApplication app = new JmeToJFXApplication() {
+        final JmeToJFXApplication application = new JmeToJFXApplication() {
 
             protected Geometry player;
             Boolean isRunning = true;
@@ -90,11 +93,9 @@ public class TestJmeToJFXImageView extends Application {
             }
 
             /** Use this listener for KeyDown/KeyUp events */
-            private ActionListener actionListener = new ActionListener() {
-                public void onAction(String name, boolean keyPressed, float tpf) {
-                    if (name.equals("Pause") && !keyPressed) {
-                        isRunning = !isRunning;
-                    }
+            private ActionListener actionListener = (name, keyPressed, tpf) -> {
+                if (name.equals("Pause") && !keyPressed) {
+                    isRunning = !isRunning;
                 }
             };
 
@@ -117,8 +118,8 @@ public class TestJmeToJFXImageView extends Application {
                 }
             };
         };
-        app.setSettings(settings);
-        app.setShowSettings(false);
-        return app;
+        application.setSettings(settings);
+        application.setShowSettings(false);
+        return application;
     }
 }

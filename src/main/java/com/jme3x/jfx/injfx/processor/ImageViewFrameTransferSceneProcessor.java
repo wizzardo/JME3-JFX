@@ -18,17 +18,17 @@ public class ImageViewFrameTransferSceneProcessor extends AbstractFrameTransferS
 
     @Override
     protected int getDestinationHeight() {
-        return (int) destination.getFitHeight();
+        return (int) getDestination().getFitHeight();
     }
 
     @Override
     protected int getDestinationWidth() {
-        return (int) destination.getFitWidth();
+        return (int) getDestination().getFitWidth();
     }
 
     @Override
     protected boolean isPreserveRatio() {
-        return destination.isPreserveRatio();
+        return getDestination().isPreserveRatio();
     }
 
     @Override
@@ -40,6 +40,7 @@ public class ImageViewFrameTransferSceneProcessor extends AbstractFrameTransferS
 
     @Override
     protected void bindListeners() {
+        final ImageView destination = getDestination();
         destination.fitWidthProperty().addListener(widthListener);
         destination.fitHeightProperty().addListener(heightListener);
         destination.preserveRatioProperty().addListener(rationListener);
@@ -48,15 +49,15 @@ public class ImageViewFrameTransferSceneProcessor extends AbstractFrameTransferS
 
     @Override
     protected void unbindDestination() {
+        final ImageView destination = getDestination();
         destination.fitWidthProperty().removeListener(widthListener);
         destination.fitHeightProperty().removeListener(heightListener);
         destination.preserveRatioProperty().removeListener(rationListener);
         super.unbindDestination();
     }
 
-    @NotNull
     @Override
-    protected FrameTransfer createFrameTransfer(final int width, final int height, @NotNull final FrameBuffer frameBuffer) {
-        return new ImageFrameTransfer(destination, getTransferMode(), isMain() ? null : frameBuffer, width, height);
+    protected @NotNull FrameTransfer createFrameTransfer(@NotNull final FrameBuffer frameBuffer, final int width, final int height) {
+        return new ImageFrameTransfer(getDestination(), getTransferMode(), isMain() ? null : frameBuffer, width, height);
     }
 }

@@ -48,29 +48,49 @@ public class JFXInput implements Input {
     protected Scene scene;
 
     /**
-     * Initializes is it.
+     * The flag of initializing this.
      */
     protected boolean initialized;
 
-    /**
-     * Instantiates a new Jfx input.
-     *
-     * @param context the context
-     */
     public JFXInput(@NotNull final JmeOffscreenSurfaceContext context) {
         this.context = context;
     }
 
     /**
-     * Bind.
+     * Checks of existing the node.
      *
-     * @param node the node
+     * @return true if the node is exist.
+     */
+    protected boolean hasNode() {
+        return node != null;
+    }
+
+    /**
+     * Gets the bound node.
+     *
+     * @return the bound node.
+     */
+    protected @NotNull Node getNode() {
+        return notNull(node);
+    }
+
+    /**
+     * Gets the raw listener.
+     *
+     * @return the raw listener.
+     */
+    protected @NotNull RawInputListener getListener() {
+        return notNull(listener);
+    }
+
+    /**
+     * Bind this input to the node.
+     *
+     * @param node the node.
      */
     public void bind(@NotNull final Node node) {
         this.node = node;
-        this.scene = node.getScene();
-        notNull(this.node, "ImageView can' be null");
-        notNull(this.scene, "The scene of the ImageView can' be null");
+        this.scene = notNull(node.getScene());
     }
 
     /**
