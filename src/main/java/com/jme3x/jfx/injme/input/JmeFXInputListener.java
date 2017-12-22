@@ -13,7 +13,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.awt.AwtKeyInput;
 import com.jme3.input.event.*;
-import com.jme3x.jfx.injme.JmeFxContainer;
+import com.jme3x.jfx.injme.JmeFXContainerInternal;
 import com.jme3x.jfx.injme.JmeFxDNDHandler;
 import com.jme3x.jfx.util.JFXPlatform;
 import com.sun.javafx.embed.AbstractEvents;
@@ -36,7 +36,7 @@ public class JmeFXInputListener implements RawInputListener {
      * The javaFX container.
      */
     @NotNull
-    private final JmeFxContainer container;
+    private final JmeFXContainerInternal container;
 
     /**
      * The key state set.
@@ -74,7 +74,7 @@ public class JmeFXInputListener implements RawInputListener {
     @Nullable
     private volatile JmeFxDNDHandler dndHandler;
 
-    public JmeFXInputListener(@NotNull final JmeFxContainer container) {
+    public JmeFXInputListener(@NotNull final JmeFXContainerInternal container) {
         this.container = container;
         this.keyStateSet = new BitSet(0xFF);
         this.keyCharSet = new char[Character.MAX_CODE_POINT];
@@ -121,7 +121,7 @@ public class JmeFXInputListener implements RawInputListener {
      *
      * @return the javaFX container.
      */
-    private @NotNull JmeFxContainer getContainer() {
+    private @NotNull JmeFXContainerInternal getContainer() {
         return container;
     }
 
@@ -179,7 +179,7 @@ public class JmeFXInputListener implements RawInputListener {
         final RawInputListener adapter = getRawInputListener();
         if (adapter != null) adapter.onKeyEvent(event);
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final EmbeddedSceneInterface sceneInterface = container.getSceneInterface();
         if (sceneInterface == null) return;
 
@@ -247,7 +247,7 @@ public class JmeFXInputListener implements RawInputListener {
         final RawInputListener adapter = getRawInputListener();
         if (adapter != null) adapter.onMouseButtonEvent(event);
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final Application application = requireNonNull(container.getApplication());
         final InputManager inputManager = application.getInputManager();
 
@@ -319,7 +319,7 @@ public class JmeFXInputListener implements RawInputListener {
             dndHandler.mouseUpdate(x, y, primaryBtnDown);
         }
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final EmbeddedSceneInterface sceneInterface = requireNonNull(container.getSceneInterface());
 
         final int screenX = container.getPositionX() + x;
@@ -343,7 +343,7 @@ public class JmeFXInputListener implements RawInputListener {
         final RawInputListener adapter = getRawInputListener();
         if (adapter != null) adapter.onMouseMotionEvent(event);
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final Application application = notNull(container.getApplication(), "Application is null.");
         final InputManager inputManager = notNull(application.getInputManager(), "Input manager is null.");
 
@@ -395,7 +395,7 @@ public class JmeFXInputListener implements RawInputListener {
 
     private void onMouseMotionEventImpl(int x, int y, int wheelRotation, int type, int button) {
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final Application application = notNull(container.getApplication());
         final InputManager inputManager = application.getInputManager();
 

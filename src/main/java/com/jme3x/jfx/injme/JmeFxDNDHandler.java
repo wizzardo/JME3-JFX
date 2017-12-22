@@ -37,7 +37,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
      * The JavaFX container.
      */
     @NotNull
-    private JmeFxContainer container;
+    private JmeFXContainerInternal container;
 
     /**
      * The drop target.
@@ -63,7 +63,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
     @Nullable
     private ImageView dragImage;
 
-    public JmeFxDNDHandler(@NotNull final JmeFxContainer container) {
+    public JmeFxDNDHandler(@NotNull final JmeFXContainerInternal container) {
         this.container = container;
     }
 
@@ -111,7 +111,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
     @Override
     public void dragStarted(@NotNull final EmbeddedSceneDSInterface dragSource, @NotNull final TransferMode transferMode) {
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final Group rootNode = container.getRootNode();
         final JmeFXInputListener inputListener = container.getInputListener();
         final EmbeddedSceneInterface sceneInterface = container.getSceneInterface();
@@ -175,7 +175,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
      *
      * @return the JavaFX container.
      */
-    private @NotNull JmeFxContainer getContainer() {
+    private @NotNull JmeFXContainerInternal getContainer() {
         return container;
     }
 
@@ -210,7 +210,7 @@ public class JmeFxDNDHandler implements HostDragStartListener {
             return;
         }
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final Group rootNode = container.getRootNode();
         final JmeFXInputListener inputListener = container.getInputListener();
         final EmbeddedSceneInterface sceneInterface = container.getSceneInterface();

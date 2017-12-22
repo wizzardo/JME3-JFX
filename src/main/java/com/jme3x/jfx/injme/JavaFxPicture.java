@@ -24,9 +24,9 @@ public class JavaFxPicture extends Picture {
      * The JavaFX container.
      */
     @NotNull
-    private final JmeFxContainer container;
+    private final JmeFXContainerInternal container;
 
-    public JavaFxPicture(@NotNull final JmeFxContainer container) {
+    public JavaFxPicture(@NotNull final JmeFXContainerInternal container) {
         super("JavaFxContainer", true);
         this.container = container;
     }
@@ -36,14 +36,14 @@ public class JavaFxPicture extends Picture {
      *
      * @return the JavaFX container.
      */
-    private @NotNull JmeFxContainer getContainer() {
+    private @NotNull JmeFXContainerInternal getContainer() {
         return container;
     }
 
     @Override
     public void updateLogicalState(final float tpf) {
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final JmeContext jmeContext = container.getJmeContext();
         try {
 

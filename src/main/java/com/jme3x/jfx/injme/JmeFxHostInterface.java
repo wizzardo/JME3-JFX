@@ -30,9 +30,9 @@ public class JmeFxHostInterface implements HostInterface {
      * The JavaFX container.
      */
     @NotNull
-    private final JmeFxContainer container;
+    private final JmeFXContainerInternal container;
 
-    public JmeFxHostInterface(@NotNull final JmeFxContainer container) {
+    public JmeFxHostInterface(@NotNull final JmeFXContainerInternal container) {
         this.container = container;
     }
 
@@ -41,7 +41,7 @@ public class JmeFxHostInterface implements HostInterface {
      *
      * @return the JavaFX container.
      */
-    private @NotNull JmeFxContainer getContainer() {
+    private @NotNull JmeFXContainerInternal getContainer() {
         return container;
     }
 
@@ -78,7 +78,7 @@ public class JmeFxHostInterface implements HostInterface {
             LOGGER.debug(this, sceneInterface, scene -> "Called setEmbeddedScene(" + scene + ")");
         }
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final EmbeddedSceneInterface currentSceneInterface = container.getSceneInterface();
         if (currentSceneInterface != null) {
             // FIXME release all things
@@ -111,7 +111,7 @@ public class JmeFxHostInterface implements HostInterface {
             LOGGER.debug(this, stageInterface, stage -> "Called setEmbeddedStage(" + stage + ")");
         }
 
-        final JmeFxContainer container = getContainer();
+        final JmeFXContainerInternal container = getContainer();
         final EmbeddedStageInterface currentStageInterface = container.getStageInterface();
         if (currentStageInterface != null) {
             // FIXME release all things

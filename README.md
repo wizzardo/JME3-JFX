@@ -18,7 +18,7 @@ allprojects {
 }
 
 dependencies {
-    compile 'com.github.JavaSaBr:JME3-JFX:1.6.1'
+    compile 'com.github.JavaSaBr:JME3-JFX:1.7.0'
 }
 ```
 
@@ -36,7 +36,7 @@ dependencies {
     <dependency>
         <groupId>com.github.JavaSaBr</groupId>
         <artifactId>JME3-JFX</artifactId>
-        <version>1.6.1</version>
+        <version>1.7.0</version>
     </dependency>
 ```
 
@@ -78,8 +78,8 @@ dependencies {
         public void simpleUpdate(final float tpf) {
             super.simpleUpdate(tpf);
             // we decide here that we need to do transferring the last frame from javaFX to jME
-            if (container.isNeedWriteToJME()) {
-                container.writeToJME();
+            if (container.isNeedWriteToJme()) {
+                container.writeToJme();
             }
         }
     }

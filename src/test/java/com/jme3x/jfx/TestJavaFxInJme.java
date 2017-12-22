@@ -78,8 +78,8 @@ public class TestJavaFxInJme extends SimpleApplication {
     public void simpleUpdate(final float tpf) {
         super.simpleUpdate(tpf);
         // we decide here that we need to do transferring the last frame from javaFX to jME
-        if (container.isNeedWriteToJME()) {
-            container.writeToJME();
+        if (container.isNeedWriteToJme()) {
+            container.writeToJme();
         }
     }
 
