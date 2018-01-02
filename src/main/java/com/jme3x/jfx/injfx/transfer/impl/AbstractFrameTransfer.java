@@ -112,28 +112,11 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      */
     private final int height;
 
-    /**
-     * Instantiates a new Abstract frame transfer.
-     *
-     * @param destination  the destination.
-     * @param width        the width.
-     * @param height       the height.
-     * @param transferMode the transfer mode.
-     */
     public AbstractFrameTransfer(@NotNull final T destination, final int width, final int height,
                                  @NotNull final TransferMode transferMode) {
         this(destination, transferMode, null, width, height);
     }
 
-    /**
-     * Instantiates a new Abstract frame transfer.
-     *
-     * @param destination  the destination.
-     * @param transferMode the transfer mode.
-     * @param frameBuffer  the frame buffer.
-     * @param width        the width.
-     * @param height       the height.
-     */
     public AbstractFrameTransfer(@NotNull final T destination, @NotNull final TransferMode transferMode,
                                  @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
         this.transferMode = transferMode;

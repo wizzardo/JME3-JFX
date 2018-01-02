@@ -14,28 +14,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CanvasFrameTransfer extends AbstractFrameTransfer<Canvas> {
 
-    /**
-     * Instantiates a new Canvas frame transfer.
-     *
-     * @param canvas       the canvas.
-     * @param transferMode the transfer mode.
-     * @param width        the width.
-     * @param height       the height.
-     */
     public CanvasFrameTransfer(@NotNull final Canvas canvas, @NotNull final TransferMode transferMode, int width,
                                int height) {
         this(canvas, transferMode, null, width, height);
     }
 
-    /**
-     * Instantiates a new Canvas frame transfer.
-     *
-     * @param canvas       the canvas.
-     * @param transferMode the transfer mode.
-     * @param frameBuffer  the frame buffer.
-     * @param width        the width.
-     * @param height       the height.
-     */
     public CanvasFrameTransfer(@NotNull final Canvas canvas, @NotNull final TransferMode transferMode,
                                @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
         super(canvas, transferMode, frameBuffer, width, height);

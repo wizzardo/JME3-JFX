@@ -19,28 +19,11 @@ public class ImageFrameTransfer extends AbstractFrameTransfer<ImageView> {
     @Nullable
     private WritableImage writableImage;
 
-    /**
-     * Instantiates a new Image frame transfer.
-     *
-     * @param imageView    the image view.
-     * @param transferMode the transfer mode.
-     * @param width        the width.
-     * @param height       the height.
-     */
     public ImageFrameTransfer(@NotNull final ImageView imageView, @NotNull final TransferMode transferMode, int width,
                               int height) {
         this(imageView, transferMode, null, width, height);
     }
 
-    /**
-     * Instantiates a new Image frame transfer.
-     *
-     * @param imageView    the image view.
-     * @param transferMode the transfer mode.
-     * @param frameBuffer  the frame buffer.
-     * @param width        the width.
-     * @param height       the height.
-     */
     public ImageFrameTransfer(@NotNull final ImageView imageView, @NotNull final TransferMode transferMode,
                               @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
         super(imageView, transferMode, frameBuffer, width, height);

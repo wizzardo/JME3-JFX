@@ -29,8 +29,11 @@ public class TestJavaFxInJme extends SimpleApplication {
 
     public static void main(@NotNull final String[] args) {
 
+        final AppSettings settings = new AppSettings(true);
+        settings.setResizable(true);
+
         final TestJavaFxInJme application = new TestJavaFxInJme();
-        application.setSettings(new AppSettings(true));
+        application.setSettings(settings);
         application.setShowSettings(false);
         application.start();
     }
