@@ -6,7 +6,7 @@ JFX Gui bridge for JME with usefull utilities for common usecases
 License is the New BSD License (same as JME3) 
 http://opensource.org/licenses/BSD-3-Clause
 
-## How to add the library to your project
+#### How to add the library to your project
 
 #### Gradle
 
@@ -18,7 +18,7 @@ allprojects {
 }
 
 dependencies {
-    compile 'com.github.JavaSaBr:JME3-JFX:1.7.0'
+    compile 'com.github.JavaSaBr:JME3-JFX:1.7.1'
 }
 ```
 
@@ -36,7 +36,7 @@ dependencies {
     <dependency>
         <groupId>com.github.JavaSaBr</groupId>
         <artifactId>JME3-JFX</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
     </dependency>
 ```
 

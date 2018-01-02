@@ -15,6 +15,9 @@ import com.jme3x.jfx.injfx.input.JFXKeyInput;
 import com.jme3x.jfx.injfx.input.JFXMouseInput;
 import com.jme3x.jfx.injfx.transfer.FrameTransfer;
 import com.jme3x.jfx.util.JFXPlatform;
+import com.ss.rlib.logging.Logger;
+import com.ss.rlib.logging.LoggerLevel;
+import com.ss.rlib.logging.LoggerManager;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Node;
@@ -23,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The base implementation of scene processor for transferring frames.
@@ -33,6 +36,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implements FrameTransferSceneProcessor {
+
+    @NotNull
+    protected static final Logger LOGGER = LoggerManager.getLogger(JFXPlatform.class);
 
     /**
      * The width listener.
@@ -56,7 +62,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
      * The flag to decide when we should resize.
      */
     @NotNull
-    private final AtomicBoolean reshapeNeeded;
+    private final AtomicInteger reshapeNeeded;
 
     /**
      * The render manager.
@@ -110,7 +116,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
         askWidth = 1;
         askHeight = 1;
         main = true;
-        reshapeNeeded = new AtomicBoolean(true);
+        reshapeNeeded = new AtomicInteger(2);
         widthListener = (view, oldValue, newValue) -> notifyChangedWidth(newValue);
         heightListener = (view, oldValue, newValue) -> notifyChangedHeight(newValue);
         rationListener = (view, oldValue, newValue) -> notifyChangedRatio(newValue);
@@ -252,12 +258,14 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
         askWidth = newWidth;
         askHeight = newHeight;
         askFixAspect = fixAspect;
-        reshapeNeeded.set(true);
+        reshapeNeeded.set(2);
+
+        LOGGER.debug(this, this, processor -> "notify resized to " + processor.askWidth + "x" + processor.askHeight);
     }
 
     @Override
     public void reshape() {
-        reshapeNeeded.set(true);
+        reshapeNeeded.set(2);
     }
 
     /**
@@ -460,6 +468,11 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
      * @return the new frame transfer.
      */
     protected @NotNull FrameTransfer reshapeInThread(final int width, final int height, final boolean fixAspect) {
+
+        if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
+            LOGGER.debug(this, "Reshape in the jME thread to " + width + "x" + height);
+        }
+
         reshapeCurrentViewPort(width, height);
 
         final ViewPort viewPort = getViewPort();
@@ -499,6 +512,10 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
      */
     protected void reshapeCurrentViewPort(final int width, final int height) {
 
+        if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
+            LOGGER.debug(this, "reshape the current view port to " + width + "x" + height);
+        }
+
         final ViewPort viewPort = getViewPort();
         final Camera camera = viewPort.getCamera();
         final int cameraAngle = getCameraAngle();
@@ -530,9 +547,9 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
 
         for (final SceneProcessor sceneProcessor : processors) {
             if (!sceneProcessor.isInitialized()) {
-                sceneProcessor.initialize(renderManager, this.viewPort);
+                sceneProcessor.initialize(renderManager, viewPort);
             } else {
-                sceneProcessor.reshape(this.viewPort, width, height);
+                sceneProcessor.reshape(viewPort, width, height);
             }
         }
     }
@@ -581,7 +598,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
         }
 
         // for the next frame
-        if (hasDestination() && reshapeNeeded.getAndSet(false)) {
+        if (hasDestination() && reshapeNeeded.get() > 0 && reshapeNeeded.decrementAndGet() >= 0) {
 
             if (frameTransfer != null) {
                 frameTransfer.dispose();
