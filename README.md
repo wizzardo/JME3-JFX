@@ -18,7 +18,7 @@ allprojects {
 }
 
 dependencies {
-    compile 'com.github.JavaSaBr:JME3-JFX:1.7.0'
+    compile 'com.github.JavaSaBr:JME3-JFX:1.7.1'
 }
 ```
 
@@ -36,7 +36,7 @@ dependencies {
     <dependency>
         <groupId>com.github.JavaSaBr</groupId>
         <artifactId>JME3-JFX</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
     </dependency>
 ```
 
