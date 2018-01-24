@@ -11,22 +11,20 @@ http://opensource.org/licenses/BSD-3-Clause
 #### Gradle
 
 ```groovy
-allprojects {
     repositories {
         maven { url 'https://jitpack.io' }
     }
-}
-
-dependencies {
-    compile 'com.github.JavaSaBr:JME3-JFX:1.7.1'
-}
+    
+    dependencies {
+        compile 'com.github.JavaSaBr:JME3-JFX:1.7.2'
+    }
 ```
 
     
 #### Maven
 
 ```xml
-<repositories>
+    <repositories>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -36,7 +34,7 @@ dependencies {
     <dependency>
         <groupId>com.github.JavaSaBr</groupId>
         <artifactId>JME3-JFX</artifactId>
-        <version>1.7.1</version>
+        <version>1.7.2</version>
     </dependency>
 ```
 
