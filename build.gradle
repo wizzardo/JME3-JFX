@@ -2,13 +2,14 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'com.jme3x'
-version = '1.7.2'
+version = '1.7.3'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-ext.jmeVersion = "v3.3.dev-SNAPSHOT"
 ext.rlibVersion = "6.7.4"
+
+def jme3 = [v: '3.2.0-stable', g: 'org.jmonkeyengine']
 
 repositories {
     mavenCentral()
@@ -19,8 +20,8 @@ repositories {
 dependencies {
     compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
     compile group: 'com.github.JavaSaBr', name: 'RLib', version: rlibVersion
-    compile group: 'com.github.JavaSaBr.jmonkeyengine', name: 'jme3-core', version: jmeVersion
-    compile group: 'com.github.JavaSaBr.jmonkeyengine', name: 'jme3-lwjgl3', version: jmeVersion
+    compile "${jme3.g}:jme3-core:${jme3.v}"
+    compile "${jme3.g}:jme3-lwjgl3:${jme3.v}"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
