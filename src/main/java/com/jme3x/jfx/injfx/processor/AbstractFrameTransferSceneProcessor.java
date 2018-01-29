@@ -590,7 +590,10 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
 
     @Override
     public void postFrame(@Nullable final FrameBuffer out) {
-        if (!isEnabled()) return;
+
+        if (!isEnabled()) {
+            return;
+        }
 
         final FrameTransfer frameTransfer = getFrameTransfer();
         if (frameTransfer != null) {

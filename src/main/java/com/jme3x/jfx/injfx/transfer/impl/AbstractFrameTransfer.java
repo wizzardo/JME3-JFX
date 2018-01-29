@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The base implementation of a frame transfer.
  *
- * @param <T> the type parameter
+ * @param <T> the destination's type.
  * @author JavaSaBr
  */
 public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
@@ -144,17 +144,19 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
     @Override
     public void initFor(@NotNull final Renderer renderer, final boolean main) {
-        if (main) renderer.setMainFrameBufferOverride(frameBuffer);
+        if (main) {
+            renderer.setMainFrameBufferOverride(frameBuffer);
+        }
     }
 
     /**
-     * Gets pixel writer.
+     * Get the pixel writer.
      *
-     * @param destination the destination
-     * @param frameBuffer the frame buffer
-     * @param width       the width
-     * @param height      the height
-     * @return the pixel writer
+     * @param destination the destination.
+     * @param frameBuffer the frame buffer.
+     * @param width       the width.
+     * @param height      the height.
+     * @return the pixel writer.
      */
     protected PixelWriter getPixelWriter(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer,
                                          final int width, final int height) {
@@ -172,7 +174,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     }
 
     @Override
-    public void copyFrameBufferToImage(final RenderManager renderManager) {
+    public void copyFrameBufferToImage(@NotNull final RenderManager renderManager) {
 
         while (!frameState.compareAndSet(WAITING_STATE, RUNNING_STATE)) {
             if (frameState.get() == DISPOSED_STATE) {
@@ -186,7 +188,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
             frameByteBuffer.clear();
 
             final Renderer renderer = renderManager.getRenderer();
-            renderer.readFrameBufferWithFormat(frameBuffer, frameByteBuffer, Image.Format.BGRA8);
+            renderer.readFrameBufferWithFormat(frameBuffer, frameByteBuffer, Image.Format.RGBA8);
 
         } finally {
             if (!frameState.compareAndSet(RUNNING_STATE, WAITING_STATE)) {
@@ -222,7 +224,9 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     protected void writeFrame() {
 
         while (!imageState.compareAndSet(WAITING_STATE, RUNNING_STATE)) {
-            if (imageState.get() == DISPOSED_STATE) return;
+            if (imageState.get() == DISPOSED_STATE) {
+                return;
+            }
         }
 
         try {
@@ -231,6 +235,17 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
             synchronized (byteBuffer) {
                 System.arraycopy(byteBuffer, 0, imageByteBuffer, 0, byteBuffer.length);
+            }
+
+            for (int i = 0, length = width * height * 4; i < length; i += 4) {
+                byte r = imageByteBuffer[i];
+                byte g = imageByteBuffer[i + 1];
+                byte b = imageByteBuffer[i + 2];
+                byte a = imageByteBuffer[i + 3];
+                imageByteBuffer[i] = b;
+                imageByteBuffer[i + 1] = g;
+                imageByteBuffer[i + 2] = r;
+                imageByteBuffer[i + 3] = a;
             }
 
             final PixelFormat<ByteBuffer> pixelFormat = PixelFormat.getByteBgraInstance();
@@ -248,8 +263,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      *
      * @return the image byte buffer.
      */
-    @NotNull
-    protected byte[] getImageByteBuffer() {
+    protected @NotNull byte[] getImageByteBuffer() {
         return imageByteBuffer;
     }
 
@@ -258,8 +272,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      *
      * @return the prev image byte buffer.
      */
-    @NotNull
-    protected byte[] getPrevImageByteBuffer() {
+    protected @NotNull byte[] getPrevImageByteBuffer() {
         return prevImageByteBuffer;
     }
 

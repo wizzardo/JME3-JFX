@@ -16,7 +16,7 @@ http://opensource.org/licenses/BSD-3-Clause
     }
     
     dependencies {
-        compile 'com.github.JavaSaBr:JME3-JFX:1.7.3'
+        compile 'com.github.JavaSaBr:JME3-JFX:1.7.4'
     }
 ```
 
@@ -34,7 +34,7 @@ http://opensource.org/licenses/BSD-3-Clause
     <dependency>
         <groupId>com.github.JavaSaBr</groupId>
         <artifactId>JME3-JFX</artifactId>
-        <version>1.7.3</version>
+        <version>1.7.4</version>
     </dependency>
 ```
 
