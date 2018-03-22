@@ -1,25 +1,76 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
 
 group = 'com.jme3x'
-version = '1.7.4'
+version = '1.7.5'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-ext.rlibVersion = "6.7.4"
+ext.rlibVersion = "6.8.3-Final"
+ext.bintrayVersion = version + "-Final"
 
 def jme3 = [v: '3.2.0-stable', g: 'org.jmonkeyengine']
 
 repositories {
     mavenCentral()
     jcenter()
-    maven { url 'https://jitpack.io' }
+    maven {
+        url "https://jitpack.io"
+    }
+    maven {
+        url  "https://dl.bintray.com/javasabr/maven"
+    }
+}
+
+publishing {
+    publications {
+        LibArtifact(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId 'jme-jfx'
+            version bintrayVersion
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    user = System.getProperty('bintrayUser')
+    key = System.getProperty('bintrayKey')
+    publications = ['LibArtifact']
+    pkg {
+        repo = 'maven'
+        name = 'com.jme3x.jme-jfx'
+        licenses = ['Apache-2.0']
+        websiteUrl = 'https://github.com/JavaSaBr/JME3-JFX'
+        vcsUrl = 'https://github.com/JavaSaBr/JME3-JFX.git'
+        issueTrackerUrl = 'https://github.com/JavaSaBr/JME3-JFX/issues'
+        githubRepo = 'JavaSaBr/JME3-JFX'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            name = bintrayVersion
+            desc = bintrayVersion
+            released  = new Date()
+        }
+    }
 }
 
 dependencies {
     compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
-    compile group: 'com.github.JavaSaBr', name: 'RLib', version: rlibVersion
+    compile group: 'com.spaceshift', name: 'rlib', version: rlibVersion
     compile "${jme3.g}:jme3-core:${jme3.v}"
     compile "${jme3.g}:jme3-lwjgl3:${jme3.v}"
 }
@@ -34,30 +85,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
-
-defaultTasks 'clean', 'install'
-
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4'
-}
-
-// To specify a license in the pom:
-install {
-    repositories.mavenInstaller {
-        pom.version = version
-        pom.artifactId = 'jme-jfx'
-        pom.project {
-            licenses {
-                license {
-                    name 'License is the New BSD License (same as JME3) '
-                    url 'http://opensource.org/licenses/BSD-3-Clause'
-                    distribution 'repo'
-                }
-            }
-        }
-    }
+    gradleVersion = '4.6'
 }
