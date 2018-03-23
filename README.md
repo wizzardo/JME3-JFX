@@ -8,34 +8,37 @@ http://opensource.org/licenses/BSD-3-Clause
 
 #### How to add the library to your project
 
-#### Gradle
-
 ```groovy
-    repositories {
-        maven { url 'https://jitpack.io' }
+repositories {
+    maven {
+        url  "https://dl.bintray.com/javasabr/maven" 
     }
-    
-    dependencies {
-        compile 'com.github.JavaSaBr:JME3-JFX:1.7.4'
-    }
-```
+}
 
+dependencies {
+    compile 'com.jme3x:jme-jfx:1.7.5-Final'
+}
+```
     
 #### Maven
 
 ```xml
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
+<repositories>
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>bintray-javasabr-maven</id>
+        <name>bintray</name>
+        <url>https://dl.bintray.com/javasabr/maven</url>
+    </repository>
+</repositories>
 
-    <dependency>
-        <groupId>com.github.JavaSaBr</groupId>
-        <artifactId>JME3-JFX</artifactId>
-        <version>1.7.4</version>
-    </dependency>
+<dependency>
+    <groupId>com.jme3x</groupId>
+    <artifactId>jme-jfx</artifactId>
+    <version>1.7.5-Final</version>
+</dependency>
 ```
 
 #### How to integrate jME application to JavaFX ImageView:
