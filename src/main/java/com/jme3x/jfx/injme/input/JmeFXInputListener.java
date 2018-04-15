@@ -5,7 +5,7 @@
 package com.jme3x.jfx.injme.input;
 
 import static com.jme3x.jfx.util.JFXPlatform.runInFXThread;
-import static com.ss.rlib.util.ObjectUtils.notNull;
+import static com.ss.rlib.common.util.ObjectUtils.notNull;
 import static java.util.Objects.requireNonNull;
 import com.jme3.app.Application;
 import com.jme3.input.InputManager;
@@ -334,7 +334,7 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean popupTrigger = button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON;
 
         sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
-                shift, ctrl, alt, meta, 0, popupTrigger);
+                shift, ctrl, alt, meta, popupTrigger);
     }
 
     @Override
@@ -372,7 +372,7 @@ public class JmeFXInputListener implements RawInputListener {
         final int wheelRotation = (int) Math.round(event.getDeltaWheel() / -120.0);
 
         if (wheelRotation != 0) {
-            type = AbstractEvents.MOUSEEVENT_WHEEL;
+            type = AbstractEvents.MOUSEEVENT_VERTICAL_WHEEL;
             button = AbstractEvents.MOUSEEVENT_NONE_BUTTON;
         } else if (mouseButtonState[0]) {
             type = AbstractEvents.MOUSEEVENT_DRAGGED;
@@ -427,7 +427,7 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
 
         sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
-                shift, ctrl, alt, meta, wheelRotation, false);
+                shift, ctrl, alt, meta, false);
     }
 
     @Override

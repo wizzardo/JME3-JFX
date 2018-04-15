@@ -4,9 +4,9 @@ import static com.jme3x.jfx.injme.util.JmeWindowUtils.*;
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
 import com.jme3x.jfx.util.JFXPlatform;
-import com.ss.rlib.logging.Logger;
-import com.ss.rlib.logging.LoggerLevel;
-import com.ss.rlib.logging.LoggerManager;
+import com.ss.rlib.common.logging.Logger;
+import com.ss.rlib.common.logging.LoggerLevel;
+import com.ss.rlib.common.logging.LoggerManager;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 import org.jetbrains.annotations.NotNull;
 

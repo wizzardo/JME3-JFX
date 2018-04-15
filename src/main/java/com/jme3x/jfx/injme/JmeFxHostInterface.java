@@ -5,9 +5,9 @@
 package com.jme3x.jfx.injme;
 
 import com.jme3x.jfx.util.JFXPlatform;
-import com.ss.rlib.logging.Logger;
-import com.ss.rlib.logging.LoggerLevel;
-import com.ss.rlib.logging.LoggerManager;
+import com.ss.rlib.common.logging.Logger;
+import com.ss.rlib.common.logging.LoggerLevel;
+import com.ss.rlib.common.logging.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
@@ -90,7 +90,9 @@ public class JmeFxHostInterface implements HostInterface {
             return;
         }
 
-        sceneInterface.setPixelScaleFactor(container.getPixelScaleFactor());
+        var scaleFactor = container.getPixelScaleFactor();
+
+        sceneInterface.setPixelScaleFactors(scaleFactor, scaleFactor);
 
         final int width = container.getSceneWidth();
         final int height = container.getSceneHeight();

@@ -1,6 +1,6 @@
 package com.jme3x.jfx.injfx.input;
 
-import static com.ss.rlib.util.ObjectUtils.notNull;
+import static com.ss.rlib.common.util.ObjectUtils.notNull;
 import com.jme3.input.Input;
 import com.jme3.input.RawInputListener;
 import com.jme3x.jfx.injfx.ApplicationThreadExecutor;

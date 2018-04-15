@@ -13,18 +13,44 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 group = 'com.jme3x'
-version = '1.7.5'
+version = '2.0.0'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+compileJava {
+    options.encoding = "UTF-8"
+    options.incremental = true
+    options.compilerArgs.addAll([
+        "--add-exports",
+        "javafx.graphics/com.sun.javafx.embed=ALL-UNNAMED"
+    ])
+    options.compilerArgs.addAll([
+        "--add-exports",
+        "javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED"
+    ])
+    options.compilerArgs.addAll([
+        "--add-exports",
+        "javafx.graphics/com.sun.javafx.cursor=ALL-UNNAMED"
+    ])
+    options.compilerArgs.addAll([
+        "--add-exports",
+        "javafx.graphics/com.sun.glass.ui=ALL-UNNAMED"
+    ])
+    options.compilerArgs.addAll([
+        "--add-exports",
+        "javafx.graphics/com.sun.javafx.application=ALL-UNNAMED"
+    ])
+}
 
-ext.rlibVersion = "6.8.3-Final"
-ext.bintrayVersion = version + "-Final"
+sourceCompatibility = 1.10
+targetCompatibility = 1.10
+
+ext.rlibVersion = "7.0.0"
+ext.bintrayVersion = version
 
 def jme3 = [v: '3.2.0-stable', g: 'org.jmonkeyengine']
 
 repositories {
     mavenCentral()
+    mavenLocal()
     jcenter()
     maven {
         url "https://jitpack.io"
@@ -70,9 +96,13 @@ bintray {
 
 dependencies {
     compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
-    compile group: 'com.spaceshift', name: 'rlib', version: rlibVersion
+    compile group: 'com.spaceshift', name: 'rlib.common', version: rlibVersion
     compile "${jme3.g}:jme3-core:${jme3.v}"
     compile "${jme3.g}:jme3-lwjgl3:${jme3.v}"
+}
+
+javadoc {
+    failOnError = false
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

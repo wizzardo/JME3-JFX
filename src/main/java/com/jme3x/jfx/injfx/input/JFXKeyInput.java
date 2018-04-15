@@ -1,11 +1,11 @@
 package com.jme3x.jfx.injfx.input;
 
-import static com.ss.rlib.util.linkedlist.LinkedListFactory.newLinkedList;
+import static com.ss.rlib.common.util.linkedlist.LinkedListFactory.newLinkedList;
 import com.jme3.input.KeyInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-import com.ss.rlib.util.linkedlist.LinkedList;
+import com.ss.rlib.common.util.linkedlist.LinkedList;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;

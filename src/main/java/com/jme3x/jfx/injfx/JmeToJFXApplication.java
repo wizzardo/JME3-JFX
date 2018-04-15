@@ -1,6 +1,6 @@
 package com.jme3x.jfx.injfx;
 
-import static com.ss.rlib.util.ObjectUtils.notNull;
+import static com.ss.rlib.common.util.ObjectUtils.notNull;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.post.FilterPostProcessor;

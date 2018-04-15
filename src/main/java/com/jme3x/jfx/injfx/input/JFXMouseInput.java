@@ -1,13 +1,13 @@
 package com.jme3x.jfx.injfx.input;
 
-import static com.ss.rlib.util.linkedlist.LinkedListFactory.newLinkedList;
+import static com.ss.rlib.common.util.linkedlist.LinkedListFactory.newLinkedList;
 import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.input.MouseInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3x.jfx.injfx.JmeOffscreenSurfaceContext;
-import com.ss.rlib.util.linkedlist.LinkedList;
+import com.ss.rlib.common.util.linkedlist.LinkedList;
 import javafx.collections.ObservableMap;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
