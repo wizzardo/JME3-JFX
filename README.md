@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.jme3x:jme-jfx:2.0.0'
+    compile jfx
 }
 ```
     
@@ -56,10 +56,10 @@ dependencies {
 
     var imageView = new ImageView();
         
-    var settings = JmeToJFXIntegrator.prepareSettings(new AppSettings(true), 60);
+    var settings = JmeToJfxIntegrator.prepareSettings(new AppSettings(true), 60);
     var application = new MySomeApplication();
     
-    JmeToJFXIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
+    JmeToJfxIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
 ```
 
 #### How to integrate javaFX UI to jME application:
