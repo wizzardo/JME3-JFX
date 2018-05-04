@@ -1,13 +1,13 @@
 package com.jme3.jfx.injfx.transfer.impl;
 
 import static com.jme3.jfx.injfx.processor.FrameTransferSceneProcessor.TransferMode;
+import com.jme3.jfx.injfx.transfer.FrameTransfer;
+import com.jme3.jfx.util.JfxPlatform;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
 import com.jme3.util.BufferUtils;
-import com.jme3.jfx.injfx.transfer.FrameTransfer;
-import com.jme3.jfx.util.JfxPlatform;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import org.jetbrains.annotations.NotNull;
@@ -25,21 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
-    /**
-     * The constant RUNNING_STATE.
-     */
     protected static final int RUNNING_STATE = 1;
-    /**
-     * The constant WAITING_STATE.
-     */
     protected static final int WAITING_STATE = 2;
-    /**
-     * The constant DISPOSING_STATE.
-     */
     protected static final int DISPOSING_STATE = 3;
-    /**
-     * The constant DISPOSED_STATE.
-     */
     protected static final int DISPOSED_STATE = 4;
 
     /**
@@ -71,7 +59,6 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      */
     @NotNull
     protected final ByteBuffer frameByteBuffer;
-
 
     /**
      * The transfer mode.
@@ -112,13 +99,17 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      */
     private final int height;
 
-    public AbstractFrameTransfer(@NotNull final T destination, final int width, final int height,
-                                 @NotNull final TransferMode transferMode) {
+    public AbstractFrameTransfer(@NotNull T destination, int width, int height, @NotNull TransferMode transferMode) {
         this(destination, transferMode, null, width, height);
     }
 
-    public AbstractFrameTransfer(@NotNull final T destination, @NotNull final TransferMode transferMode,
-                                 @Nullable final FrameBuffer frameBuffer, final int width, final int height) {
+    public AbstractFrameTransfer(
+            @NotNull T destination,
+            @NotNull TransferMode transferMode,
+            @Nullable FrameBuffer frameBuffer,
+            int width,
+            int height
+    ) {
         this.transferMode = transferMode;
         this.frameState = new AtomicInteger(WAITING_STATE);
         this.imageState = new AtomicInteger(WAITING_STATE);
@@ -143,7 +134,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     }
 
     @Override
-    public void initFor(@NotNull final Renderer renderer, final boolean main) {
+    public void initFor(@NotNull Renderer renderer, boolean main) {
         if (main) {
             renderer.setMainFrameBufferOverride(frameBuffer);
         }
@@ -158,8 +149,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      * @param height      the height.
      * @return the pixel writer.
      */
-    protected PixelWriter getPixelWriter(@NotNull final T destination, @NotNull final FrameBuffer frameBuffer,
-                                         final int width, final int height) {
+    protected PixelWriter getPixelWriter(@NotNull T destination, @NotNull FrameBuffer frameBuffer, int width, int height) {
         throw new UnsupportedOperationException();
     }
 
@@ -174,7 +164,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
     }
 
     @Override
-    public void copyFrameBufferToImage(@NotNull final RenderManager renderManager) {
+    public void copyFrameBufferToImage(@NotNull RenderManager renderManager) {
 
         while (!frameState.compareAndSet(WAITING_STATE, RUNNING_STATE)) {
             if (frameState.get() == DISPOSED_STATE) {
@@ -187,7 +177,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
             frameByteBuffer.clear();
 
-            final Renderer renderer = renderManager.getRenderer();
+            var renderer = renderManager.getRenderer();
             renderer.readFrameBufferWithFormat(frameBuffer, frameByteBuffer, Image.Format.RGBA8);
 
         } finally {
@@ -231,7 +221,7 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
         try {
 
-            final byte[] imageByteBuffer = getImageByteBuffer();
+            var imageByteBuffer = getImageByteBuffer();
 
             synchronized (byteBuffer) {
                 System.arraycopy(byteBuffer, 0, imageByteBuffer, 0, byteBuffer.length);
@@ -248,7 +238,8 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
                 imageByteBuffer[i + 3] = a;
             }
 
-            final PixelFormat<ByteBuffer> pixelFormat = PixelFormat.getByteBgraInstance();
+            var pixelFormat = PixelFormat.getByteBgraInstance();
+
             pixelWriter.setPixels(0, 0, width, height, pixelFormat, imageByteBuffer, 0, width * 4);
 
         } finally {

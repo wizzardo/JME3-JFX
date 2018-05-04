@@ -2,7 +2,6 @@ package com.jme3.jfx.injfx.transfer;
 
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
-
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -16,31 +15,31 @@ public interface FrameTransfer {
      * Init this transfer for the render.
      *
      * @param renderer the render.
-     * @param main     the main
+     * @param main     true if this transfer is main.
      */
-    default void initFor(@NotNull final Renderer renderer, final boolean main) {
+    default void initFor(@NotNull Renderer renderer, boolean main) {
     }
 
     /**
-     * Gets width.
+     * Gets the width.
      *
      * @return the width.
      */
     int getWidth();
 
     /**
-     * Gets height.
+     * Gets the height.
      *
      * @return the height.
      */
     int getHeight();
 
     /**
-     * Copy the content from render to the frameByteBuffer and write this content to image view.
+     * Copy the content from render to the frameByteBuffer and write this content to javaFX.
      *
-     * @param renderManager the render manager
+     * @param renderManager the render manager.
      */
-    void copyFrameBufferToImage(@NotNull final RenderManager renderManager);
+    void copyFrameBufferToImage(@NotNull RenderManager renderManager);
 
     /**
      * Dispose this transfer.
