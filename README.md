@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compile jfx
+    compile 'com.jme3:jfx:2.0.0'
 }
 ```
     
@@ -44,8 +44,8 @@ dependencies {
 </repositories>
 
 <dependency>
-    <groupId>com.jme3x</groupId>
-    <artifactId>jme-jfx</artifactId>
+    <groupId>com.jme3</groupId>
+    <artifactId>jfx</artifactId>
     <version>2.0.0</version>
 </dependency>
 ```
