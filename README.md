@@ -6,6 +6,15 @@ JFX Gui bridge for JME with usefull utilities for common usecases
 License is the New BSD License (same as JME3) 
 http://opensource.org/licenses/BSD-3-Clause
 
+##### java compiler options
+```bash
+--add-exports javafx.graphics/com.sun.javafx.embed=ALL-UNNAMED 
+--add-exports javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED 
+--add-exports javafx.graphics/com.sun.javafx.cursor=ALL-UNNAMED 
+--add-exports javafx.graphics/com.sun.glass.ui=ALL-UNNAMED 
+--add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+```
+
 #### How to add the library to your project
 
 ```groovy
@@ -16,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.jme3x:jme-jfx:1.7.5-Final'
+    compile 'com.jme3:jfx:2.0.0'
 }
 ```
     
@@ -35,9 +44,9 @@ dependencies {
 </repositories>
 
 <dependency>
-    <groupId>com.jme3x</groupId>
-    <artifactId>jme-jfx</artifactId>
-    <version>1.7.5-Final</version>
+    <groupId>com.jme3</groupId>
+    <artifactId>jfx</artifactId>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -45,12 +54,12 @@ dependencies {
 
 ```java
 
-    final ImageView imageView = new ImageView();
+    var imageView = new ImageView();
         
-    final AppSettings settings = JmeToJFXIntegrator.prepareSettings(new AppSettings(true), 60);
-    final JmeToJFXApplication application = new MySomeApplication();
+    var settings = JmeToJfxIntegrator.prepareSettings(new AppSettings(true), 60);
+    var application = new MySomeApplication();
     
-    JmeToJFXIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
+    JmeToJfxIntegrator.startAndBindMainViewPort(application, imageView, Thread::new);
 ```
 
 #### How to integrate javaFX UI to jME application:
@@ -65,9 +74,9 @@ dependencies {
         public void simpleInitApp() {
             container = JmeFxContainer.install(this, getGuiNode());
     
-            final Button button = new Button("BUTTON");
-            final Group rootNode = new Group(button);
-            final Scene scene = new Scene(rootNode, 600, 600);
+            var button = new Button("BUTTON");
+            var rootNode = new Group(button);
+            var scene = new Scene(rootNode, 600, 600);
             scene.setFill(Color.TRANSPARENT);
 
             container.setScene(scene, rootNode);
@@ -76,7 +85,7 @@ dependencies {
         }
     
         @Override
-        public void simpleUpdate(final float tpf) {
+        public void simpleUpdate(float tpf) {
             super.simpleUpdate(tpf);
             // we decide here that we need to do transferring the last frame from javaFX to jME
             if (container.isNeedWriteToJme()) {
