@@ -5,9 +5,9 @@
 package com.jme3.jfx.injme;
 
 import com.jme3.jfx.util.JfxPlatform;
-import com.ss.rlib.common.logging.Logger;
-import com.ss.rlib.common.logging.LoggerLevel;
-import com.ss.rlib.common.logging.LoggerManager;
+import com.ss.rlib.logger.api.Logger;
+import com.ss.rlib.logger.api.LoggerLevel;
+import com.ss.rlib.logger.api.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.embed.AbstractEvents;
 import com.sun.javafx.embed.EmbeddedSceneInterface;
@@ -47,25 +47,25 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public boolean grabFocus() {
-        LOGGER.debug(this, "Called grabFocus()");
+        LOGGER.debug("Called grabFocus()");
         return true;
     }
 
     @Override
     public void repaint() {
-        LOGGER.debug(this, "Called repaint()");
+        LOGGER.debug("Called repaint()");
         getContainer().requestRedraw();
     }
 
     @Override
     public boolean requestFocus() {
-        LOGGER.debug(this, "Called requestFocus()");
+        LOGGER.debug("Called requestFocus()");
         return getContainer().requestFocus();
     }
 
     @Override
     public void setCursor(@NotNull final CursorFrame cursorFrame) {
-        LOGGER.debug(this, cursorFrame, frame -> "Called setCursor(" + frame + ")");
+        LOGGER.debug(cursorFrame, frame -> "Called setCursor(" + frame + ")");
         getContainer().requestShowingCursor(cursorFrame);
     }
 
@@ -73,9 +73,9 @@ public class JmeFxHostInterface implements HostInterface {
     public void setEmbeddedScene(@Nullable final EmbeddedSceneInterface sceneInterface) {
 
         if (sceneInterface == null) {
-            LOGGER.debug(this, "Called setEmbeddedScene(null)");
+            LOGGER.debug("Called setEmbeddedScene(null)");
         } else {
-            LOGGER.debug(this, sceneInterface, scene -> "Called setEmbeddedScene(" + scene + ")");
+            LOGGER.debug(sceneInterface, scene -> "Called setEmbeddedScene(" + scene + ")");
         }
 
         final JmeFxContainerInternal container = getContainer();
@@ -108,9 +108,9 @@ public class JmeFxHostInterface implements HostInterface {
     public void setEmbeddedStage(@Nullable final EmbeddedStageInterface stageInterface) {
 
         if (stageInterface == null) {
-            LOGGER.debug(this, "Called setEmbeddedStage(null)");
+            LOGGER.debug("Called setEmbeddedStage(null)");
         } else {
-            LOGGER.debug(this, stageInterface, stage -> "Called setEmbeddedStage(" + stage + ")");
+            LOGGER.debug(stageInterface, stage -> "Called setEmbeddedStage(" + stage + ")");
         }
 
         final JmeFxContainerInternal container = getContainer();
@@ -137,7 +137,7 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public void setEnabled(final boolean enabled) {
-        LOGGER.debug(this, enabled, val -> "Called setEnabled(" + val + ")");
+        LOGGER.debug(enabled, val -> "Called setEnabled(" + val + ")");
         getContainer().requestEnabled(enabled);
     }
 
@@ -145,7 +145,7 @@ public class JmeFxHostInterface implements HostInterface {
     public void setPreferredSize(final int width, final int height) {
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-            LOGGER.debug(this, "Called setPreferredSize(" + width + ", " + height + ")");
+            LOGGER.debug("Called setPreferredSize(" + width + ", " + height + ")");
         }
 
         getContainer().requestPreferredSize(width, height);
@@ -153,12 +153,12 @@ public class JmeFxHostInterface implements HostInterface {
 
     @Override
     public boolean traverseFocusOut(final boolean forward) {
-        LOGGER.debug(this, forward, val -> "Called traverseFocusOut(" + val + ")");
+        LOGGER.debug(forward, val -> "Called traverseFocusOut(" + val + ")");
         return true;
     }
 
     @Override
     public void ungrabFocus() {
-        LOGGER.debug(this, "Called ungrabFocus()");
+        LOGGER.debug("Called ungrabFocus()");
     }
 }

@@ -7,8 +7,8 @@ import com.jme3.cursors.plugins.JmeCursor;
 import com.jme3.jfx.injme.cursor.CursorDisplayProvider;
 import com.jme3.jfx.util.JfxPlatform;
 import com.jme3.input.InputManager;
-import com.ss.rlib.common.logging.Logger;
-import com.ss.rlib.common.logging.LoggerManager;
+import com.ss.rlib.logger.api.Logger;
+import com.ss.rlib.logger.api.LoggerManager;
 import com.sun.javafx.cursor.CursorFrame;
 import com.sun.javafx.cursor.CursorType;
 import org.jetbrains.annotations.NotNull;
@@ -125,7 +125,7 @@ public class ProtonCursorProvider implements CursorDisplayProvider {
         CursorType cursorType = cursorFrame.getCursorType();
 
         if (cache.get(cursorType) == null) {
-            LOGGER.debug(this, cursorType, type -> "Unknown Cursor! " + type);
+            LOGGER.debug(cursorType, type -> "Unknown Cursor! " + type);
             cursorType = CursorType.DEFAULT;
         }
 

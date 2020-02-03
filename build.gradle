@@ -7,54 +7,39 @@ buildscript {
     }
 }
 
+plugins {
+  id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
+javafx {
+    version = "13"
+    modules = [ 'javafx.controls' ]
+}
+
 apply plugin: 'java'
-apply plugin: 'maven'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 group = 'com.jme3'
-version = '2.0.0'
+version = '3.0.0'
 
 compileJava {
     options.encoding = "UTF-8"
     options.incremental = true
-    options.compilerArgs.addAll([
-        "--add-exports",
-        "javafx.graphics/com.sun.javafx.embed=ALL-UNNAMED"
-    ])
-    options.compilerArgs.addAll([
-        "--add-exports",
-        "javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED"
-    ])
-    options.compilerArgs.addAll([
-        "--add-exports",
-        "javafx.graphics/com.sun.javafx.cursor=ALL-UNNAMED"
-    ])
-    options.compilerArgs.addAll([
-        "--add-exports",
-        "javafx.graphics/com.sun.glass.ui=ALL-UNNAMED"
-    ])
-    options.compilerArgs.addAll([
-        "--add-exports",
-        "javafx.graphics/com.sun.javafx.application=ALL-UNNAMED"
-    ])
 }
 
-sourceCompatibility = 1.10
-targetCompatibility = 1.10
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 
-ext.rlibVersion = "7.0.0"
+ext.rlibVersion = "9.9.0"
 ext.bintrayVersion = version
 
-def jme3 = [v: '3.2.0-stable', g: 'org.jmonkeyengine']
+def jme3 = [v: '3.2.4-stable', g: 'org.jmonkeyengine']
 
 repositories {
     mavenCentral()
     mavenLocal()
     jcenter()
-    maven {
-        url "https://jitpack.io"
-    }
     maven {
         url  "https://dl.bintray.com/javasabr/maven"
     }
@@ -67,8 +52,10 @@ publishing {
             groupId group
             artifactId 'jfx'
             version bintrayVersion
-            artifact sourcesJar
-            artifact javadocJar
+            afterEvaluate {
+                artifact sourcesJar
+                artifact javadocJar
+            }
         }
     }
 }
@@ -95,10 +82,10 @@ bintray {
 }
 
 dependencies {
-    compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
-    compile group: 'com.spaceshift', name: 'rlib.common', version: rlibVersion
-    compile "${jme3.g}:jme3-core:${jme3.v}"
-    compile "${jme3.g}:jme3-lwjgl3:${jme3.v}"
+    implementation  group: 'org.jetbrains', name: 'annotations', version: '18.0.0'
+    implementation  group: 'com.spaceshift', name: 'rlib.common', version: rlibVersion
+    implementation  "${jme3.g}:jme3-core:${jme3.v}"
+    implementation  "${jme3.g}:jme3-lwjgl3:${jme3.v}"
 }
 
 javadoc {
@@ -115,6 +102,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
+wrapper {
+    gradleVersion = '6.1.1'
 }

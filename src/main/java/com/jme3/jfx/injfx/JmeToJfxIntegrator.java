@@ -29,10 +29,11 @@ public class JmeToJfxIntegrator {
      *
      * @param settings  the settings
      * @param frameRate the frame rate
+     * @return the correct render settings applied to the settings
      */
     public static @NotNull AppSettings prepareSettings(@NotNull AppSettings settings, int frameRate) {
         settings.setFullscreen(false);
-        settings.setFrameRate(max(1, min(100, frameRate)));
+        settings.setFrameRate(max(0, min(100, frameRate)));
         settings.setCustomRenderer(JmeOffscreenSurfaceContext.class);
         return settings;
     }

@@ -11,9 +11,9 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
-import com.ss.rlib.common.logging.Logger;
-import com.ss.rlib.common.logging.LoggerLevel;
-import com.ss.rlib.common.logging.LoggerManager;
+import com.ss.rlib.logger.api.Logger;
+import com.ss.rlib.logger.api.LoggerLevel;
+import com.ss.rlib.logger.api.LoggerManager;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Node;
@@ -253,7 +253,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
         askFixAspect = fixAspect;
         reshapeNeeded.set(2);
 
-        LOGGER.debug(this, this, processor -> "notify resized to " + processor.askWidth + "x" + processor.askHeight);
+        LOGGER.debug(this, processor -> "notify resized to " + processor.askWidth + "x" + processor.askHeight);
     }
 
     @Override
@@ -465,7 +465,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
     protected @NotNull FrameTransfer reshapeInThread(int width, int height, boolean fixAspect) {
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-            LOGGER.debug(this, "Reshape in the jME thread to " + width + "x" + height);
+            LOGGER.debug("Reshape in the jME thread to " + width + "x" + height);
         }
 
         reshapeCurrentViewPort(width, height);
@@ -507,7 +507,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
     protected void reshapeCurrentViewPort(int width, int height) {
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-            LOGGER.debug(this, "reshape the current view port to " + width + "x" + height);
+            LOGGER.debug("reshape the current view port to " + width + "x" + height);
         }
 
         var viewPort = getViewPort();

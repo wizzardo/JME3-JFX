@@ -42,7 +42,7 @@ public class ApplicationThreadExecutor {
      * @param task the new task.
      */
     public void addToExecute(@NotNull Runnable task) {
-        ArrayUtils.runInWriteLock(waitTasks, task, Array::add);
+        waitTasks.runInWriteLock(task, Array::add);
     }
 
     /**
@@ -54,7 +54,7 @@ public class ApplicationThreadExecutor {
             return;
         }
 
-        ArrayUtils.runInWriteLock(waitTasks, execute, ArrayUtils::move);
+        waitTasks.runInWriteLock(execute, ArrayUtils::move);
         try {
             execute.forEach(Runnable::run);
         } finally {
