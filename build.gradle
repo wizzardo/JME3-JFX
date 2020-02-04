@@ -1,19 +1,12 @@
+import org.gradle.internal.os.OperatingSystem;
+
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
     }
-}
-
-plugins {
-  id 'org.openjfx.javafxplugin' version '0.0.8'
-}
-
-javafx {
-    version = "13"
-    modules = [ 'javafx.controls' ]
 }
 
 apply plugin: 'java'
@@ -28,13 +21,16 @@ compileJava {
     options.incremental = true
 }
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
-ext.rlibVersion = "9.9.0"
-ext.bintrayVersion = version
-
-def jme3 = [v: '3.2.4-stable', g: 'org.jmonkeyengine']
+ext {
+    bintrayVersion = version
+    javaFxVersion = "13"
+    jetbrainsAnnotation = "18.0.0"
+    jMonkeyVersion = "3.2.4-stable"
+    rlibVersion = "9.9.0"
+}
 
 repositories {
     mavenCentral()
@@ -82,10 +78,20 @@ bintray {
 }
 
 dependencies {
-    implementation  group: 'org.jetbrains', name: 'annotations', version: '18.0.0'
-    implementation  group: 'com.spaceshift', name: 'rlib.common', version: rlibVersion
-    implementation  "${jme3.g}:jme3-core:${jme3.v}"
-    implementation  "${jme3.g}:jme3-lwjgl3:${jme3.v}"
+    def osName = OperatingSystem.current().getName().toLowerCase()
+    def targetArch = project.hasProperty('targetArch') ? project.property("targetArch") : 'x64'
+
+    implementation  "org.jetbrains:annotations:$jetbrainsAnnotation"
+    implementation  "com.spaceshift:rlib.common:$rlibVersion"
+    implementation  "com.spaceshift:rlib.logger.impl:$rlibVersion"
+    implementation  "org.jmonkeyengine:jme3-core:$jMonkeyVersion"
+    implementation  "org.jmonkeyengine:jme3-lwjgl3:$jMonkeyVersion"
+
+    if (targetArch == "x64" || targetArch == "x86") {
+        implementation "org.openjfx:javafx-base:$javaFxVersion:${osName}"
+        implementation "org.openjfx:javafx-controls:$javaFxVersion:${osName}"
+        implementation "org.openjfx:javafx-graphics:$javaFxVersion:${osName}"
+    }
 }
 
 javadoc {
