@@ -78,8 +78,16 @@ bintray {
 }
 
 dependencies {
-    def osName = OperatingSystem.current().getName().toLowerCase()
     def targetArch = project.hasProperty('targetArch') ? project.property("targetArch") : 'x64'
+
+    def osName = ""
+    if (OperatingSystem.current().isLinux()) {
+        osName = "linux"
+    } else if (OperatingSystem.current().isMacOsX()) {
+        osName = "mac"
+    } else if (OperatingSystem.current().isWindows()) {
+        osName = "win"
+    }
 
     implementation  "org.jetbrains:annotations:$jetbrainsAnnotation"
     implementation  "com.spaceshift:rlib.common:$rlibVersion"
