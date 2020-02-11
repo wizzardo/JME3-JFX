@@ -105,7 +105,7 @@ public abstract class AbstractFrameTransferSceneProcessor<T extends Node> implem
     private boolean enabled;
 
     public AbstractFrameTransferSceneProcessor() {
-        transferMode = TransferMode.ALWAYS;
+        transferMode = TransferMode.UNBUFFERED;
         askWidth = 1;
         askHeight = 1;
         main = true;

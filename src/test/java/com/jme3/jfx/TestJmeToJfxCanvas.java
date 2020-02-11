@@ -1,5 +1,6 @@
 package com.jme3.jfx;
 
+import static com.jme3.jfx.injfx.processor.FrameTransferSceneProcessor.TransferMode;
 import com.jme3.jfx.injfx.JmeToJfxIntegrator;
 import com.jme3.jfx.injfx.JmeToJfxApplication;
 import com.jme3.input.KeyInput;
@@ -58,12 +59,12 @@ public class TestJmeToJfxCanvas extends Application {
         var application = makeJmeApplication();
 
         // integrate jME application with Canvas
-        JmeToJfxIntegrator.startAndBindMainViewPort(application, canvas, Thread::new);
+        JmeToJfxIntegrator.startAndBindMainViewPort(application, canvas, Thread::new, TransferMode.DOUBLE_BUFFERED);
     }
 
     private static @NotNull JmeToJfxApplication makeJmeApplication() {
 
-        var settings = JmeToJfxIntegrator.prepareSettings(new AppSettings(true), 60);
+        var settings = JmeToJfxIntegrator.prepareSettings(new AppSettings(true));
         var application = new JmeToJfxApplication() {
 
             protected Geometry player;

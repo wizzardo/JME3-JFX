@@ -15,8 +15,10 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.image.WritablePixelFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -101,6 +103,16 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
      */
     protected final int height;
 
+    /**
+     * OpenGL PBOs
+     */
+    private final IntBuffer[] pixelBufferObjects;
+
+    /**
+     * Index of active PBO
+     */
+    private int index;
+
     public AbstractFrameTransfer(@NotNull T destination, int width, int height, @NotNull TransferMode transferMode) {
         this(destination, transferMode, null, width, height);
     }
@@ -134,7 +146,27 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
         img = new WritableImage(pixelBuffer);
         updatedBuffer = new Rectangle2D(0, 0, width, height);
 
+        pixelBufferObjects = new IntBuffer[2];
+        if (transferMode == TransferMode.DOUBLE_BUFFERED) {
+            index = 0;
+            
+            final int dataSize = width * height * 4;
+            pixelBufferObjects[0] = createPixelBuffer(dataSize);
+            pixelBufferObjects[1] = createPixelBuffer(dataSize);
+        }
+
         JfxPlatform.runInFxThread(() -> setImage());
+    }
+
+    private IntBuffer createPixelBuffer(int dataSize) {
+        IntBuffer pixelBufferObject = BufferUtils.createIntBuffer(1);
+
+        GL15.glGenBuffers(pixelBufferObject);
+        GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER, pixelBufferObject.get(0));
+        GL15.glBufferData(GL21.GL_PIXEL_PACK_BUFFER, dataSize, GL15.GL_STREAM_READ);
+        GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER, 0);
+
+        return pixelBufferObject;
     }
 
     protected void setImage() { }
@@ -167,18 +199,25 @@ public abstract class AbstractFrameTransfer<T> implements FrameTransfer {
 
         // Convert screenshot.
         try {
+            if (transferMode == TransferMode.DOUBLE_BUFFERED) {
+                index = (index + 1) % 2;
+                final int nextIndex = (index + 1) % 2;
 
-            frameByteBuffer.clear();
+                GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER, pixelBufferObjects[index].get(0));
+                GL11.glReadPixels(0, 0, width, height, GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, 0);
 
-            var renderer = renderManager.getRenderer();
-            renderer.readFrameBufferWithFormat(frameBuffer, frameByteBuffer, Image.Format.BGRA8);
+                GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER, pixelBufferObjects[nextIndex].get(0));
+                GL15.glGetBufferSubData(GL21.GL_PIXEL_PACK_BUFFER, 0, frameByteBuffer);
 
+                GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER, 0);
+            } else {
+                GL11.glReadPixels(0, 0, width, height, GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, frameByteBuffer);
+            }
         } finally {
             if (!frameState.compareAndSet(RUNNING_STATE, WAITING_STATE)) {
                 throw new RuntimeException("unknown problem with the frame state");
             }
         }
-
         JfxPlatform.runInFxThread(this::writeFrame);
     }
 
