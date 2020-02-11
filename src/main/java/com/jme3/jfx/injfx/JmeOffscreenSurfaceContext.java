@@ -114,7 +114,7 @@ public class JmeOffscreenSurfaceContext implements JmeContext {
      * @return the new background jme context.
      */
     protected @NotNull JmeContext createBackgroundContext() {
-        return JmeSystem.newContext(settings, Type.OffscreenSurface);
+        return new JmeBackgroundContext(settings);
     }
 
     /**
