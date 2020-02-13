@@ -11,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 public interface FrameTransferSceneProcessor extends SceneProcessor {
 
     enum TransferMode {
-        ALWAYS,
-        ON_CHANGES
+        UNBUFFERED,
+        DOUBLE_BUFFERED
     }
 
     /**

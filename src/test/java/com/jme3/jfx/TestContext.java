@@ -4,8 +4,8 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.NativeLibraryLoader;
 import com.jme3.system.lwjgl.LwjglDisplay;
 
-import com.ss.rlib.common.logging.Logger;
-import com.ss.rlib.common.logging.LoggerManager;
+import com.ss.rlib.logger.api.Logger;
+import com.ss.rlib.logger.api.LoggerManager;
 
 /**
  * Created by ronn on 25.07.16.

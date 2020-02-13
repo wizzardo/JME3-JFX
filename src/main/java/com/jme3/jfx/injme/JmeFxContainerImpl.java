@@ -24,9 +24,9 @@ import com.jme3.jfx.injme.cursor.proton.ProtonCursorProvider;
 import com.ss.rlib.common.concurrent.atomic.AtomicInteger;
 import com.ss.rlib.common.concurrent.lock.AsyncReadSyncWriteLock;
 import com.ss.rlib.common.concurrent.lock.LockFactory;
-import com.ss.rlib.common.logging.Logger;
-import com.ss.rlib.common.logging.LoggerLevel;
-import com.ss.rlib.common.logging.LoggerManager;
+import com.ss.rlib.logger.api.Logger;
+import com.ss.rlib.logger.api.LoggerLevel;
+import com.ss.rlib.logger.api.LoggerManager;
 import com.sun.glass.ui.Pixels;
 import com.sun.javafx.application.PlatformImpl;
 import com.sun.javafx.cursor.CursorFrame;
@@ -574,7 +574,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
         stageInterface.setFocused(true, AbstractEvents.FOCUSEVENT_ACTIVATED);
         setFocused(true);
 
-        LOGGER.debug(this, "got focused.");
+        LOGGER.debug("got focused.");
     }
 
     @Override
@@ -598,7 +598,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
             final Picture picture = getPicture();
 
             if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-                LOGGER.debug(this, "Fit the scene to window size from [" + getSceneWidth() + "x" + getSceneHeight() + "] to " +
+                LOGGER.debug("Fit the scene to window size from [" + getSceneWidth() + "x" + getSceneHeight() + "] to " +
                                 "[" + textureWidth + "x" + textureHeight + "]");
             }
 
@@ -717,7 +717,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
         data.limit(0);
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-            LOGGER.debug(this, "is covered " + x + ", " + y + " = " + (alpha != 0));
+            LOGGER.debug("is covered " + x + ", " + y + " = " + (alpha != 0));
         }
 
         return alpha != 0;
@@ -771,7 +771,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
 
         setFocused(false);
 
-        LOGGER.debug(this, "lost focused.");
+        LOGGER.debug("lost focused.");
     }
 
     @Override
@@ -781,7 +781,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
             time = System.currentTimeMillis();
-            LOGGER.debug(this, "Started paint FX scene...");
+            LOGGER.debug("Started paint FX scene...");
         }
 
         final EmbeddedSceneInterface sceneInterface = getSceneInterface();
@@ -817,7 +817,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
             }
 
         } catch (final Exception exc) {
-            LOGGER.warning(exc.getMessage(), exc);
+            LOGGER.warning(exc);
         } finally {
             imageLock.syncUnlock();
         }
@@ -826,7 +826,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
         waitCount.incrementAndGet();
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-            LOGGER.debug(this, "finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
+            LOGGER.debug("finished paint FX scene(" + (System.currentTimeMillis() - time) + "ms.).");
         }
     }
 
@@ -886,7 +886,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
             time = System.currentTimeMillis();
-            LOGGER.debug(this, "Started writing FX data to JME...");
+            LOGGER.debug("Started writing FX data to JME...");
         }
 
         final ByteBuffer jmeData = notNull(getJmeData());
@@ -908,7 +908,7 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
         waitCount.subAndGet(currentCount);
 
         if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-            LOGGER.debug(this, "Finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
+            LOGGER.debug("Finished writing FX data to JME(" + (System.currentTimeMillis() - time) + "ms.).");
         }
 
         return null;

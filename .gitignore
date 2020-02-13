@@ -3,3 +3,8 @@
 *.so
 /.gradle/
 /out/
+/.classpath
+/.project
+/.settings/
+/.vscode/
+/bin/

@@ -4,9 +4,9 @@ import static com.jme3.jfx.injme.util.JmeWindowUtils.*;
 import com.jme3.system.JmeContext;
 import com.jme3.ui.Picture;
 import com.jme3.jfx.util.JfxPlatform;
-import com.ss.rlib.common.logging.Logger;
-import com.ss.rlib.common.logging.LoggerLevel;
-import com.ss.rlib.common.logging.LoggerManager;
+import com.ss.rlib.logger.api.Logger;
+import com.ss.rlib.logger.api.LoggerLevel;
+import com.ss.rlib.logger.api.LoggerManager;
 import com.sun.javafx.embed.EmbeddedStageInterface;
 import org.jetbrains.annotations.NotNull;
 
@@ -65,7 +65,7 @@ public class JavaFxPicture extends Picture {
             if (container.getPositionX() != currentX || container.getPositionY() != currentY) {
 
                 if (LOGGER.isEnabled(LoggerLevel.DEBUG)) {
-                    LOGGER.debug(this, "moved window to [original: " + currentX + ", " + currentY + "]");
+                    LOGGER.debug("moved window to [original: " + currentX + ", " + currentY + "]");
                 }
 
                 container.move(currentX, currentY);

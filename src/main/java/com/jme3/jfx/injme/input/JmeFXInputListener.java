@@ -332,8 +332,8 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
         final boolean popupTrigger = button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON;
 
-        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
-                shift, ctrl, alt, meta, popupTrigger);
+        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, false, false, x, y,
+                screenX, screenY, shift, ctrl, alt, meta, popupTrigger);
     }
 
     @Override
@@ -425,8 +425,8 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean alt = keyStateSet.get(KeyEvent.VK_ALT);
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
 
-        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
-                shift, ctrl, alt, meta, false);
+        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, false, false, x, y,
+                screenX, screenY, shift, ctrl, alt, meta, false);
     }
 
     @Override
@@ -467,6 +467,8 @@ public class JmeFXInputListener implements RawInputListener {
     /**
      * set on drag start /nulled on end<br> necessary so that the drag events can be generated
      * appropiatly
+     *
+     * @param dndHandler  the drag and drop handler
      */
     public void setMouseDNDListener(@Nullable final JmeFxDnDHandler dndHandler) {
         assert this.dndHandler == null || dndHandler == null : "duplicate dnd handler register? ";
