@@ -27,18 +27,13 @@ targetCompatibility = JavaVersion.VERSION_11
 ext {
     bintrayVersion = version
     javaFxVersion = "13"
-    jetbrainsAnnotation = "18.0.0"
-    jMonkeyVersion = "3.2.4-stable"
-    rlibVersion = "9.9.0"
 }
 
 repositories {
     mavenCentral()
     mavenLocal()
     jcenter()
-    maven {
-        url  "https://dl.bintray.com/javasabr/maven"
-    }
+    maven { url 'https://jitpack.io' }
 }
 
 publishing {
@@ -89,11 +84,11 @@ dependencies {
         osName = "win"
     }
 
-    implementation  "org.jetbrains:annotations:$jetbrainsAnnotation"
-    implementation  "com.spaceshift:rlib.common:$rlibVersion"
-    implementation  "com.spaceshift:rlib.logger.impl:$rlibVersion"
-    implementation  "org.jmonkeyengine:jme3-core:$jMonkeyVersion"
-    implementation  "org.jmonkeyengine:jme3-lwjgl3:$jMonkeyVersion"
+    implementation  "org.jetbrains:annotations:21.0.1"
+    implementation 'com.github.wizzardo.RLib:rlib.common:master-SNAPSHOT'
+    implementation 'com.github.wizzardo.RLib:rlib.logger.impl:master-SNAPSHOT'
+    implementation  "org.jmonkeyengine:jme3-core:3.4.0-stable"
+    implementation  "org.jmonkeyengine:jme3-lwjgl3:3.4.0-stable"
 
     if (targetArch == "x64" || targetArch == "x86") {
         implementation "org.openjfx:javafx-base:$javaFxVersion:${osName}"
