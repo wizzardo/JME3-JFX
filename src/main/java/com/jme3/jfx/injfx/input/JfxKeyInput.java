@@ -200,4 +200,9 @@ public class JfxKeyInput extends JfxInput implements KeyInput {
         var code = KEY_CODE_TO_JME.get(keyCode);
         return code == null ? KEY_UNKNOWN : code;
     }
+
+    @Override
+    public String getKeyName(int key) {
+        throw new UnsupportedOperationException("getKeyName is not implemented");
+    }
 }
