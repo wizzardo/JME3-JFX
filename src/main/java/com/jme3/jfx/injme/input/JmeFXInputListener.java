@@ -332,7 +332,7 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
         final boolean popupTrigger = button == AbstractEvents.MOUSEEVENT_SECONDARY_BUTTON;
 
-        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
+        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, false, false, x, y, screenX, screenY,
                 shift, ctrl, alt, meta, popupTrigger);
     }
 
@@ -425,7 +425,7 @@ public class JmeFXInputListener implements RawInputListener {
         final boolean alt = keyStateSet.get(KeyEvent.VK_ALT);
         final boolean meta = keyStateSet.get(KeyEvent.VK_META);
 
-        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, x, y, screenX, screenY,
+        sceneInterface.mouseEvent(type, button, primaryBtnDown, middleBtnDown, secondaryBtnDown, false, false, x, y, screenX, screenY,
                 shift, ctrl, alt, meta, false);
     }
 

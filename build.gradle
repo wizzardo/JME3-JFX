@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem;
+
 buildscript {
     repositories {
         jcenter()
@@ -45,6 +47,7 @@ targetCompatibility = 1.10
 
 ext.rlibVersion = "7.0.0"
 ext.bintrayVersion = version
+ext.javaFxVersion = '13'
 
 def jme3 = [v: '3.2.0-stable', g: 'org.jmonkeyengine']
 
@@ -60,18 +63,6 @@ repositories {
     }
 }
 
-publishing {
-    publications {
-        LibArtifact(MavenPublication) {
-            from components.java
-            groupId group
-            artifactId 'jfx'
-            version bintrayVersion
-            artifact sourcesJar
-            artifact javadocJar
-        }
-    }
-}
 
 bintray {
     user = System.getProperty('bintrayUser')
@@ -96,9 +87,27 @@ bintray {
 
 dependencies {
     compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
-    compile group: 'com.spaceshift', name: 'rlib.common', version: rlibVersion
+    compile "com.github.wizzardo:RLib:${rlibVersion}"
     compile "${jme3.g}:jme3-core:${jme3.v}"
     compile "${jme3.g}:jme3-lwjgl3:${jme3.v}"
+
+
+    def targetArch = project.hasProperty('targetArch') ? project.property("targetArch") : 'x64'
+
+    def osName = ""
+    if (OperatingSystem.current().isLinux()) {
+        osName = "linux"
+    } else if (OperatingSystem.current().isMacOsX()) {
+        osName = "mac"
+    } else if (OperatingSystem.current().isWindows()) {
+        osName = "win"
+    }
+
+    if (targetArch == "x64" || targetArch == "x86") {
+        implementation "org.openjfx:javafx-base:$javaFxVersion:${osName}"
+        implementation "org.openjfx:javafx-controls:$javaFxVersion:${osName}"
+        implementation "org.openjfx:javafx-graphics:$javaFxVersion:${osName}"
+    }
 }
 
 javadoc {
@@ -113,8 +122,4 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
 }
